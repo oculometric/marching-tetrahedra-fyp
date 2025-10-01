@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "9914ca0aedf0d5ed",
+        "id": "68b5b1153b5047a7",
         "type": "tabs",
         "children": [
           {
-            "id": "76b9b70a5d264bd2",
+            "id": "8298b48951b3c8d9",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "doc/misc shit.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "misc shit"
+              "title": "New tab"
             }
           }
         ]
@@ -163,11 +159,18 @@
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "bases:Create new base": false
+      "bases:Create new base": false,
+      "obsidian-kanban:Create new board": false
     }
   },
-  "active": "76b9b70a5d264bd2",
+  "active": "60e8ac5952277439",
   "lastOpenFiles": [
+    "doc/task board.md",
+    "doc/Cassette Costen FYP Proposal.docx",
+    "doc/loose gantt.png",
+    "doc/misc shit.md",
+    "doc/research notes.md",
+    "doc/kanban task board.md",
     "doc/lu106285ibgj3.tmp",
     "doc/GDEV60001 Games Development Project Proposal Template_ReadOnly.docx",
     "doc/Project Pitch Template - Copy.pptx"
