@@ -1,4 +1,4 @@
-- [ ] do project plan/proposal doc (include key sources)
+- [x] do project plan/proposal doc (include key sources)
 - [ ] whittle down key sources
 no gantt charts! just do kanbans
 
