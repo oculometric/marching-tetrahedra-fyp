@@ -1,0 +1,1 @@
+again summarises the problem with MC: adjacent cubes may generate inconsistent surfaces with holes in due to ambiguity about which pattern should be used. MT resolves this and reduces the number of possible configuration cases per cell.
