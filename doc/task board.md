@@ -8,11 +8,11 @@ kanban-plugin: board
 
 - [ ] finalise project proposal [60] #management
 - [ ] tetrahedral meshing research [1440] #literature
+- [ ] complete ethics form and documentation for collecting user data [120] #management
 
 
 ## backlog
 
-- [ ] complete ethics form and documentation for collecting user data [120] #management
 - [ ] create project pitch presentation [240\] #management
 - [ ] vertex clustering research [1440] #literature
 - [ ] mesh format research [360] #literature

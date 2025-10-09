@@ -4,7 +4,7 @@ https://link.springer.com/article/10.1007/s12650-016-0359-5
 https://link.springer.com/article/10.1007/BF01901516
 
 regularised marching tetrahedra https://www.sciencedirect.com/science/article/pii/S009784939900076X (DONE)
-body centered lattice tesselation https://www.sciencedirect.com/science/article/abs/pii/S009784939700085X
+body centered lattice tesselation https://www.sciencedirect.com/science/article/abs/pii/S009784939700085X (DONE)
 mesh simplification comparison https://www.sciencedirect.com/science/article/pii/S0097849397000824
 
 https://dl.acm.org/doi/10.1145/1275808.1276448
