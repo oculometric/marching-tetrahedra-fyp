@@ -33,12 +33,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "doc/questionnaire template.md",
+                "file": "doc/research notes/Regularised marching tetrahedra (1999).md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "questionnaire template"
+              "title": "Regularised marching tetrahedra (1999)"
             }
           },
           {
@@ -202,11 +202,11 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "60e8ac5952277439",
+  "active": "726b3f3e8fd564cb",
   "lastOpenFiles": [
+    "doc/questionnaire template.md",
     "doc/Pasted image 20251009125842.png",
     "doc/misc shit.md",
-    "doc/questionnaire template.md",
     "doc/task board.md",
     "doc/research notes.md",
     "doc/papers/mesh simplification comparison.pdf",
