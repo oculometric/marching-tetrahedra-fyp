@@ -31,6 +31,8 @@ algorithm pseudocode
 ```
 for each sample point:
 	sample the value
+	
+for each sample point:
 	for each connected edge:
 		check if the value at the other end is opposite the threshold,
 		and the computed intersection is closer to the current sample point:
