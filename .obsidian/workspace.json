@@ -28,6 +28,20 @@
             }
           },
           {
+            "id": "addace445816c46b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "doc/misc shit.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "misc shit"
+            }
+          },
+          {
             "id": "726b3f3e8fd564cb",
             "type": "leaf",
             "state": {
@@ -47,16 +61,16 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "doc/misc shit.md",
+                "file": "doc/questionnaire template.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "misc shit"
+              "title": "questionnaire template"
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -202,29 +216,30 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "726b3f3e8fd564cb",
+  "active": "a1e5ddd0c8e309af",
   "lastOpenFiles": [
-    "doc/questionnaire template.md",
-    "doc/Pasted image 20251009125842.png",
+    "doc/ethics/Cassette Costen FYP Information Sheet.docx",
+    "doc/ethics/Cassette Costen FYP Questionnaire Template.docx",
+    "doc/ethics/Cassette Costen FYP Consent Form.docx",
+    "doc/ethics/Cassette Costen FYP Proportionate Review.docx",
+    "doc/ethics",
+    "doc/New folder",
     "doc/misc shit.md",
-    "doc/task board.md",
     "doc/research notes.md",
+    "doc/task board.md",
+    "doc/questionnaire template.md",
+    "doc/research notes/Regularised marching tetrahedra (1999).md",
+    "doc/Pasted image 20251009125842.png",
     "doc/papers/mesh simplification comparison.pdf",
     "doc/papers/regularised marching tetrahedra 1999.pdf",
     "doc/papers/marching cubes 1987.pdf",
     "doc/papers/a new mt tessellation.pdf",
     "doc/research notes/A new tetrahedral tessellation scheme for isosurface generation (1998).md",
-    "doc/research notes/Regularised marching tetrahedra (1999).md",
     "doc/research notes/primitives comparison.png",
     "doc/research notes/marching cubes ambiguity.png",
     "doc/papers",
     "doc/research notes/body centered lattice.png",
-    "tesselations.blend@",
     "doc/research notes/simple cubic lattice.png",
-    "tesselations.blend1",
-    "tesselations.blend",
-    "doc/research notes",
-    "doc/Cassette Costen FYP Proposal.docx",
     "doc/loose gantt.png",
     "doc/kanban task board.md"
   ]
