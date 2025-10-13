@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -8,9 +9,26 @@ using System.Threading.Tasks;
 
 public struct MTVTMesh
 {
-    List<Vector3> vertices;
-    List<Vector3> normals;
-    List<uint> indices;
+    public List<Vector3> vertices;
+    public List<Vector3> normals;
+    public List<uint> indices;
+}
+
+public struct MTVTDebugStats
+{
+    public int cubes_x;
+    public int cubes_y;
+    public int cubes_z;
+    public double allocation_time;
+    public double sampling_time;
+    public double flagging_time;
+    public double vertex_time;
+    public double geometry_time;
+    public long sample_points;
+    public long edges;
+    public long tetrahedra;
+    public long vertices;
+    public long indices;
 }
 
 public class MTVTBuilder
@@ -29,9 +47,12 @@ public class MTVTBuilder
     private float resolution;
     private long grid_data_length;
 
+    private int[] index_offsets_evenz = [];
+    private int[] index_offsets_oddz = [];
+
     private float[] sample_values = [];
     private Vector3[] sample_positions = [];
-    private int[] sample_proximity_flags = [];
+    private Int16[] sample_proximity_flags = [];
 
     public MTVTBuilder()
     {
@@ -54,6 +75,57 @@ public class MTVTBuilder
         samples_y = cubes_y + 2;
         samples_z = (cubes_z * 2) + 3;
         grid_data_length = samples_x * samples_y * samples_z;
+
+        {
+            // generate a set of index offsets for surrounding sample points,
+            // used in the flagging pass
+            // the bit-flagging is as follows:
+            int s_y = samples_x;
+            int s_hz = samples_y * s_y;
+            int s_z = s_hz * 2;
+            index_offsets_evenz =
+            [
+                 1,               //  0 - 0b00000000 00000001 - +X
+                -1,               //  1 - 0b00000000 00000010 - -X
+                 s_y,             //  2 - 0b00000000 00000100 - +Y
+                -s_y,             //  3 - 0b00000000 00001000 - -Y
+                 s_z,             //  4 - 0b00000000 00010000 - +Z
+                -s_z,             //  5 - 0b00000000 00100000 - -Z
+
+                 s_hz,            //  6 - 0b00000000 01000000 - +X+Y+Z
+                 s_hz - 1,        //  7 - 0b00000000 10000000 - -X+Y+Z
+                 s_hz - s_y,      //  8 - 0b00000001 00000000 - +X-Y+Z
+                 s_hz - s_y - 1,  //  9 - 0b00000010 00000000 - -X-Y+Z
+                -s_hz,            // 10 - 0b00000100 00000000 - +X+Y-Z
+                -s_hz - 1,        // 11 - 0b00001000 00000000 - -X+Y-Z
+                -s_hz - s_y,      // 12 - 0b00010000 00000000 - +X-Y-Z
+                -s_hz - s_y - 1,  // 13 - 0b00100000 00000000 - -X-Y-Z
+            ];
+            index_offsets_oddz =
+            [
+                index_offsets_evenz[0],
+                index_offsets_evenz[1],
+                index_offsets_evenz[2],
+                index_offsets_evenz[3],
+                index_offsets_evenz[4],
+                index_offsets_evenz[5],
+
+                 s_hz + s_y + 1,
+                 s_hz + s_y,
+                 s_hz + 1,
+                 s_hz,
+                -s_hz + s_y + 1,
+                -s_hz + s_y,
+                -s_hz + 1,
+                -s_hz,
+            ];
+        }
+
+        {
+            sample_values = new float[grid_data_length];
+            sample_positions = new Vector3[grid_data_length];
+            sample_proximity_flags = new Int16[grid_data_length];
+        }
     }
 
     public void configureModes(bool cache_positions, bool cache_values, bool use_diamond_lattice, int merging_mode)
@@ -102,47 +174,6 @@ public class MTVTBuilder
         // our position in the array, saves recomputing this all the time
         int index = 0;
         int[] connected_indices = new int[14];
-        // a set of index offsets for surrounding sample points
-        // the bit-flagging is as follows:
-        int s_y = samples_x;
-        int s_hz = samples_y * s_y;
-        int s_z = s_hz * 2;
-        int[] index_offsets_evenz =
-        {
-             1,               //  0 - 0b00000000 00000001 - +X
-            -1,               //  1 - 0b00000000 00000010 - -X
-             s_y,             //  2 - 0b00000000 00000100 - +Y
-            -s_y,             //  3 - 0b00000000 00001000 - -Y
-             s_z,             //  4 - 0b00000000 00010000 - +Z
-            -s_z,             //  5 - 0b00000000 00100000 - -Z
-
-             s_hz,            //  6 - 0b00000000 01000000 - +X+Y+Z
-             s_hz - 1,        //  7 - 0b00000000 10000000 - -X+Y+Z
-             s_hz - s_y,      //  8 - 0b00000001 00000000 - +X-Y+Z
-             s_hz - s_y - 1,  //  9 - 0b00000010 00000000 - -X-Y+Z
-            -s_hz,            // 10 - 0b00000100 00000000 - +X+Y-Z
-            -s_hz - 1,        // 11 - 0b00001000 00000000 - -X+Y-Z
-            -s_hz - s_y,      // 12 - 0b00010000 00000000 - +X-Y-Z
-            -s_hz - s_y - 1,  // 13 - 0b00100000 00000000 - -X-Y-Z
-        };
-        int[] index_offsets_oddz =
-        {
-            index_offsets_evenz[0],
-            index_offsets_evenz[1],
-            index_offsets_evenz[2],
-            index_offsets_evenz[3],
-            index_offsets_evenz[4],
-            index_offsets_evenz[5],
-
-             s_hz + s_y + 1,
-             s_hz + s_y,
-             s_hz + 1,
-             s_hz,
-            -s_hz + s_y + 1,
-            -s_hz + s_y,
-            -s_hz + 1,
-            -s_hz,
-        };
         
         for (int zi = 0; zi < samples_z; zi++)
         {
@@ -186,12 +217,12 @@ public class MTVTBuilder
                     // populate the list of neighbouring indices
                     if (!is_odd_z)
                     {
-                        for (int t = 0; t < 14; t++)
+                        for (int t = 0; t < 14; ++t)
                             connected_indices[t] = index + index_offsets_evenz[t];
                     }
                     else
                     {
-                        for (int t = 0; t < 14; t++)
+                        for (int t = 0; t < 14; ++t)
                             connected_indices[t] = index + index_offsets_oddz[t];
                     }
 
@@ -274,9 +305,9 @@ public class MTVTBuilder
                     float thresh_dist = threshold - value;
                     bool thresh_less = thresh_dist < 0.0f;
                     if (thresh_less) thresh_dist = -thresh_dist;
-                    for (int p = 0; p < connected_indices.Length; p++)
+                    for (int p = 0; p < connected_indices.Length; ++p)
                     {
-                        if (connected_indices[p] == -1)
+                        if (connected_indices[p] < 0)
                             continue;
                         float value_at_neighbour = sample_values[connected_indices[p]];
                         float neighbour_dist = threshold - value_at_neighbour;
@@ -286,7 +317,7 @@ public class MTVTBuilder
                         // FIXME: should we compute the edge position and store it? it might save some math and some memory lookups
                         bits |= ((thresh_dist < neighbour_dist) ? (1 << p) : 0);
                     }
-                    sample_proximity_flags[index] = bits;
+                    sample_proximity_flags[index] = (Int16)bits;
                     index++;
                 }
             }
@@ -303,7 +334,7 @@ public class MTVTBuilder
         // TODO: geometry pass - generate per-tetrahedron geometry from the edge/sample point info, discard triangles which zero size
     }
 
-    public MTVTMesh generate()
+    public MTVTMesh generate(ref MTVTDebugStats stats)
     {
         if (sampler == null)
             return new MTVTMesh();
@@ -311,12 +342,25 @@ public class MTVTBuilder
         // sample points will contain space for the entire lattice
         // this means we need space for cubes_s + 1 + cubes_s + 2 points for the BCDL
         // and every other layer in each direction is one sample shorter (and we just leave the last one blank)
-        sample_values = new float[grid_data_length];
-        sample_positions = new Vector3[grid_data_length];
-        sample_proximity_flags = new int[grid_data_length];
+        Stopwatch allocation = Stopwatch.StartNew();
+        
+        allocation.Stop();
 
+        Stopwatch sampling = Stopwatch.StartNew();
         samplingPass();
+        sampling.Stop();
+
+        Stopwatch flagging = Stopwatch.StartNew();
         flaggingPass();
+        flagging.Stop();
+
+        stats.cubes_x = cubes_x;
+        stats.cubes_y = cubes_y;
+        stats.cubes_z = cubes_z;
+        stats.allocation_time += allocation.Elapsed.TotalSeconds;
+        stats.sampling_time += sampling.Elapsed.TotalSeconds;
+        stats.flagging_time += flagging.Elapsed.TotalSeconds;
+        stats.sample_points = grid_data_length;
 
         return new MTVTMesh();
     }
