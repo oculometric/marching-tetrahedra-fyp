@@ -70,7 +70,7 @@ public class MTVTBuilder
     private float[]? sample_values = null;
     private Vector3[]? sample_positions = null;
     private Int16[]? sample_proximity_flags = null;
-    private HashSet<Int64>? edge_pairs = null;
+    //private HashSet<Int64>? edge_pairs = null;
     private List<Vector3>? vertices = null;
     private List<UInt16>? indices = null;
 
@@ -379,7 +379,7 @@ public class MTVTBuilder
         // this means we need space for cubes_s + 1 + cubes_s + 2 points for the BCDL
         // and every other layer in each direction is one sample shorter (and we just leave the last one blank)
         Stopwatch allocation = Stopwatch.StartNew();
-        edge_pairs = new HashSet<Int64>();
+        //edge_pairs = new HashSet<Int64>();
         vertices = new List<Vector3>(); // TODO: test size reservation for speed
         indices = new List<UInt16>();
         allocation.Stop();
