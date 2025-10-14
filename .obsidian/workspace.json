@@ -67,7 +67,8 @@
               "title": "questionnaire template"
             }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -213,8 +214,10 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "d6c5fb8c18675b10",
+  "active": "726b3f3e8fd564cb",
   "lastOpenFiles": [
+    "tesselations.blend@",
+    "doc/task board.md",
     "doc/papers/regularised marching tetrahedra 1999.pdf",
     "doc/papers/marching cubes 1987.pdf",
     "doc/papers/a new mt tessellation.pdf",
@@ -225,7 +228,6 @@
     "doc/questionnaire template.md",
     "doc/misc shit.md",
     "doc/research notes.md",
-    "doc/task board.md",
     "doc/ethics/Cassette Costen FYP Information Sheet.docx",
     "doc/ethics/Cassette Costen FYP Questionnaire Template.docx",
     "doc/ethics/Cassette Costen FYP Consent Form.docx",

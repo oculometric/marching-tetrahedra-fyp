@@ -59,8 +59,6 @@ public class MTVTBuilder
     private int samples_z;
     private float resolution;
     private long grid_data_length;
-    private List<Vector3>? vertices = null;
-    private List<UInt16>? indices = null;
 
     private bool cache_positions_enabled;
     private LatticeType structure;
@@ -72,6 +70,9 @@ public class MTVTBuilder
     private float[]? sample_values = null;
     private Vector3[]? sample_positions = null;
     private Int16[]? sample_proximity_flags = null;
+    private HashSet<Int64>? edge_pairs = null;
+    private List<Vector3>? vertices = null;
+    private List<UInt16>? indices = null;
 
     public MTVTBuilder()
     {
@@ -340,6 +341,10 @@ public class MTVTBuilder
                     {
                         if (connected_indices[p] < 0)
                             continue;
+                        bool index_is_min = index < connected_indices[p];
+                        int mindex = index_is_min ? index : connected_indices[p];
+                        int maxdex = index_is_min ? connected_indices[p] : index;
+                        //edge_pairs.Add((((long)mindex) << 32) | ((long)maxdex));
                         float value_at_neighbour = sample_values[connected_indices[p]];
                         float neighbour_dist = threshold - value_at_neighbour;
                         if (neighbour_dist < 0.0f == thresh_less)
@@ -374,6 +379,7 @@ public class MTVTBuilder
         // this means we need space for cubes_s + 1 + cubes_s + 2 points for the BCDL
         // and every other layer in each direction is one sample shorter (and we just leave the last one blank)
         Stopwatch allocation = Stopwatch.StartNew();
+        edge_pairs = new HashSet<Int64>();
         vertices = new List<Vector3>(); // TODO: test size reservation for speed
         indices = new List<UInt16>();
         allocation.Stop();
