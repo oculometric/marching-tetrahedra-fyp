@@ -33,6 +33,19 @@ public struct MTVTDebugStats
 
 public class MTVTBuilder
 {
+    public enum LatticeType
+    {
+        BODY_CENTERED_DIAMOND,
+        SIMPLE_CUBIC
+    }
+
+    public enum ClusteringMode
+    {
+        NONE,
+        INTEGRATED,
+        POST_PROCESED
+    }
+
     private Func<Vector3, float>? sampler;
     private float threshold;
     private Vector3 min_extent;
@@ -46,18 +59,24 @@ public class MTVTBuilder
     private int samples_z;
     private float resolution;
     private long grid_data_length;
+    private List<Vector3>? vertices = null;
+    private List<UInt16>? indices = null;
+
+    private bool cache_positions_enabled;
+    private LatticeType structure;
+    private ClusteringMode clustering;
 
     private int[] index_offsets_evenz = [];
     private int[] index_offsets_oddz = [];
 
-    private float[] sample_values = [];
-    private Vector3[] sample_positions = [];
-    private Int16[] sample_proximity_flags = [];
+    private float[]? sample_values = null;
+    private Vector3[]? sample_positions = null;
+    private Int16[]? sample_proximity_flags = null;
 
     public MTVTBuilder()
     {
         configure(Vector3.One * -1.0f, Vector3.One, 0.1f, (Vector3 v) => { return v.Length(); }, 1.0f);
-        configureModes(true, true, true, 1);
+        configureModes(false, LatticeType.BODY_CENTERED_DIAMOND, ClusteringMode.NONE);
     }
 
     public void configure(Vector3 minimum_extent, Vector3 maximum_extent, float cube_size, Func<Vector3, float> sample_func, float threshold_value)
@@ -121,24 +140,36 @@ public class MTVTBuilder
             ];
         }
 
-        {
-            sample_values = new float[grid_data_length];
-            sample_positions = new Vector3[grid_data_length];
-            sample_proximity_flags = new Int16[grid_data_length];
-        }
+        prepareBuffers();
     }
 
-    public void configureModes(bool cache_positions, bool cache_values, bool use_diamond_lattice, int merging_mode)
+    public void configureModes(bool cache_positions, LatticeType lattice_type, ClusteringMode clustering_mode)
     {
-        // TODO: configurable mode options!
+        cache_positions_enabled = cache_positions;
+        structure = lattice_type;
+        clustering = clustering_mode;
+
+        prepareBuffers();
+    }
+
+    private void prepareBuffers()
+    {
+        if (!cache_positions_enabled)
+            sample_positions = null;
+        else if (sample_positions == null || sample_positions.Length != grid_data_length)
+            sample_positions = new Vector3[grid_data_length];
+
+        if (sample_values == null || sample_values.Length != grid_data_length)
+            sample_values = new float[grid_data_length];
+
+        if (sample_proximity_flags == null || sample_proximity_flags.Length != grid_data_length)
+            sample_proximity_flags = new Int16[grid_data_length];
     }
 
     private void samplingPass()
     {
         // sampling pass - compute the values at all of the sample points
         float step = resolution / 2.0f;
-
-        // TODO: OPTIMISE: we can skip some points out here whose values will never be used (final elements on odd rows)
 
         // our position in the array, saves recomputing this all the time
         long index = 0;
@@ -155,8 +186,10 @@ public class MTVTBuilder
                 position.X = (zi % 2 == 0) ? (min_extent.X - step) : min_extent.X;
                 for (int xi = 0; xi < samples_x; xi++)
                 {
+                    // i tested logic for skipping out points whose values will never be used, but it was actually less efficient!
                     sample_values[index] = sampler(position);
-                    sample_positions[index] = position;
+                    if (cache_positions_enabled)
+                        sample_positions[index] = position;
                     position.X += resolution;
                     index++;
                 }
@@ -181,8 +214,6 @@ public class MTVTBuilder
             {
                 for (int xi = 0; xi < samples_x; xi++)
                 {
-                    // FIXME: looking at this, it may be possible to reduce the memory footprint of the cube! WILL require a bunch of rewrites though (see blender)
-
                     // make some flags for where this sample is within the sample space
                     bool is_odd_z = zi % 2 == 1;
                     bool is_max_x = xi >= samples_x - 1;
@@ -324,12 +355,12 @@ public class MTVTBuilder
         }
     }
 
-    private void vertexPass(/*out uint[] edge_indices, out List<Vector3> vertices, in float[] sample_points, in float[] sample_prox_flags*/)
+    private void vertexPass(/*out uint[] edge_indices*/)
     {
         // TODO: vertex pass - generate vertices for edges with flags set, and merge them where possible, assigning vertex references to these edges
     }
 
-    private void geometryPass(/*out List<uint> index_buffer, in uint[] edge_indices, in float[] sample_points, Vector3 grid_size*/)
+    private void geometryPass(/*out List<uint> index_buffer, in uint[] edge_indices, Vector3 grid_size*/)
     {
         // TODO: geometry pass - generate per-tetrahedron geometry from the edge/sample point info, discard triangles which zero size
     }
@@ -343,7 +374,8 @@ public class MTVTBuilder
         // this means we need space for cubes_s + 1 + cubes_s + 2 points for the BCDL
         // and every other layer in each direction is one sample shorter (and we just leave the last one blank)
         Stopwatch allocation = Stopwatch.StartNew();
-        
+        vertices = new List<Vector3>(); // TODO: test size reservation for speed
+        indices = new List<UInt16>();
         allocation.Stop();
 
         Stopwatch sampling = Stopwatch.StartNew();
@@ -368,5 +400,6 @@ public class MTVTBuilder
 
 // TODO: different lattice structures
 // TODO: different merging techniques
+// TODO: parallelise
 // TODO: time/memory tracking
 // TODO: vertex/index count
