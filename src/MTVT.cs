@@ -370,4 +370,3 @@ public class MTVTBuilder
 // TODO: different merging techniques
 // TODO: time/memory tracking
 // TODO: vertex/index count
-// TODO: stats summary generation

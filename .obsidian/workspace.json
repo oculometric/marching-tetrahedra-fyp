@@ -67,8 +67,7 @@
               "title": "questionnaire template"
             }
           }
-        ],
-        "currentTab": 2
+        ]
       }
     ],
     "direction": "vertical"
@@ -214,10 +213,10 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "726b3f3e8fd564cb",
+  "active": "d6c5fb8c18675b10",
   "lastOpenFiles": [
-    "doc/papers/marching cubes 1987.pdf",
     "doc/papers/regularised marching tetrahedra 1999.pdf",
+    "doc/papers/marching cubes 1987.pdf",
     "doc/papers/a new mt tessellation.pdf",
     "doc/papers/mesh simplification comparison.pdf",
     "doc/research notes/Regularised marching tetrahedra (1999).md",
