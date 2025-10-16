@@ -70,7 +70,7 @@ public class MTVTBuilder
     private float[]? sample_values = null;
     private Vector3[]? sample_positions = null;
     private Int16[]? sample_proximity_flags = null;
-    //private HashSet<Int64>? edge_pairs = null;
+    private List<Int64>? edge_pairs = null;
     private List<Vector3>? vertices = null;
     private List<UInt16>? indices = null;
 
@@ -344,14 +344,14 @@ public class MTVTBuilder
                         bool index_is_min = index < connected_indices[p];
                         int mindex = index_is_min ? index : connected_indices[p];
                         int maxdex = index_is_min ? connected_indices[p] : index;
-                        //edge_pairs.Add((((long)mindex) << 32) | ((long)maxdex));
+                        edge_pairs.Add((((long)mindex) << 32) | ((long)maxdex));
                         float value_at_neighbour = sample_values[connected_indices[p]];
                         float neighbour_dist = threshold - value_at_neighbour;
                         if (neighbour_dist < 0.0f == thresh_less)
                             continue;
                         if (!thresh_less) neighbour_dist = -neighbour_dist;
                         // FIXME: should we compute the edge position and store it? it might save some math and some memory lookups
-                        bits |= ((thresh_dist < neighbour_dist) ? (1 << p) : 0);
+                        bits |= ((thresh_dist < neighbour_dist) ? (1 << p) : 0); // this is faster than an if statement!
                     }
                     sample_proximity_flags[index] = (Int16)bits;
                     index++;
@@ -379,7 +379,7 @@ public class MTVTBuilder
         // this means we need space for cubes_s + 1 + cubes_s + 2 points for the BCDL
         // and every other layer in each direction is one sample shorter (and we just leave the last one blank)
         Stopwatch allocation = Stopwatch.StartNew();
-        //edge_pairs = new HashSet<Int64>();
+        edge_pairs = new List<Int64>();
         vertices = new List<Vector3>(); // TODO: test size reservation for speed
         indices = new List<UInt16>();
         allocation.Stop();

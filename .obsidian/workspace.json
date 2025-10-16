@@ -45,12 +45,14 @@
             "id": "726b3f3e8fd564cb",
             "type": "leaf",
             "state": {
-              "type": "pdf",
+              "type": "markdown",
               "state": {
-                "file": "doc/papers/regularised marching tetrahedra 1999.pdf"
+                "file": "doc/sample point and edge counting.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-file-text",
-              "title": "regularised marching tetrahedra 1999"
+              "icon": "lucide-file",
+              "title": "sample point and edge counting"
             }
           },
           {
@@ -216,25 +218,30 @@
   },
   "active": "726b3f3e8fd564cb",
   "lastOpenFiles": [
+    "doc/Cassette Costen FYP Proportionate Review.docx",
+    "lattice sizes demo.png",
     "tesselations.blend@",
-    "doc/task board.md",
+    "doc/Pasted image 20251009125842.png",
+    "doc/e equation desmos.png",
+    "doc/sp equation desmos.png",
+    "doc/sample point and edge counting.md",
     "doc/papers/regularised marching tetrahedra 1999.pdf",
+    "doc/image.png",
+    "src/kppzaxv0.fnr~",
+    "src/rtd2kbst.v5w~",
+    "doc/research notes/Regularised marching tetrahedra (1999).md",
+    "doc/misc shit.md",
+    "doc/task board.md",
     "doc/papers/marching cubes 1987.pdf",
     "doc/papers/a new mt tessellation.pdf",
     "doc/papers/mesh simplification comparison.pdf",
-    "doc/research notes/Regularised marching tetrahedra (1999).md",
     "doc/research notes/simple cubic lattice.png",
     "doc/research notes/A new tetrahedral tessellation scheme for isosurface generation (1998).md",
     "doc/questionnaire template.md",
-    "doc/misc shit.md",
     "doc/research notes.md",
     "doc/ethics/Cassette Costen FYP Information Sheet.docx",
     "doc/ethics/Cassette Costen FYP Questionnaire Template.docx",
     "doc/ethics/Cassette Costen FYP Consent Form.docx",
-    "doc/ethics/Cassette Costen FYP Proportionate Review.docx",
-    "doc/ethics",
-    "doc/New folder",
-    "doc/Pasted image 20251009125842.png",
     "doc/research notes/primitives comparison.png",
     "doc/research notes/marching cubes ambiguity.png",
     "doc/research notes/body centered lattice.png",
