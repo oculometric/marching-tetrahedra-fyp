@@ -2,7 +2,7 @@
 - [x] whittle down key sources
 - [x] update proposal  + add paper refs
 - [x] tempalte questionnaire
-- [ ] fill out ethics form
+- [x] fill out ethics form
 - [ ] forum
 - [x] decide on what we're actually researching: what are we comparing?
 no gantt charts! just do kanbans
@@ -21,6 +21,8 @@ things to actually compare:
 - performance with different clustering methods (as above)
 - performance with different tessellations
 
+
+STORE THE EDGE VERTEX DATA ON THE SAMPLE POINTS! ONLY ONE SAMPLE POINT WILL KNOW ABOUT THE VERTEX ANYWAY!
 
 my questionnaire:
 do you consent

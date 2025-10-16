@@ -1,3 +1,4 @@
+link - https://www.sciencedirect.com/science/article/abs/pii/S009784939700085X
 again summarises the problem with MC: adjacent cubes may generate inconsistent surfaces with holes in due to ambiguity about which pattern should be used. MT resolves this and reduces the number of possible configuration cases per cell.
 ![[marching cubes ambiguity.png]]
 

@@ -7,8 +7,7 @@ kanban-plugin: board
 ## current
 
 - [ ] tetrahedral meshing research [1440] #literature
-- [ ] complete ethics form and documentation for collecting user data [120] #management
-- [ ] implement mesh generation [720 ->330...] #development
+- [ ] implement mesh generation [720 ->390...] #development
 
 
 ## backlog
@@ -29,9 +28,11 @@ kanban-plugin: board
 
 ## completed
 
+**Complete**
 - [ ] initial project pitch to supervisor [30 -> 30] #management
 - [ ] gather initial research [120 -> 150] #literature
 - [ ] finalise project proposal [60] #management
+- [ ] complete ethics form and documentation for collecting user data [120 -> 180] #management
 
 
 
