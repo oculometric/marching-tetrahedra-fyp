@@ -33,12 +33,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "doc/research notes.md",
+                "file": "doc/research notes/Regularised marching tetrahedra (1999).md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "research notes"
+              "title": "Regularised marching tetrahedra (1999)"
             }
           },
           {
@@ -67,16 +67,25 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "doc/misc shit.md",
+                "file": "doc/sample point and edge counting.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "misc shit"
+              "title": "sample point and edge counting"
+            }
+          },
+          {
+            "id": "ad5763a0fdaf730b",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
             }
           }
-        ],
-        "currentTab": 2
+        ]
       }
     ],
     "direction": "vertical"
@@ -222,21 +231,21 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "bf886bdff4825551",
+  "active": "d6c5fb8c18675b10",
   "lastOpenFiles": [
-    "doc/research notes.md",
+    "doc/sample point and edge counting.md",
     "doc/research kanban.md",
     "doc/misc shit.md",
     "doc/research notes/Regularised marching tetrahedra (1999).md",
+    "tesselations.blend@",
+    "doc/research notes.md",
     "doc/papers/a new mt tessellation.pdf",
     "doc/research notes/A new tetrahedral tessellation scheme for isosurface generation (1998).md",
     "doc/task board.md",
     "doc/questionnaire template.md",
     "Untitled.md",
     "lattice sizes demo.png",
-    "doc/sample point and edge counting.md",
     "doc/Cassette Costen FYP Proportionate Review.docx",
-    "tesselations.blend@",
     "doc/Pasted image 20251009125842.png",
     "doc/e equation desmos.png",
     "doc/sp equation desmos.png",

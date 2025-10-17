@@ -67,9 +67,9 @@ public class MTVTBuilder
     private int[] index_offsets_evenz = [];
     private int[] index_offsets_oddz = [];
 
-    private float[]? sample_values = null;
-    private Vector3[]? sample_positions = null;
-    private Int16[]? sample_proximity_flags = null;
+    private unsafe float[]? sample_values = null;
+    private unsafe Vector3[]? sample_positions = null;
+    private unsafe Int16[]? sample_proximity_flags = null;
     private List<Int64>? edge_pairs = null;
     private List<Vector3>? vertices = null;
     private List<UInt16>? indices = null;
@@ -207,13 +207,13 @@ public class MTVTBuilder
 
         // our position in the array, saves recomputing this all the time
         int index = 0;
-        int[] connected_indices = new int[14];
-        
-        for (int zi = 0; zi < samples_z; zi++)
+        Span<int> connected_indices = stackalloc int[14];
+
+        for (int zi = 0; zi < samples_z; ++zi)
         {
-            for (int yi = 0; yi < samples_y; yi++)
+            for (int yi = 0; yi < samples_y; ++yi)
             {
-                for (int xi = 0; xi < samples_x; xi++)
+                for (int xi = 0; xi < samples_x; ++xi)
                 {
                     // make some flags for where this sample is within the sample space
                     bool is_odd_z = zi % 2 == 1;
@@ -222,7 +222,7 @@ public class MTVTBuilder
                     if (is_odd_z && (is_max_x || is_max_y))
                     {
                         // early reject if this is just an extra filler point
-                        index++;
+                        ++index;
                         continue;
                     }
                     bool is_min_x = xi <= 0;
@@ -232,16 +232,16 @@ public class MTVTBuilder
                     if (!is_odd_z)
                     {
                         int num_edges = 0;
-                        if (is_min_x) num_edges++;
-                        if (is_max_x) num_edges++;
-                        if (is_min_y) num_edges++;
-                        if (is_max_y) num_edges++;
-                        if (is_min_z) num_edges++;
-                        if (is_max_z) num_edges++;
+                        if (is_min_x) ++num_edges;
+                        if (is_max_x) ++num_edges;
+                        if (is_min_y) ++num_edges;
+                        if (is_max_y) ++num_edges;
+                        if (is_min_z) ++num_edges;
+                        if (is_max_z) ++num_edges;
                         if (num_edges >= 2)
                         {
                             // early reject if this is an edge point
-                            index++;
+                            ++index;
                             continue;
                         }
                     }
@@ -337,14 +337,14 @@ public class MTVTBuilder
                     float thresh_dist = threshold - value;
                     bool thresh_less = thresh_dist < 0.0f;
                     if (thresh_less) thresh_dist = -thresh_dist;
-                    for (int p = 0; p < connected_indices.Length; ++p)
+                    for (int p = 0; p < 14; ++p)
                     {
                         if (connected_indices[p] < 0)
                             continue;
                         bool index_is_min = index < connected_indices[p];
                         int mindex = index_is_min ? index : connected_indices[p];
                         int maxdex = index_is_min ? connected_indices[p] : index;
-                        edge_pairs.Add((((long)mindex) << 32) | ((long)maxdex));
+                        //edge_pairs.Add((((long)mindex) << 32) | ((long)maxdex));
                         float value_at_neighbour = sample_values[connected_indices[p]];
                         float neighbour_dist = threshold - value_at_neighbour;
                         if (neighbour_dist < 0.0f == thresh_less)
