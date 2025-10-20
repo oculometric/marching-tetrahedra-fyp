@@ -13,9 +13,6 @@ struct MTVTMesh
 
 struct MTVTDebugStats
 {
-    int cubes_x = 0;
-    int cubes_y = 0;
-    int cubes_z = 0;
     double allocation_time = 0;
     double sampling_time = 0;
     double flagging_time = 0;
@@ -26,6 +23,9 @@ struct MTVTDebugStats
     size_t tetrahedra = 0;
     size_t vertices = 0;
     size_t indices = 0;
+    int cubes_x = 0;
+    int cubes_y = 0;
+    int cubes_z = 0;
 };
 
 class MTVTBuilder

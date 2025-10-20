@@ -27,7 +27,7 @@ void MTVTBuilder::configure(Vector3 minimum_extent, Vector3 maximum_extent, floa
     samples_x = cubes_x + 2;
     samples_y = cubes_y + 2;
     samples_z = (cubes_z * 2) + 3;
-    grid_data_length = samples_x * samples_y * samples_z;
+    grid_data_length = static_cast<size_t>(samples_x) * static_cast<size_t>(samples_y) * static_cast<size_t>(samples_z);
 
     {
         // generate a set of index offsets for surrounding sample points,
@@ -229,8 +229,6 @@ void MTVTBuilder::flaggingPass()
                         connected_indices[t] = index + index_offsets_oddz[t];
                 }
 
-                // TODO: if we move this before the loops above, then add if statements, would that speed us up?
-
                 // strike out any neighbour which doesn't exist
                 if (is_min_z)
                 {
@@ -312,7 +310,7 @@ void MTVTBuilder::flaggingPass()
                 if (thresh_less) thresh_dist = -thresh_dist;
                 for (int p = 0; p < 14; ++p)
                 {
-                    if (connected_indices[p] < 0)
+                    if (connected_indices[p] == (size_t)-1)
                         continue;
                     float value_at_neighbour = sample_values[connected_indices[p]];
                     float neighbour_dist = threshold - value_at_neighbour;
@@ -320,10 +318,11 @@ void MTVTBuilder::flaggingPass()
                         continue;
                     if (!thresh_less) neighbour_dist = -neighbour_dist;
                     // FIXME: should we compute the edge position and store it? it might save some math and some memory lookups
-                    bits |= ((thresh_dist < neighbour_dist) ? (1 << p) : 0); // this is faster than an if statement!
+                    if (thresh_dist < neighbour_dist)
+                        bits |= (1 << p);
                 }
                 sample_proximity_flags[index] = bits;
-                index++;
+                ++index;
             }
         }
     }
