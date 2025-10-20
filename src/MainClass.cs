@@ -44,7 +44,7 @@ namespace mtvt
 
         static void Main(string[] args)
         {
-            runBenchmark("sphere", 100, Vector3.Zero, Vector3.One * 6.0f, 0.06f, sphereFunc, 1.0f);
+            runBenchmark("sphere", 100, Vector3.Zero, Vector3.One * 8.0f, 0.08f, sphereFunc, 1.0f);
         }
     }
 }
