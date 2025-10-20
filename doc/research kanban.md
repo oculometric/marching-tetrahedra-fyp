@@ -8,9 +8,10 @@ kanban-plugin: board
 
 - [ ] [Adaptive marching cubes (1995)](https://link.springer.com/article/10.1007/BF01901516)
 - [ ] [large isosurface simplification (2016)](https://link.springer.com/article/10.1007/s12650-016-0359-5)
-- [ ] [Memory-Efficient Modelling and Slicing of Large-Scale Adaptive Lattice Structures (2021)](https://asmedigitalcollection.asme.org/computingengineering/article-abstract/21/6/061003/1100541/Memory-Efficient-Modeling-and-Slicing-of-Large)
 - [ ] [A generalized combinatorial marching hypercube algorithm](https://doi.org/10.1007/s40314-024-02627-4)
 - [ ] [A Comprehensive Survey of Isocontouring Methods: Applications, Limitations and Perspectives](https://doi.org/10.3390/a17020083)
+- [ ] [sample lit review](https://www.researchgate.net/profile/Faizan-Hussain-2/publication/348917348_Unity_Game_Development_Engine_A_Technical_Survey/links/60167daf45851517ef2b2c0d/Unity-Game-Development-Engine-A-Technical-Survey.pdf)
+- [ ] [Tetrahedral grid refinement (1995)](https://link.springer.com/article/10.1007/BF02238487)
 
 
 ## todo
@@ -34,6 +35,8 @@ kanban-plugin: board
 - [ ] meta mesh?
 - [ ] hill tetrahedra/other space-filling tetrahedra schemes
 - [ ] delaunay triangulations
+- [ ] [Deforming Radiance Fields with Cages (2022)](https://dl.acm.org/doi/10.1007/978-3-031-19827-4_10)
+- [ ] [Tetra-NeRF: Representing Neural Radiance Fields Using Tetrahedra (2023)](https://doi.org/10.1109/ICCV51070.2023.01692)
 
 
 ## annotated
@@ -49,6 +52,7 @@ kanban-plugin: board
 ## discarded
 
 - [ ] [Lattice-based memory allocation (2003)](https://dl.acm.org/doi/abs/10.1145/951710.951749)
+- [ ] [Memory-Efficient Modelling and Slicing of Large-Scale Adaptive Lattice Structures (2021)](https://doi.org/10.1115/1.4050290)
 
 
 

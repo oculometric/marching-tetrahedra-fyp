@@ -6,7 +6,7 @@ namespace mtvt
     {
         static float sphereFunc(Vector3 v)
         {
-            return (v - (Vector3.One * 3.0f)).Length() / 3.0f;
+            return (v - (Vector3.One * 4.0f)).Length() / 4.0f;
         }
 
         static void runBenchmark(string name, int iterations, Vector3 min, Vector3 max, float cube_size, Func<Vector3, float> sampler, float threshold)
