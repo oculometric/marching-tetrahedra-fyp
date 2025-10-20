@@ -13,44 +13,11 @@
             "state": {
               "type": "kanban",
               "state": {
-                "file": "doc/task board.md",
-                "kanbanViewState": {
-                  "kanban-plugin": "board",
-                  "list-collapse": [
-                    false,
-                    false,
-                    false
-                  ]
-                }
-              },
-              "icon": "lucide-trello",
-              "title": "task board"
-            }
-          },
-          {
-            "id": "a37200cb77feaf47",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "doc/research notes/Regularised marching tetrahedra (1999).md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Regularised marching tetrahedra (1999)"
-            }
-          },
-          {
-            "id": "bf886bdff4825551",
-            "type": "leaf",
-            "state": {
-              "type": "kanban",
-              "state": {
                 "file": "doc/research kanban.md",
                 "kanbanViewState": {
                   "kanban-plugin": "board",
                   "list-collapse": [
+                    false,
                     false,
                     false,
                     false
@@ -59,30 +26,6 @@
               },
               "icon": "lucide-trello",
               "title": "research kanban"
-            }
-          },
-          {
-            "id": "61bd9a562db8de5f",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "doc/sample point and edge counting.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "sample point and edge counting"
-            }
-          },
-          {
-            "id": "ad5763a0fdaf730b",
-            "type": "leaf",
-            "state": {
-              "type": "empty",
-              "state": {},
-              "icon": "lucide-file",
-              "title": "New tab"
             }
           }
         ]
@@ -233,15 +176,18 @@
   },
   "active": "d6c5fb8c18675b10",
   "lastOpenFiles": [
-    "doc/sample point and edge counting.md",
+    "doc/research notes/Marching Cubes (1987).md",
     "doc/research kanban.md",
-    "doc/misc shit.md",
+    "doc/papers/marching cubes 1987.pdf",
+    "doc/papers/regularised marching tetrahedra 1999.pdf",
     "doc/research notes/Regularised marching tetrahedra (1999).md",
+    "doc/task board.md",
+    "doc/sample point and edge counting.md",
+    "doc/misc shit.md",
     "tesselations.blend@",
     "doc/research notes.md",
     "doc/papers/a new mt tessellation.pdf",
     "doc/research notes/A new tetrahedral tessellation scheme for isosurface generation (1998).md",
-    "doc/task board.md",
     "doc/questionnaire template.md",
     "Untitled.md",
     "lattice sizes demo.png",
@@ -249,11 +195,9 @@
     "doc/Pasted image 20251009125842.png",
     "doc/e equation desmos.png",
     "doc/sp equation desmos.png",
-    "doc/papers/regularised marching tetrahedra 1999.pdf",
     "doc/image.png",
     "src/kppzaxv0.fnr~",
     "src/rtd2kbst.v5w~",
-    "doc/papers/marching cubes 1987.pdf",
     "doc/papers/mesh simplification comparison.pdf",
     "doc/research notes/simple cubic lattice.png",
     "doc/ethics/Cassette Costen FYP Information Sheet.docx",

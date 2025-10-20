@@ -6,16 +6,15 @@ kanban-plugin: board
 
 ## in focus
 
-- [ ] [Marching cubes: a high resolution 3D surface construction algorithm (1987)](https://dl.acm.org/doi/abs/10.1145/280811.281026)
 - [ ] [Adaptive marching cubes (1995)](https://link.springer.com/article/10.1007/BF01901516)
 - [ ] [deformable NeRF using recursively subdivided tetrahedra (2024)](https://dl.acm.org/doi/abs/10.1145/3664647.3681019)
 - [ ] [Meta-meshing and Triangulating Lattice Structures at a Large Scale (2024)](https://www.sciencedirect.com/science/article/pii/S0010448524000599)
-- [ ] [Lattice-based memory allocation (2003)](https://dl.acm.org/doi/abs/10.1145/951710.951749)
 - [ ] [Memory-Efficient Modelling and Slicing of Large-Scale Adaptive Lattice Structures (2021)](https://asmedigitalcollection.asme.org/computingengineering/article-abstract/21/6/061003/1100541/Memory-Efficient-Modeling-and-Slicing-of-Large)
 
 
 ## todo
 
+- [ ] c++/c# performance comparison
 - [ ] [large isosurface simplification (2016)](https://link.springer.com/article/10.1007/s12650-016-0359-5)
 - [ ] [Tetrahedron Splatting for 3D Generation (2024)](https://proceedings.neurips.cc/paper_files/paper/2024/hash/92ce40962b4098f7bf6eed33128fc606-Abstract-Conference.html)
 - [ ] [isosurface extraction using delaunay tetrahedral grids (2025)](https://dl.acm.org/doi/abs/10.1145/3730851)
@@ -37,12 +36,18 @@ kanban-plugin: board
 
 - [ ] [[regularised marching tetrahedra 1999.pdf]] -> [[Regularised marching tetrahedra (1999)]]
 - [ ] [[a new mt tessellation.pdf]] -> [[A new tetrahedral tessellation scheme for isosurface generation (1998)]]
+- [ ] [Marching cubes: a high resolution 3D surface construction algorithm (1987)](https://dl.acm.org/doi/abs/10.1145/280811.281026) -> [[Marching Cubes (1987)]]
+
+
+## discarded
+
+- [ ] [Lattice-based memory allocation (2003)](https://dl.acm.org/doi/abs/10.1145/951710.951749)
 
 
 
 
 %% kanban:settings
 ```
-{"kanban-plugin":"board","list-collapse":[false,false,false]}
+{"kanban-plugin":"board","list-collapse":[false,false,false,false]}
 ```
 %%
