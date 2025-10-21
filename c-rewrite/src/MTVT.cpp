@@ -115,7 +115,7 @@ MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
 
     destroyBuffers();
 
-    return MTVTMesh();
+    return MTVTMesh{ vertices };
 }
 
 void MTVTBuilder::prepareBuffers()
@@ -176,6 +176,7 @@ void MTVTBuilder::samplingPass()
 
 void MTVTBuilder::vertexPass()
 {
+    // flagging pass - check all of the edges around each sample point, and set the edge flag bits
     // vertex pass - generate vertices for edges with flags set, and merge them where possible, assigning vertex references to these edges
 
     // our position in the array, saves recomputing this all the time
@@ -331,7 +332,7 @@ void MTVTBuilder::vertexPass()
                     neighbour_values[p] = value_at_neighbour;
                     bits |= (1 << p);
                 }
-                sample_proximity_flags[index] = bits;
+                sample_proximity_flags[index] = bits; // TODO: do we actually need to store this at all?
 
                 // perform vertex generation & merging
                 // TODO: actually implement merging!
