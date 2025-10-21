@@ -180,16 +180,20 @@ void MTVTBuilder::flaggingPass()
     size_t index = 0;
     size_t connected_indices[14] = { 0 };
 
+    bool is_odd_z = true;
     for (int zi = 0; zi < samples_z; ++zi)
     {
+        is_odd_z = !is_odd_z;
+        bool is_min_z = zi <= 1;
+        bool is_max_z = zi >= samples_z - 2;
         for (int yi = 0; yi < samples_y; ++yi)
         {
+            bool is_max_y = yi >= samples_y - 1;
+            bool is_min_y = yi <= 0;
             for (int xi = 0; xi < samples_x; ++xi)
             {
-                // make some flags for where this sample is within the sample space
-                bool is_odd_z = zi % 2 == 1;
                 bool is_max_x = xi >= samples_x - 1;
-                bool is_max_y = yi >= samples_y - 1;
+                // check flags for where this sample is within the sample space
                 if (is_odd_z && (is_max_x || is_max_y))
                 {
                     // early reject if this is just an extra filler point
@@ -197,9 +201,6 @@ void MTVTBuilder::flaggingPass()
                     continue;
                 }
                 bool is_min_x = xi <= 0;
-                bool is_min_y = yi <= 0;
-                bool is_min_z = zi <= 1;
-                bool is_max_z = zi >= samples_z - 2;
                 if (!is_odd_z)
                 {
                     int num_edges = 0;
