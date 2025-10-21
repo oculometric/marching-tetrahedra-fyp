@@ -41,4 +41,4 @@ inline Vector3 norm(const Vector3& a) { return a / mag(a); }
 inline Vector3 abs(const Vector3& a) { return Vector3{ abs(a.x), fabs(a.y), fabs(a.z) }; }
 inline Vector3 min(const Vector3& a, const Vector3& b) { return Vector3{ std::min(a.x, b.x), std::min(a.y, b.y), std::min(a.z, b.z) }; }
 inline Vector3 max(const Vector3& a, const Vector3& b) { return Vector3{ std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z) }; }
-inline Vector3 lerp(const Vector3& a, const Vector3& b, const float f) { Vector3{ a.x + ((b.x - a.x) * f), a.y + ((b.y - a.y) * f), a.z + ((b.z - a.z) * f) }; }
+inline Vector3 lerp(const Vector3& a, const Vector3& b, const float f) { return Vector3{ a.x + ((b.x - a.x) * f), a.y + ((b.y - a.y) * f), a.z + ((b.z - a.z) * f) }; }

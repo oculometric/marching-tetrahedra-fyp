@@ -3,7 +3,7 @@
 #include <format>
 #include <fstream>
 
-#include "src/MTVT.h"
+#include "MTVT.h"
 
 using namespace std;
 
@@ -17,6 +17,7 @@ void runBenchmark(string name, int iterations, Vector3 min, Vector3 max, float c
     for (int i = 0; i < iterations; ++i)
     {
         cout << format("{0} test iteration {1}/{2}\r", name, i, iterations);
+        cout.flush();
         mesh = builder.generate(stats);
     }
 
