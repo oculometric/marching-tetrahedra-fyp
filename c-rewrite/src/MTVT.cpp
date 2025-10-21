@@ -92,10 +92,6 @@ MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
     samplingPass();
     float sampling = ((chrono::duration<float>)(chrono::high_resolution_clock::now() - sampling_start)).count();
 
-    auto flagging_start = chrono::high_resolution_clock::now();
-    flaggingPass();
-    float flagging = ((chrono::duration<float>)(chrono::high_resolution_clock::now() - flagging_start)).count();
-
     auto vertex_start = chrono::high_resolution_clock::now();
     vertexPass();
     float vertex = ((chrono::duration<float>)(chrono::high_resolution_clock::now() - vertex_start)).count();
@@ -105,9 +101,16 @@ MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
     stats.cubes_z = cubes_z;
     stats.allocation_time += allocation;
     stats.sampling_time += sampling;
-    stats.flagging_time += flagging;
     stats.vertex_time += vertex;
-    stats.sample_points = grid_data_length;
+    stats.sample_points_allocated = grid_data_length;
+    stats.edges_allocated = grid_data_length * 14;
+    stats.min_sample_points = (2 * stats.cubes_x * stats.cubes_y * stats.cubes_z)
+                                + (3 * stats.cubes_x * stats.cubes_y) + (3 * stats.cubes_y * stats.cubes_z) + (3 * stats.cubes_x * stats.cubes_z)
+                                + stats.cubes_x + stats.cubes_y + stats.cubes_z
+                                + 1;
+    stats.min_edges         = (14 * stats.cubes_x * stats.cubes_y * stats.cubes_z)
+                                + (11 * stats.cubes_x * stats.cubes_y) + (11 * stats.cubes_y * stats.cubes_z) + (11 * stats.cubes_x * stats.cubes_z)
+                                + stats.cubes_x + stats.cubes_y + stats.cubes_z;
     stats.vertices = vertices.size();
 
     destroyBuffers();
@@ -171,9 +174,9 @@ void MTVTBuilder::samplingPass()
     }
 }
 
-void MTVTBuilder::flaggingPass()
+void MTVTBuilder::vertexPass()
 {
-    // flagging pass - check all of the edges around each sample point, and set the edge flag bits
+    // vertex pass - generate vertices for edges with flags set, and merge them where possible, assigning vertex references to these edges
 
     // our position in the array, saves recomputing this all the time
     size_t index = 0;
@@ -303,9 +306,14 @@ void MTVTBuilder::flaggingPass()
                     connected_indices[12] = -1;
                 }
 
+                // grab useful data about ourself
                 uint16_t bits = 0;
                 float value = sample_values[index];
-                float thresh_dist = threshold - value;
+                float thresh_diff = threshold - value;
+                float neighbour_values[14];
+
+                // perform edge flagging
+                float thresh_dist = thresh_diff;
                 bool thresh_less = thresh_dist < 0.0f;
                 if (thresh_less) thresh_dist = -thresh_dist;
                 for (int p = 0; p < 14; ++p)
@@ -317,165 +325,31 @@ void MTVTBuilder::flaggingPass()
                     if (neighbour_dist < 0.0f == thresh_less)
                         continue;
                     if (!thresh_less) neighbour_dist = -neighbour_dist;
-                    // FIXME: should we compute the edge position and store it? it might save some math and some memory lookups
-                    if (thresh_dist < neighbour_dist)
-                        bits |= (1 << p);
+                    if (thresh_dist > neighbour_dist)
+                        continue;
+
+                    neighbour_values[p] = value_at_neighbour;
+                    bits |= (1 << p);
                 }
                 sample_proximity_flags[index] = bits;
-                ++index;
-            }
-        }
-    }
-}
 
-void MTVTBuilder::vertexPass()
-{
-    // vertex pass - generate vertices for edges with flags set, and merge them where possible, assigning vertex references to these edges
-
-    // our position in the array, saves recomputing this all the time
-    size_t index = 0;
-    size_t connected_indices[14] = { 0 };
-
-    // FIXME: we're doing a bunch of checking and fetching and iterating twice over! we should merge this pass with the with the flagging pass
-    bool is_odd_z = true;
-    for (int zi = 0; zi < samples_z; ++zi)
-    {
-        is_odd_z = !is_odd_z;
-        bool is_min_z = zi <= 1;
-        bool is_max_z = zi >= samples_z - 2;
-        for (int yi = 0; yi < samples_y; ++yi)
-        {
-            bool is_max_y = yi >= samples_y - 1;
-            bool is_min_y = yi <= 0;
-            for (int xi = 0; xi < samples_x; ++xi)
-            {
-                bool is_max_x = xi >= samples_x - 1;
-                // check flags for where this sample is within the sample space
-                if (is_odd_z && (is_max_x || is_max_y))
+                // perform vertex generation & merging
+                // TODO: actually implement merging!
+                EdgeReferences edges; for (int p = 0; p < 14; ++p) edges.references[p] = -1;
+                if (bits == 0)
                 {
-                    // early reject if this is just an extra filler point
+                    // skip this entire sample point if there are no intersections at all
+                    sample_edge_indices[index] = edges;
                     ++index;
                     continue;
                 }
-                bool is_min_x = xi <= 0;
-                if (!is_odd_z)
-                {
-                    int num_edges = 0;
-                    if (is_min_x) ++num_edges;
-                    if (is_max_x) ++num_edges;
-                    if (is_min_y) ++num_edges;
-                    if (is_max_y) ++num_edges;
-                    if (is_min_z) ++num_edges;
-                    if (is_max_z) ++num_edges;
-                    if (num_edges >= 2)
-                    {
-                        // early reject if this is an edge point
-                        ++index;
-                        continue;
-                    }
-                }
-
-                // populate the list of neighbouring indices
-                if (!is_odd_z)
-                {
-                    for (int t = 0; t < 14; ++t)
-                        connected_indices[t] = index + index_offsets_evenz[t];
-                }
-                else
-                {
-                    for (int t = 0; t < 14; ++t)
-                        connected_indices[t] = index + index_offsets_oddz[t];
-                }
-
-                // strike out any neighbour which doesn't exist
-                if (is_min_z)
-                {
-                    connected_indices[0] = -1;
-                    connected_indices[1] = -1;
-                    connected_indices[2] = -1;
-                    connected_indices[3] = -1;
-                    connected_indices[5] = -1;
-                    connected_indices[10] = -1;
-                    connected_indices[11] = -1;
-                    connected_indices[12] = -1;
-                    connected_indices[13] = -1;
-                }
-                if (is_min_y)
-                {
-                    connected_indices[0] = -1;
-                    connected_indices[1] = -1;
-                    connected_indices[3] = -1;
-                    connected_indices[4] = -1;
-                    connected_indices[5] = -1;
-                    connected_indices[8] = -1;
-                    connected_indices[9] = -1;
-                    connected_indices[12] = -1;
-                    connected_indices[13] = -1;
-                }
-                if (is_min_x)
-                {
-                    connected_indices[1] = -1;
-                    connected_indices[2] = -1;
-                    connected_indices[3] = -1;
-                    connected_indices[4] = -1;
-                    connected_indices[5] = -1;
-                    connected_indices[7] = -1;
-                    connected_indices[9] = -1;
-                    connected_indices[11] = -1;
-                    connected_indices[13] = -1;
-                }
-                if (is_max_z)
-                {
-                    connected_indices[0] = -1;
-                    connected_indices[1] = -1;
-                    connected_indices[2] = -1;
-                    connected_indices[3] = -1;
-                    connected_indices[4] = -1;
-                    connected_indices[6] = -1;
-                    connected_indices[7] = -1;
-                    connected_indices[8] = -1;
-                    connected_indices[9] = -1;
-                }
-                if (is_max_y)
-                {
-                    connected_indices[0] = -1;
-                    connected_indices[1] = -1;
-                    connected_indices[2] = -1;
-                    connected_indices[4] = -1;
-                    connected_indices[5] = -1;
-                    connected_indices[6] = -1;
-                    connected_indices[7] = -1;
-                    connected_indices[10] = -1;
-                    connected_indices[11] = -1;
-                }
-                if (is_max_x)
-                {
-                    connected_indices[0] = -1;
-                    connected_indices[2] = -1;
-                    connected_indices[3] = -1;
-                    connected_indices[4] = -1;
-                    connected_indices[5] = -1;
-                    connected_indices[6] = -1;
-                    connected_indices[8] = -1;
-                    connected_indices[10] = -1;
-                    connected_indices[12] = -1;
-                }
-
-                // TODO: implement merging!
-                // FIXME: oh shit! we need positions here!
-                uint16_t bits = sample_proximity_flags[index];
-                EdgeReferences edges;
-                float value = sample_values[index];
-                float thresh_diff = threshold - value;
                 Vector3 position = sample_positions[index];
                 for (int p = 0; p < 14; ++p)
                 {
-                    if (connected_indices[p] == (size_t)-1)
-                        continue;
                     if (!(bits & (1 << p)))
                         continue;
-                    float value_at_neighbour = sample_values[connected_indices[p]];
-                    Vector3 position_at_neighbour = sample_positions[p];
+                    float value_at_neighbour = neighbour_values[p];
+                    Vector3 position_at_neighbour = sample_positions[connected_indices[p]];
                     // TODO: can this be accelerated by rearrangement?
                     Vector3 vertex_position = ((position_at_neighbour - position) * (thresh_diff / (value_at_neighbour - value))) + position;
                     vertices.push_back(vertex_position);
@@ -491,5 +365,4 @@ void MTVTBuilder::vertexPass()
 // TODO: different lattice structures
 // TODO: different merging techniques
 // TODO: parallelise
-// TODO: time/memory tracking
 // TODO: vertex/index count

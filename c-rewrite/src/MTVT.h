@@ -15,17 +15,18 @@ struct MTVTDebugStats
 {
     double allocation_time = 0;
     double sampling_time = 0;
-    double flagging_time = 0;
     double vertex_time = 0;
     double geometry_time = 0;
-    size_t sample_points = 0;
-    size_t edges = 0;
+    size_t sample_points_allocated = 0;
+    size_t min_sample_points = 0;
+    size_t edges_allocated = 0;
+    size_t min_edges = 0;
     size_t tetrahedra = 0;
     size_t vertices = 0;
     size_t indices = 0;
-    int cubes_x = 0;
-    int cubes_y = 0;
-    int cubes_z = 0;
+    size_t cubes_x = 0;
+    size_t cubes_y = 0;
+    size_t cubes_z = 0;
 };
 
 class MTVTBuilder
@@ -84,7 +85,6 @@ private:
     void prepareBuffers();
     void destroyBuffers();
     void samplingPass();
-    void flaggingPass();
     void vertexPass();
     void geometryPass();
 };
