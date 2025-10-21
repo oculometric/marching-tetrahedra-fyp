@@ -60,7 +60,6 @@ private:
     float resolution;
     size_t grid_data_length;
 
-    bool cache_positions_enabled;
     LatticeType structure;
     ClusteringMode clustering;
 
@@ -78,7 +77,7 @@ public:
     MTVTBuilder();
 
     void configure(Vector3 minimum_extent, Vector3 maximum_extent, float cube_size, float (*sample_func)(Vector3), float threshold_value);
-    void configureModes(bool cache_positions, LatticeType lattice_type, ClusteringMode clustering_mode);
+    void configureModes(LatticeType lattice_type, ClusteringMode clustering_mode);
     MTVTMesh generate(MTVTDebugStats& stats);
 
 private:

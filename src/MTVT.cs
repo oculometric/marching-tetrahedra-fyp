@@ -365,7 +365,6 @@ public class MTVTBuilder
 
     private void vertexPass(/*out uint[] edge_indices*/)
     {
-        // TODO: vertex pass - generate vertices for edges with flags set, and merge them where possible, assigning vertex references to these edges
     }
 
     private void geometryPass(/*out List<uint> index_buffer, in uint[] edge_indices, Vector3 grid_size*/)
@@ -405,9 +404,3 @@ public class MTVTBuilder
         return new MTVTMesh();
     }
 }
-
-// TODO: different lattice structures
-// TODO: different merging techniques
-// TODO: parallelise
-// TODO: time/memory tracking
-// TODO: vertex/index count

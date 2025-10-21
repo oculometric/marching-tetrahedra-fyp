@@ -7,7 +7,7 @@ using namespace std;
 MTVTBuilder::MTVTBuilder()
 {
 	configure({ -1, -1, -1 }, { 1, 1, 1 }, 0.1f, [](Vector3 v) -> float { return mag(v); }, 1.0f);
-	configureModes(false, LatticeType::BODY_CENTERED_DIAMOND, ClusteringMode::NONE);
+	configureModes(LatticeType::BODY_CENTERED_DIAMOND, ClusteringMode::NONE);
 }
 
 void MTVTBuilder::configure(Vector3 minimum_extent, Vector3 maximum_extent, float cube_size, float(*sample_func)(Vector3), float threshold_value)
@@ -69,14 +69,10 @@ void MTVTBuilder::configure(Vector3 minimum_extent, Vector3 maximum_extent, floa
         index_offsets_oddz[12]  = -s_hz + 1;
         index_offsets_oddz[13]  = -s_hz;
     }
-
-    // TODO: move this
-    prepareBuffers();
 }
 
-void MTVTBuilder::configureModes(bool cache_positions, LatticeType lattice_type, ClusteringMode clustering_mode)
+void MTVTBuilder::configureModes(LatticeType lattice_type, ClusteringMode clustering_mode)
 {
-    cache_positions_enabled = cache_positions;
     structure = lattice_type;
     clustering = clustering_mode;
 }
@@ -100,13 +96,19 @@ MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
     flaggingPass();
     float flagging = ((chrono::duration<float>)(chrono::high_resolution_clock::now() - flagging_start)).count();
 
+    auto vertex_start = chrono::high_resolution_clock::now();
+    vertexPass();
+    float vertex = ((chrono::duration<float>)(chrono::high_resolution_clock::now() - vertex_start)).count();
+
     stats.cubes_x = cubes_x;
     stats.cubes_y = cubes_y;
     stats.cubes_z = cubes_z;
     stats.allocation_time += allocation;
     stats.sampling_time += sampling;
     stats.flagging_time += flagging;
+    stats.vertex_time += vertex;
     stats.sample_points = grid_data_length;
+    stats.vertices = vertices.size();
 
     destroyBuffers();
 
@@ -115,8 +117,8 @@ MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
 
 void MTVTBuilder::prepareBuffers()
 {
-    if (cache_positions_enabled)
-        sample_positions = new Vector3[grid_data_length];
+    // TODO: experiment with un-caching this (recomputing position each step)
+    sample_positions = new Vector3[grid_data_length];
 
     sample_values = new float[grid_data_length];
 
@@ -127,9 +129,7 @@ void MTVTBuilder::prepareBuffers()
 
 void MTVTBuilder::destroyBuffers()
 {
-    if (cache_positions_enabled)
-        delete[] sample_positions;
-    sample_positions = nullptr;
+    delete[] sample_positions; sample_positions = nullptr;
 
     delete[] sample_values; sample_values = nullptr;
 
@@ -160,8 +160,7 @@ void MTVTBuilder::samplingPass()
             {
                 // i tested logic for skipping out points whose values will never be used, but it was actually less efficient!
                 sample_values[index] = sampler(position);
-                if (cache_positions_enabled)
-                    sample_positions[index] = position;
+                sample_positions[index] = position;
                 position.x += resolution;
                 index++;
             }
@@ -328,3 +327,169 @@ void MTVTBuilder::flaggingPass()
         }
     }
 }
+
+void MTVTBuilder::vertexPass()
+{
+    // vertex pass - generate vertices for edges with flags set, and merge them where possible, assigning vertex references to these edges
+
+    // our position in the array, saves recomputing this all the time
+    size_t index = 0;
+    size_t connected_indices[14] = { 0 };
+
+    // FIXME: we're doing a bunch of checking and fetching and iterating twice over! we should merge this pass with the with the flagging pass
+    bool is_odd_z = true;
+    for (int zi = 0; zi < samples_z; ++zi)
+    {
+        is_odd_z = !is_odd_z;
+        bool is_min_z = zi <= 1;
+        bool is_max_z = zi >= samples_z - 2;
+        for (int yi = 0; yi < samples_y; ++yi)
+        {
+            bool is_max_y = yi >= samples_y - 1;
+            bool is_min_y = yi <= 0;
+            for (int xi = 0; xi < samples_x; ++xi)
+            {
+                bool is_max_x = xi >= samples_x - 1;
+                // check flags for where this sample is within the sample space
+                if (is_odd_z && (is_max_x || is_max_y))
+                {
+                    // early reject if this is just an extra filler point
+                    ++index;
+                    continue;
+                }
+                bool is_min_x = xi <= 0;
+                if (!is_odd_z)
+                {
+                    int num_edges = 0;
+                    if (is_min_x) ++num_edges;
+                    if (is_max_x) ++num_edges;
+                    if (is_min_y) ++num_edges;
+                    if (is_max_y) ++num_edges;
+                    if (is_min_z) ++num_edges;
+                    if (is_max_z) ++num_edges;
+                    if (num_edges >= 2)
+                    {
+                        // early reject if this is an edge point
+                        ++index;
+                        continue;
+                    }
+                }
+
+                // populate the list of neighbouring indices
+                if (!is_odd_z)
+                {
+                    for (int t = 0; t < 14; ++t)
+                        connected_indices[t] = index + index_offsets_evenz[t];
+                }
+                else
+                {
+                    for (int t = 0; t < 14; ++t)
+                        connected_indices[t] = index + index_offsets_oddz[t];
+                }
+
+                // strike out any neighbour which doesn't exist
+                if (is_min_z)
+                {
+                    connected_indices[0] = -1;
+                    connected_indices[1] = -1;
+                    connected_indices[2] = -1;
+                    connected_indices[3] = -1;
+                    connected_indices[5] = -1;
+                    connected_indices[10] = -1;
+                    connected_indices[11] = -1;
+                    connected_indices[12] = -1;
+                    connected_indices[13] = -1;
+                }
+                if (is_min_y)
+                {
+                    connected_indices[0] = -1;
+                    connected_indices[1] = -1;
+                    connected_indices[3] = -1;
+                    connected_indices[4] = -1;
+                    connected_indices[5] = -1;
+                    connected_indices[8] = -1;
+                    connected_indices[9] = -1;
+                    connected_indices[12] = -1;
+                    connected_indices[13] = -1;
+                }
+                if (is_min_x)
+                {
+                    connected_indices[1] = -1;
+                    connected_indices[2] = -1;
+                    connected_indices[3] = -1;
+                    connected_indices[4] = -1;
+                    connected_indices[5] = -1;
+                    connected_indices[7] = -1;
+                    connected_indices[9] = -1;
+                    connected_indices[11] = -1;
+                    connected_indices[13] = -1;
+                }
+                if (is_max_z)
+                {
+                    connected_indices[0] = -1;
+                    connected_indices[1] = -1;
+                    connected_indices[2] = -1;
+                    connected_indices[3] = -1;
+                    connected_indices[4] = -1;
+                    connected_indices[6] = -1;
+                    connected_indices[7] = -1;
+                    connected_indices[8] = -1;
+                    connected_indices[9] = -1;
+                }
+                if (is_max_y)
+                {
+                    connected_indices[0] = -1;
+                    connected_indices[1] = -1;
+                    connected_indices[2] = -1;
+                    connected_indices[4] = -1;
+                    connected_indices[5] = -1;
+                    connected_indices[6] = -1;
+                    connected_indices[7] = -1;
+                    connected_indices[10] = -1;
+                    connected_indices[11] = -1;
+                }
+                if (is_max_x)
+                {
+                    connected_indices[0] = -1;
+                    connected_indices[2] = -1;
+                    connected_indices[3] = -1;
+                    connected_indices[4] = -1;
+                    connected_indices[5] = -1;
+                    connected_indices[6] = -1;
+                    connected_indices[8] = -1;
+                    connected_indices[10] = -1;
+                    connected_indices[12] = -1;
+                }
+
+                // TODO: implement merging!
+                // FIXME: oh shit! we need positions here!
+                uint16_t bits = sample_proximity_flags[index];
+                EdgeReferences edges;
+                float value = sample_values[index];
+                float thresh_diff = threshold - value;
+                Vector3 position = sample_positions[index];
+                for (int p = 0; p < 14; ++p)
+                {
+                    if (connected_indices[p] == (size_t)-1)
+                        continue;
+                    if (!(bits & (1 << p)))
+                        continue;
+                    float value_at_neighbour = sample_values[connected_indices[p]];
+                    Vector3 position_at_neighbour = sample_positions[p];
+                    // TODO: can this be accelerated by rearrangement?
+                    Vector3 vertex_position = ((position_at_neighbour - position) * (thresh_diff / (value_at_neighbour - value))) + position;
+                    vertices.push_back(vertex_position);
+                    edges.references[p] = vertices.size() - 1;
+                }
+                sample_edge_indices[index] = edges;
+                ++index;
+            }
+        }
+    }
+}
+
+// TODO: different lattice structures
+// TODO: different merging techniques
+// TODO: parallelise
+// TODO: time/memory tracking
+// TODO: vertex/index count
