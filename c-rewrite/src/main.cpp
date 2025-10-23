@@ -57,5 +57,5 @@ float sphereFunc(Vector3 v)
 
 int main()
 {
-    runBenchmark("sphere", 100, { -2, -2, -2 }, { 2, 2, 2 }, 0.4f, sphereFunc, 1.0f);
+    runBenchmark("sphere", 100, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f);
 }

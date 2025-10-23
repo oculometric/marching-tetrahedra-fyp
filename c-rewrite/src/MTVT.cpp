@@ -379,7 +379,7 @@ void MTVTBuilder::vertexPass()
                     // TODO: can this be accelerated by rearrangement?
                     Vector3 vertex_position = ((position_at_neighbour - position) * (thresh_diff / (value_at_neighbour - value))) + position;
                     vertices.push_back(vertex_position);
-                    edges.references[p] = vertices.size() - 1;
+                    edges.references[p] = static_cast<uint16_t>(vertices.size() - 1);
                 }
                 sample_edge_indices[index] = edges;
                 ++index;
@@ -460,26 +460,6 @@ static uint8_t tetrahedra_edge_indices_templates[24][6] =
     { NZ, PXNYNZ, NXNYNZ, PXNYPZ, NXNYPZ, NX }
 };
 
-// TODO: can we replace this with arithmetic to be faster?
-static uint8_t inverted_edge_indices[14] =
-{
-    1,
-    0,
-    3,
-    2,
-    5,
-    4,
-
-    13,
-    12,
-    11,
-    10,
-    9,
-    8,
-    7,
-    6,
-};
-
 // look up table for the edge patterns for different tetrahedra configurations
 // edge indices range from 0-5, but each one could refer to the inverted-direction version,
 // and this has to be checked at each step
@@ -517,7 +497,7 @@ static uint8_t sample_point_edge_indices[12] =
     2, 3
 };
 
-#define INVERT_EDGE_INDEX(i) inverted_edge_indices[i]
+#define INVERT_EDGE_INDEX(i) ((i < 6) ? (i + 1 - ((i % 2) * 2)) : (19 - i))
 
 void MTVTBuilder::geometryPass()
 {
@@ -538,20 +518,20 @@ void MTVTBuilder::geometryPass()
                     connected_indices[e] = central_sample_point_index + index_offsets_evenz[e];
 
                 // TODO: this can be accelerated by reducing this to a uint8
-                //uint32_t tflags = 0;
-                /*if (xi > 0)
-                    tflags |= 0b11110000;
+                uint32_t tflags = 0;
+                if (xi > 0)
+                    tflags |= 0b1111;
                 if (yi > 0)
-                    tflags |= 0b1111000000000000;
+                    tflags |= 0b111100000000;
                 if (zi > 0)
-                    tflags |= 0b111100000000000000000000;*/
+                    tflags |= 0b11110000000000000000;
 
                 // each tetrahedra has sample point indices generated from its the current cube position (xi,yi,zi)
                 // TODO: skip out some tetrahedra depending where we are in the lattice
                 for (int t = 0; t < 24; ++t)
                 {
-                    /*if (tflags & (1 << t))
-                        continue;*/
+                    if (tflags & (1 << t))
+                        continue;
                     // collect the four sample point indices involved with this tetrahedron
                     size_t tetrahedra_sample_indices[4] =
                     {
@@ -636,3 +616,4 @@ void MTVTBuilder::geometryPass()
 // TODO: different lattice structures
 // TODO: different merging techniques
 // TODO: parallelise
+// FIXME: mesh with fucked up faces?
