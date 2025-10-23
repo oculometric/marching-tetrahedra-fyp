@@ -85,6 +85,7 @@ public:
 private:
     void prepareBuffers();
     void destroyBuffers();
+    void populateIndexOffsets();
     void samplingPass();
     void vertexPass();
     void geometryPass();
