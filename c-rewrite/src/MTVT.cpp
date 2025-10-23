@@ -1,6 +1,7 @@
 #include "MTVT.h"
 
 #include <chrono>
+#include <thread>
 
 using namespace std;
 
@@ -202,16 +203,28 @@ void MTVTBuilder::vertexPass()
     // flagging pass - check all of the edges around each sample point, and set the edge flag bits
     // vertex pass - generate vertices for edges with flags set, and merge them where possible, assigning vertex references to these edges
 
+    vector<Vector3> odd_layers;
+    thread odd_thread(&MTVTBuilder::vertexLayer, this, 1, 2, &odd_layers);
+    vertexLayer(0, 2, &vertices);
+
+    odd_thread.join();
+    vertices.reserve(vertices.size() + odd_layers.size());
+    vertices.insert(vertices.end(), odd_layers.begin(), odd_layers.end());
+}
+
+void MTVTBuilder::vertexLayer(const int start, const int step, vector<Vector3>* vertex_buffer)
+{
     // our position in the array, saves recomputing this all the time
     size_t index = 0;
     size_t connected_indices[14] = { 0 };
 
     bool is_odd_z = true;
-    for (int zi = 0; zi < samples_z; ++zi)
+    for (int zi = start; zi < samples_z; zi += step)
     {
-        is_odd_z = !is_odd_z;
+        is_odd_z = zi % 2;
         bool is_min_z = zi <= 1;
         bool is_max_z = zi >= samples_z - 2;
+        index = zi * samples_x * samples_y;
         for (int yi = 0; yi < samples_y; ++yi)
         {
             bool is_max_y = yi >= samples_y - 1;
@@ -375,8 +388,8 @@ void MTVTBuilder::vertexPass()
                     Vector3 position_at_neighbour = sample_positions[connected_indices[p]];
                     // TODO: can this be accelerated by rearrangement?
                     Vector3 vertex_position = ((position_at_neighbour - position) * (thresh_diff / (value_at_neighbour - value))) + position;
-                    vertices.push_back(vertex_position);
-                    edges.references[p] = static_cast<uint16_t>(vertices.size() - 1);
+                    vertex_buffer->push_back(vertex_position);
+                    edges.references[p] = static_cast<uint16_t>(vertex_buffer->size() - 1);
                 }
                 sample_edge_indices[index] = edges;
                 ++index;
@@ -512,8 +525,20 @@ void MTVTBuilder::geometryPass()
 {
     // geometry pass - generate per-tetrahedron geometry from the edge/sample point info, discard triangles which zero size
 
+    vector<uint16_t> odd_layers;
+    thread odd_thread(&MTVTBuilder::geometryLayer, this, 1, 2, &odd_layers);
+    geometryLayer(0, 2, &indices);
+
+    odd_thread.join();
+
+    indices.reserve(indices.size() + odd_layers.size());
+    indices.insert(indices.end(), odd_layers.begin(), odd_layers.end());
+}
+
+void MTVTBuilder::geometryLayer(const int start, const int step, vector<uint16_t>* index_buffer)
+{
     size_t connected_indices[14] = { 0 };
-    for (int zi = 0; zi < cubes_z; ++zi)
+    for (int zi = start; zi < cubes_z; zi += step)
     {
         for (int yi = 0; yi < cubes_y; ++yi)
         {
@@ -521,8 +546,8 @@ void MTVTBuilder::geometryPass()
             {
                 // compute central sample point index
                 const size_t central_sample_point_index = (2ull * zi * samples_x * samples_y) + (static_cast<size_t>(yi) * samples_x) + (xi)
-                                                         + 1 + samples_x + (2ull * samples_x * samples_y);
-                
+                    +1 + samples_x + (2ull * samples_x * samples_y);
+
                 // use that to compute all the sample point indices in this lattice segment
                 for (int e = 0; e < 14; ++e)
                     connected_indices[e] = central_sample_point_index + index_offsets_evenz[e];
@@ -530,12 +555,12 @@ void MTVTBuilder::geometryPass()
                 // TODO: skip out some tetrahedra depending where we are in the lattice, otherwise we'll be marching lots of tetrahedra twice over
                 // TODO: this can be accelerated by reducing this to a uint8
                 uint32_t tflags = 0;
-                if (xi > 0)
+                /*if (xi > 0)
                     tflags |= 0b1111;
                 if (yi > 0)
                     tflags |= 0b111100000000;
                 if (zi > 0)
-                    tflags |= 0b11110000000000000000;
+                    tflags |= 0b11110000000000000000;*/
 
                 // 24 tetrahedra per cube
                 // each tetrahedra has sample point indices generated from its the current cube position (xi,yi,zi)
@@ -570,7 +595,7 @@ void MTVTBuilder::geometryPass()
                         ((sample_values[tetrahedra_sample_indices[3]] > threshold) ? 8 : 0);
                     if (pattern_ident == 0 || pattern_ident == 0b1111)
                         continue;
-                    
+
                     // collect the 12 relevant edge addresses (6 pairs, since one of each pair 
                     // will be filled). this is essentially an expansion of the template for 
                     // edge addresses for this tetrahedron (t).
@@ -637,9 +662,9 @@ void MTVTBuilder::geometryPass()
                         ++degenerate_triangles;
                     else
                     {
-                        indices.push_back(triangle_indices[0]);
-                        indices.push_back(triangle_indices[1]);
-                        indices.push_back(triangle_indices[2]);
+                        index_buffer->push_back(triangle_indices[0]);
+                        index_buffer->push_back(triangle_indices[1]);
+                        index_buffer->push_back(triangle_indices[2]);
                     }
 
                     if (two_triangles)
@@ -649,9 +674,9 @@ void MTVTBuilder::geometryPass()
                             ++degenerate_triangles;
                         else
                         {
-                            indices.push_back(triangle_indices[3]);
-                            indices.push_back(triangle_indices[2]);
-                            indices.push_back(triangle_indices[1]);
+                            index_buffer->push_back(triangle_indices[3]);
+                            index_buffer->push_back(triangle_indices[2]);
+                            index_buffer->push_back(triangle_indices[1]);
                         }
                     }
                 }

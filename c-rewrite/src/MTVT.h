@@ -89,5 +89,7 @@ private:
     void populateIndexOffsets();
     void samplingPass();
     void vertexPass();
+    void vertexLayer(const int start, const int step, std::vector<Vector3>* vertex_buffer);
     void geometryPass();
+    void geometryLayer(const int start, const int step, std::vector<uint16_t>* index_buffer);
 };
