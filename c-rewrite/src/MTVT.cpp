@@ -537,10 +537,21 @@ void MTVTBuilder::geometryPass()
                 for (int e = 0; e < 14; ++e)
                     connected_indices[e] = central_sample_point_index + index_offsets_evenz[e];
 
+                // TODO: this can be accelerated by reducing this to a uint8
+                //uint32_t tflags = 0;
+                /*if (xi > 0)
+                    tflags |= 0b11110000;
+                if (yi > 0)
+                    tflags |= 0b1111000000000000;
+                if (zi > 0)
+                    tflags |= 0b111100000000000000000000;*/
+
                 // each tetrahedra has sample point indices generated from its the current cube position (xi,yi,zi)
                 // TODO: skip out some tetrahedra depending where we are in the lattice
                 for (int t = 0; t < 24; ++t)
                 {
+                    /*if (tflags & (1 << t))
+                        continue;*/
                     // collect the four sample point indices involved with this tetrahedron
                     size_t tetrahedra_sample_indices[4] =
                     {
@@ -560,7 +571,6 @@ void MTVTBuilder::geometryPass()
                         continue;
                     
                     // collect the 12 relevant edge indices (6 pairs, since one of each pair will be filled)
-                    // TODO: skip copying this out to an array, we don't need to
                     uint8_t tetrahedra_edge_indices[12] =
                     {
                                           tetrahedra_edge_indices_templates[t][0],  // relative to c
@@ -576,7 +586,6 @@ void MTVTBuilder::geometryPass()
                                           tetrahedra_edge_indices_templates[t][5],  // relative to u
                         INVERT_EDGE_INDEX(tetrahedra_edge_indices_templates[t][5]), // relative to l
                     };
-
 
                     // find the edge usage sequence (and thus index sequence) based on the pattern
                     auto pattern = tetrahedral_edge_index_index_patterns[pattern_ident];
