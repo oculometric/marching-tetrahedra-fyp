@@ -28,6 +28,7 @@ struct MTVTDebugStats
     size_t cubes_x = 0;
     size_t cubes_y = 0;
     size_t cubes_z = 0;
+    size_t degenerate_triangles = 0;
 };
 
 class MTVTBuilder
@@ -70,10 +71,10 @@ private:
 
     float* sample_values = nullptr;
     Vector3* sample_positions = nullptr;
-    uint16_t* sample_proximity_flags = nullptr;
     EdgeReferences* sample_edge_indices = nullptr;
     std::vector<Vector3> vertices;
     std::vector<uint16_t> indices;
+    size_t degenerate_triangles;
 
 public:
     MTVTBuilder();

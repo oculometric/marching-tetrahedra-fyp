@@ -44,6 +44,7 @@ MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
         return MTVTMesh();
 
     auto allocation_start = chrono::high_resolution_clock::now();
+    degenerate_triangles = 0;
     prepareBuffers();
     vertices.clear(); // TODO: test size reservation for speed
     indices.clear();
@@ -79,6 +80,7 @@ MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
                                 + stats.cubes_x + stats.cubes_y + stats.cubes_z;
     stats.vertices = vertices.size();
     stats.indices = indices.size();
+    stats.degenerate_triangles = degenerate_triangles;
 
     destroyBuffers();
 
@@ -92,8 +94,6 @@ void MTVTBuilder::prepareBuffers()
 
     sample_values = new float[grid_data_length];
 
-    sample_proximity_flags = new uint16_t[grid_data_length];
-
     sample_edge_indices = new EdgeReferences[grid_data_length];
 }
 
@@ -102,8 +102,6 @@ void MTVTBuilder::destroyBuffers()
     delete[] sample_positions; sample_positions = nullptr;
 
     delete[] sample_values; sample_values = nullptr;
-
-    delete[] sample_proximity_flags; sample_proximity_flags = nullptr;
 
     delete[] sample_edge_indices; sample_edge_indices = nullptr;
 }
@@ -357,7 +355,6 @@ void MTVTBuilder::vertexPass()
                     neighbour_values[p] = value_at_neighbour;
                     bits |= (1 << p);
                 }
-                sample_proximity_flags[index] = bits; // TODO: do we actually need to store this at all?
 
                 // perform vertex generation & merging
                 // TODO: actually implement merging!
@@ -388,7 +385,10 @@ void MTVTBuilder::vertexPass()
     }
 }
 
-static uint8_t tetrahedra_sample_indices_templates[24][3] =
+// each entry defines a collection of indices into the list of neighbouring sample points.
+// the 24 entries represent the 24 tetrahedra embedded in each cube.
+// the cube center is always assumed to be treated as the first sample point
+static constexpr uint8_t tetrahedra_sample_index_templates[24][3] =
 {
     // +x side
     { PX, PXNYPZ, PXNYNZ },
@@ -422,11 +422,28 @@ static uint8_t tetrahedra_sample_indices_templates[24][3] =
     { NZ, PXNYNZ, NXNYNZ },
 };
 
-// each entry is ordered accordingly:
-// c = center, p = pyramid, u = upper, l = lower
-// the indices for inverted direction can be computed from the next table
-//    cp, cu, cl, pu, pl, ul
-static uint8_t tetrahedra_edge_indices_templates[24][6] =
+// each pair of entries defines which of the four sample points involved with a tetrahedron
+// make up a particular generic edge. order matters! these are generic indices
+// into the array of sample point indices relevant to the current tetrahedron.
+static constexpr uint8_t tetrahedra_edge_sample_point_indices[12] =
+{
+    0, 1,   // edge 0 = center -> pyramid   (CP)
+    0, 2,   // edge 1 = center -> upper     (CU)
+    0, 3,   // edge 2 = center -> lower     (CL)
+    1, 2,   // edge 3 = pyramid -> upper    (PU)
+    1, 3,   // edge 4 = pyramid -> lower    (PL)
+    2, 3    // edge 5 = upper -> lower      (UL)
+};
+
+// each entry defines a collection of generic edge indices relative to a sample point.
+// the table above relates the sample points involved for each of the generic edges
+// described in this list. each element in an entry can be inverted using the macro,
+// and applied relative to the other end of the edge (for example, instead of PX of sp0,
+// you would have NX of sp1) in order to find the alternate storage location for the relevant
+// data.
+// hence, entries represent the 6 edges in the tetrahedron and are ordered
+//     CP, CU, CL, PU, PL, UL
+static constexpr uint8_t tetrahedra_edge_address_templates[24][6] =
 {
     // +x side
     { PX, PXNYPZ, PXNYNZ, NXNYPZ, NXNYNZ, NZ },
@@ -460,13 +477,14 @@ static uint8_t tetrahedra_edge_indices_templates[24][6] =
     { NZ, PXNYNZ, NXNYNZ, PXNYPZ, NXNYPZ, NX }
 };
 
-// look up table for the edge patterns for different tetrahedra configurations
-// edge indices range from 0-5, but each one could refer to the inverted-direction version,
-// and this has to be checked at each step
+// look up table for the geometry patterns for different tetrahedra configurations
+// edge indices range from 0-5, but each one could refer to the inverted-direction version
+// from the sample point at the other end of the edge, and this is checked at each step.
+// these sequences combine the per-edge vertex references into triangles.
 // the last values may be -1 (aka 255) if there is only one triangle
 // TODO: can we cut this in half?
 // TODO: can we reduce the size of double-triangle entries to only 4 indices?
-static uint8_t tetrahedral_edge_index_index_patterns[16][6] =
+static constexpr uint8_t tetrahedral_edge_address_patterns[16][6] =
 {
     { -1, -1, -1, -1, -1, -1 },                 // no bits set
     {  0,  1,  2, -1, -1, -1 },                 // 0b0001
@@ -486,21 +504,14 @@ static uint8_t tetrahedral_edge_index_index_patterns[16][6] =
     { -1, -1, -1, -1, -1, -1 },                 // all bits set
 };
 
-// this mirrors the CP, CU, CL, PU, PL, UL from above
-static uint8_t sample_point_edge_indices[12] =
-{
-    0, 1,
-    0, 2,
-    0, 3,
-    1, 2,
-    1, 3,
-    2, 3
-};
-
+// this macro simply turns an edge address into the edge address pointing in the 
+// opposite direction
 #define INVERT_EDGE_INDEX(i) ((i < 6) ? (i + 1 - ((i % 2) * 2)) : (19 - i))
 
 void MTVTBuilder::geometryPass()
 {
+    // geometry pass - generate per-tetrahedron geometry from the edge/sample point info, discard triangles which zero size
+
     size_t connected_indices[14] = { 0 };
     for (int zi = 0; zi < cubes_z; ++zi)
     {
@@ -508,15 +519,15 @@ void MTVTBuilder::geometryPass()
         {
             for (int xi = 0; xi < cubes_x; ++xi)
             {
-                // 24 tetrahedra per cube
                 // compute central sample point index
-                size_t central_sample_point_index = (2ull * zi * samples_x * samples_y) + (static_cast<size_t>(yi) * samples_x) + (xi)
-                                                    + 1 + samples_x + (2ull * samples_x * samples_y);
+                const size_t central_sample_point_index = (2ull * zi * samples_x * samples_y) + (static_cast<size_t>(yi) * samples_x) + (xi)
+                                                         + 1 + samples_x + (2ull * samples_x * samples_y);
                 
-                // use that to compute the sample point indices in this lattice segment
+                // use that to compute all the sample point indices in this lattice segment
                 for (int e = 0; e < 14; ++e)
                     connected_indices[e] = central_sample_point_index + index_offsets_evenz[e];
 
+                // TODO: skip out some tetrahedra depending where we are in the lattice, otherwise we'll be marching lots of tetrahedra twice over
                 // TODO: this can be accelerated by reducing this to a uint8
                 uint32_t tflags = 0;
                 if (xi > 0)
@@ -526,23 +537,33 @@ void MTVTBuilder::geometryPass()
                 if (zi > 0)
                     tflags |= 0b11110000000000000000;
 
+                // 24 tetrahedra per cube
                 // each tetrahedra has sample point indices generated from its the current cube position (xi,yi,zi)
-                // TODO: skip out some tetrahedra depending where we are in the lattice
                 for (int t = 0; t < 24; ++t)
                 {
                     if (tflags & (1 << t))
                         continue;
-                    // collect the four sample point indices involved with this tetrahedron
-                    size_t tetrahedra_sample_indices[4] =
+
+                    // collect the four sample point indices involved with this tetrahedron,
+                    // specific to this orientation of tetrahedron (i.e. the first 4 are on
+                    // the +x side of the cube, etc)
+                    // we make the indices generic, such that all possible tetrahedra are
+                    // arranged uniformly to minimise special handling (index 0 is always
+                    // the cube center, index 1 is always the SP sticking out in the relevant
+                    // direction, index 2 is the clockwise SP when looking at the relevant cube
+                    // face, index 3 is the counter-clockwise SP when looking at the relevant
+                    // cube face).
+                    const size_t tetrahedra_sample_indices[4] =
                     {
-                        central_sample_point_index,                                     // c = center
-                        connected_indices[(tetrahedra_sample_indices_templates[t])[0]], // p = pyramid
-                        connected_indices[(tetrahedra_sample_indices_templates[t])[1]], // u = upper
-                        connected_indices[(tetrahedra_sample_indices_templates[t])[2]]  // l = lower
+                        central_sample_point_index,                                   // C = center
+                        connected_indices[(tetrahedra_sample_index_templates[t])[0]], // P = pyramid
+                        connected_indices[(tetrahedra_sample_index_templates[t])[1]], // U = upper
+                        connected_indices[(tetrahedra_sample_index_templates[t])[2]]  // L = lower
                     };
-                    // check which SPs are inside/outside and use that to index into tables
-                    // with information about which edges of which sample points to use
-                    uint8_t pattern_ident =
+
+                    // check which SPs are inside/outside and use that to build a pattern
+                    // which identifies this tetrahedral configuration for geometry generation
+                    const uint8_t pattern_ident =
                         ((sample_values[tetrahedra_sample_indices[0]] > threshold) ? 1 : 0) +
                         ((sample_values[tetrahedra_sample_indices[1]] > threshold) ? 2 : 0) +
                         ((sample_values[tetrahedra_sample_indices[2]] > threshold) ? 4 : 0) +
@@ -550,45 +571,49 @@ void MTVTBuilder::geometryPass()
                     if (pattern_ident == 0 || pattern_ident == 0b1111)
                         continue;
                     
-                    // collect the 12 relevant edge indices (6 pairs, since one of each pair will be filled)
-                    uint8_t tetrahedra_edge_indices[12] =
+                    // collect the 12 relevant edge addresses (6 pairs, since one of each pair 
+                    // will be filled). this is essentially an expansion of the template for 
+                    // edge addresses for this tetrahedron (t).
+                    // these will then be used to read data out of the correct edges on each
+                    // of the sample points for this tetrahedron
+                    const uint8_t tetrahedra_edge_addresses[12] =
                     {
-                                          tetrahedra_edge_indices_templates[t][0],  // relative to c
-                        INVERT_EDGE_INDEX(tetrahedra_edge_indices_templates[t][0]), // relative to p
-                                          tetrahedra_edge_indices_templates[t][1],  // relative to c
-                        INVERT_EDGE_INDEX(tetrahedra_edge_indices_templates[t][1]), // relative to u
-                                          tetrahedra_edge_indices_templates[t][2],  // relative to c
-                        INVERT_EDGE_INDEX(tetrahedra_edge_indices_templates[t][2]), // relative to l
-                                          tetrahedra_edge_indices_templates[t][3],  // relative to p
-                        INVERT_EDGE_INDEX(tetrahedra_edge_indices_templates[t][3]), // relative to u
-                                          tetrahedra_edge_indices_templates[t][4],  // relative to p
-                        INVERT_EDGE_INDEX(tetrahedra_edge_indices_templates[t][4]), // relative to l
-                                          tetrahedra_edge_indices_templates[t][5],  // relative to u
-                        INVERT_EDGE_INDEX(tetrahedra_edge_indices_templates[t][5]), // relative to l
+                                          tetrahedra_edge_address_templates[t][0],  // relative to C
+                        INVERT_EDGE_INDEX(tetrahedra_edge_address_templates[t][0]), // relative to P
+                                          tetrahedra_edge_address_templates[t][1],  // relative to C
+                        INVERT_EDGE_INDEX(tetrahedra_edge_address_templates[t][1]), // relative to U
+                                          tetrahedra_edge_address_templates[t][2],  // relative to C
+                        INVERT_EDGE_INDEX(tetrahedra_edge_address_templates[t][2]), // relative to L
+                                          tetrahedra_edge_address_templates[t][3],  // relative to P
+                        INVERT_EDGE_INDEX(tetrahedra_edge_address_templates[t][3]), // relative to U
+                                          tetrahedra_edge_address_templates[t][4],  // relative to P
+                        INVERT_EDGE_INDEX(tetrahedra_edge_address_templates[t][4]), // relative to L
+                                          tetrahedra_edge_address_templates[t][5],  // relative to U
+                        INVERT_EDGE_INDEX(tetrahedra_edge_address_templates[t][5]), // relative to L
                     };
 
                     // find the edge usage sequence (and thus index sequence) based on the pattern
-                    auto pattern = tetrahedral_edge_index_index_patterns[pattern_ident];
+                    auto pattern = tetrahedral_edge_address_patterns[pattern_ident];
                     // build one or two triangles
-                    uint16_t triangle_indices[6] = { -1, -1, -1, -1, -1, -1 };
-                    bool two_triangles = true;
-                    for (int i = 0; i < 6; i++)
+                    uint16_t triangle_indices[4] = { -1, -1, -1, -1 };
+                    const bool two_triangles = pattern[3] != (uint8_t)-1;
+                    const int imax = (two_triangles ? 4 : 3);
+                    for (int i = 0; i < imax; ++i)
                     {
                         // this represents the index into the array of edge addresses
-                        uint8_t edge_index_index = pattern[i];
-                        if (edge_index_index == (uint8_t)-1)
-                        {
-                            two_triangles = false;
-                            break;
-                        }
-                        // these find the edge addresses for the two alternate interpretations of the given edge index
-                        uint8_t edge_address_a = tetrahedra_edge_indices[edge_index_index * 2];
-                        uint8_t edge_address_b = tetrahedra_edge_indices[(edge_index_index * 2) + 1];
-                        // these find the two sample point indices which are at either end of the given edge index
-                        size_t sample_point_index_a = tetrahedra_sample_indices[sample_point_edge_indices[edge_index_index * 2]];
-                        size_t sample_point_index_b = tetrahedra_sample_indices[sample_point_edge_indices[(edge_index_index * 2) + 1]];
+                        const uint8_t edge_address_index = pattern[i];
+                        // these find the edge addresses for the two alternate 
+                        // interpretations of the given edge index, each of which
+                        // is relative to one of the sample points on the edge
+                        const uint8_t edge_address_a = tetrahedra_edge_addresses[edge_address_index * 2];
+                        const uint8_t edge_address_b = tetrahedra_edge_addresses[(edge_address_index * 2) + 1];
+                        // these find the two sample points which are at 
+                        // either end of the given edge index
+                        const size_t sample_point_index_a = tetrahedra_sample_indices[tetrahedra_edge_sample_point_indices[edge_address_index * 2]];
+                        const size_t sample_point_index_b = tetrahedra_sample_indices[tetrahedra_edge_sample_point_indices[(edge_address_index * 2) + 1]];
 
-                        // assume initial interpretation, if there is no data on that edge, use the alternative interpretation
+                        // assume initial interpretation, but if there is no data on 
+                        // that edge, use the alternative interpretation
                         uint16_t vertex_ref = sample_edge_indices[sample_point_index_a].references[edge_address_a];
                         if (vertex_ref == (uint16_t)-1)
                             vertex_ref = sample_edge_indices[sample_point_index_b].references[edge_address_b];
@@ -596,16 +621,38 @@ void MTVTBuilder::geometryPass()
                         triangle_indices[i] = vertex_ref;
                     }
 
-                    // TODO: check if either one is degenerate
+                    // TODO: check for -1's (which shouldn't be possible)
 
-                    indices.push_back(triangle_indices[0]);
-                    indices.push_back(triangle_indices[1]);
-                    indices.push_back(triangle_indices[2]);
+                    // add the generated triangles to the index buffer, checking
+                    // for degenerate triangles (i.e. where two or more vertices
+                    // are the same)
+                    if (triangle_indices[1] == triangle_indices[2])
+                    {
+                        degenerate_triangles = degenerate_triangles + 2;
+                        continue;
+                    }
+
+                    if (triangle_indices[0] == triangle_indices[1]
+                        || triangle_indices[0] == triangle_indices[2])
+                        ++degenerate_triangles;
+                    else
+                    {
+                        indices.push_back(triangle_indices[0]);
+                        indices.push_back(triangle_indices[1]);
+                        indices.push_back(triangle_indices[2]);
+                    }
+
                     if (two_triangles)
                     {
-                        indices.push_back(triangle_indices[3]);
-                        indices.push_back(triangle_indices[4]);
-                        indices.push_back(triangle_indices[5]);
+                        if (triangle_indices[3] == triangle_indices[1]
+                            || triangle_indices[3] == triangle_indices[2])
+                            ++degenerate_triangles;
+                        else
+                        {
+                            indices.push_back(triangle_indices[3]);
+                            indices.push_back(triangle_indices[2]);
+                            indices.push_back(triangle_indices[1]);
+                        }
                     }
                 }
             }
@@ -615,5 +662,5 @@ void MTVTBuilder::geometryPass()
 
 // TODO: different lattice structures
 // TODO: different merging techniques
-// TODO: parallelise
+// TODO: parallelise (bifurcate Z layers in vertex and geometry passes)
 // FIXME: mesh with fucked up faces?

@@ -31,6 +31,7 @@ void runBenchmark(string name, int iterations, Vector3 min, Vector3 max, float c
     cout << format("    tetrahedra:     {0}", stats.tetrahedra) << endl;
     cout << format("    vertices:       {0}", stats.vertices) << endl;
     cout << format("    indices:        {0}", stats.indices) << endl;
+    cout << format("    degenerats:     {0}", stats.degenerate_triangles) << endl;
     cout <<        "  performance:" << endl;
     cout << format("    allocation:     {0:.6f}s", stats.allocation_time / iterations) << endl;
     cout << format("    sampling:       {0:.6f}s", stats.sampling_time / iterations) << endl;
