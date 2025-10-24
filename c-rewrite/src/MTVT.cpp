@@ -660,6 +660,12 @@ void MTVTBuilder::geometryPass()
                     if (triangle_indices[0] == triangle_indices[1]
                         || triangle_indices[0] == triangle_indices[2])
                         ++degenerate_triangles;
+                    else if (triangle_indices[0] == (uint16_t)-1
+                        || triangle_indices[1] == (uint16_t)-1
+                        || triangle_indices[2] == (uint16_t)-1)
+                    {
+                        degenerate_triangles += 100;
+                    }
                     else
                     {
                         indices.push_back(triangle_indices[0]);
@@ -672,6 +678,12 @@ void MTVTBuilder::geometryPass()
                         if (triangle_indices[3] == triangle_indices[1]
                             || triangle_indices[3] == triangle_indices[2])
                             ++degenerate_triangles;
+                        else if (triangle_indices[3] == (uint16_t)-1
+                            || triangle_indices[1] == (uint16_t)-1
+                            || triangle_indices[2] == (uint16_t)-1)
+                        {
+                            degenerate_triangles += 100;
+                        }
                         else
                         {
                             indices.push_back(triangle_indices[3]);
@@ -689,6 +701,9 @@ void MTVTBuilder::geometryPass()
 // TODO: different merging techniques
 // TODO: parallelise (bifurcate Z layers in vertex and geometry passes)
 // FIXME: mesh with fucked up faces?
-//  extra faces appear when one of the indices is -1!
+//  some faces do have -1s in them
+//  extra faces appear stacked on top of valid geometry
+//  more bad faces appear when the faces with -1s are removed??
+//  no idea how the -1s are getting in, and removing them seems to completely break the mesh.
 // FIXME: duplicate tetras? why does cutting some out not make any difference, or breaks things
 //  update we are in fact generating two of every triangle, and some of them definitely have -1's
