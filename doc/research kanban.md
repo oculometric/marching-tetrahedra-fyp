@@ -9,16 +9,16 @@ kanban-plugin: board
 - [ ] [Adaptive marching cubes (1995)](https://link.springer.com/article/10.1007/BF01901516)
 - [ ] [large isosurface simplification (2016)](https://link.springer.com/article/10.1007/s12650-016-0359-5)
 - [ ] [A generalized combinatorial marching hypercube algorithm](https://doi.org/10.1007/s40314-024-02627-4)
-- [ ] [A Comprehensive Survey of Isocontouring Methods: Applications, Limitations and Perspectives](https://doi.org/10.3390/a17020083)
+- [ ] [A Comprehensive Survey of Isocontouring Methods: Applications, Limitations and Perspectives (2024)](https://doi.org/10.3390/a17020083) [[Isosurface contouring methods survey 2024.pdf]]
 - [ ] [sample lit review](https://www.researchgate.net/profile/Faizan-Hussain-2/publication/348917348_Unity_Game_Development_Engine_A_Technical_Survey/links/60167daf45851517ef2b2c0d/Unity-Game-Development-Engine-A-Technical-Survey.pdf)
 - [ ] [Tetrahedral grid refinement (1995)](https://link.springer.com/article/10.1007/BF02238487)
+- [ ] [isosurface extraction using delaunay tetrahedral grids (2025)](https://dl.acm.org/doi/abs/10.1145/3730851) [[delaunay tetrahedral grids 2025.pdf]]
 
 
 ## todo
 
 - [ ] c++/c# performance comparison
 - [ ] [Tetrahedron Splatting for 3D Generation (2024)](https://proceedings.neurips.cc/paper_files/paper/2024/hash/92ce40962b4098f7bf6eed33128fc606-Abstract-Conference.html)
-- [ ] [isosurface extraction using delaunay tetrahedral grids (2025)](https://dl.acm.org/doi/abs/10.1145/3730851)
 - [ ] [scalable mesh generation for volumetric data (2022)](https://ieeexplore.ieee.org/abstract/document/9968044)
 - [ ] [topologically accurate mesh extraction (2023)](https://www.sciencedirect.com/science/article/pii/S001044852300091X)
 - [ ] [fast marching-cubes-style volume evaluation (2022)](https://dspacemainprd01.lib.uwaterloo.ca/server/api/core/bitstreams/6487b452-e1d9-4b37-bd92-8270c4b202ea/content)

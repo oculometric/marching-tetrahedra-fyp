@@ -63,7 +63,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -209,8 +209,13 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "0467a2410ef122c9",
+  "active": "c0c54553f9d4410f",
   "lastOpenFiles": [
+    "doc/papers/delaunay tetrahedral grids 2025.pdf",
+    "doc/papers/delaunay tetrahedral grids 2025_compressed.pdf",
+    "doc/papers/Isosurface contouring methods survey 2024.pdf",
+    "doc/task board.md",
+    "doc/research kanban.md",
     "doc/sample point and edge counting.md",
     "c-rewrite/x64/Release/c-rewrite.tlog/link.read.28.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.write.1.tlog",
@@ -221,14 +226,10 @@
     "c-rewrite/x64/Release/main.obj",
     "c-rewrite/x64/Release/c-rewrite.tlog/link.read.40.tlog",
     "doc/research notes/Regularised marching tetrahedra (1999).md",
-    "doc/research kanban.md",
-    "c-rewrite/x64/Release/MTVT.obj",
-    "c-rewrite/x64/Debug/c-rewrite.tlog/link.read.2.tlog",
     "doc/research notes/miscellaneous notes.md",
     "doc/research notes/tetrahedron subdivision.png",
     "doc/research notes/deformable nerf.png",
     "doc/research notes/Marching Cubes (1987).md",
-    "doc/task board.md",
     "doc/misc shit.md",
     "doc/research notes.md",
     "doc/research notes/A new tetrahedral tessellation scheme for isosurface generation (1998).md",

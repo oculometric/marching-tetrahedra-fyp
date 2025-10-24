@@ -664,3 +664,4 @@ void MTVTBuilder::geometryPass()
 // TODO: different merging techniques
 // TODO: parallelise (bifurcate Z layers in vertex and geometry passes)
 // FIXME: mesh with fucked up faces?
+// FIXME: duplicate tetras? why does cutting some out not make any difference, or breaks things
