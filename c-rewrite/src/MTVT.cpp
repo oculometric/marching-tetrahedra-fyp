@@ -90,19 +90,17 @@ MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
 void MTVTBuilder::prepareBuffers()
 {
     // TODO: experiment with un-caching this (recomputing position each step)
-    sample_positions = new Vector3[grid_data_length];
-
     sample_values = new float[grid_data_length];
-
+    sample_positions = new Vector3[grid_data_length];
+    sample_crossing_flags = new uint16_t[grid_data_length];
     sample_edge_indices = new EdgeReferences[grid_data_length];
 }
 
 void MTVTBuilder::destroyBuffers()
 {
-    delete[] sample_positions; sample_positions = nullptr;
-
     delete[] sample_values; sample_values = nullptr;
-
+    delete[] sample_positions; sample_positions = nullptr;
+    delete[] sample_crossing_flags; sample_crossing_flags = nullptr;
     delete[] sample_edge_indices; sample_edge_indices = nullptr;
 }
 
@@ -256,7 +254,10 @@ void MTVTBuilder::vertexPass()
                         connected_indices[t] = index + index_offsets_oddz[t];
                 }
 
-                // strike out any neighbour which doesn't exist
+                // strike out any neighbour which doesn't exist. we do this
+                // on the outer faces of the sample cube as the outermost points
+                // do not have neighbours in that face's direction (i.e. these
+                // indices would be invalid)
                 if (is_min_z)
                 {
                     connected_indices[0] = -1;
@@ -331,12 +332,20 @@ void MTVTBuilder::vertexPass()
                 }
 
                 // grab useful data about ourself
-                uint16_t bits = 0;
+                uint16_t edge_proximity_flags = 0;
+                uint16_t edge_crossing_flags = 0;
                 float value = sample_values[index];
                 float thresh_diff = threshold - value;
                 float neighbour_values[14];
 
-                // perform edge flagging
+                // perform edge flagging, by going through and marking a 
+                // corresponding bit for each connected edge which
+                // intersects the isosurface (i.e. the neighbour value at
+                // the other end of the edge is on the other side of the 
+                // threshold), and the intersection is closer to us than 
+                // the neighbour. we also update a bitfield for whether
+                // the neighbour is just different, and store it, hugely
+                // speeding up geometry generation later
                 float thresh_dist = thresh_diff;
                 bool thresh_less = thresh_dist < 0.0f;
                 if (thresh_less) thresh_dist = -thresh_dist;
@@ -348,18 +357,20 @@ void MTVTBuilder::vertexPass()
                     float neighbour_dist = threshold - value_at_neighbour;
                     if (neighbour_dist < 0.0f == thresh_less)
                         continue;
+                    edge_crossing_flags |= (1 << p);
                     if (!thresh_less) neighbour_dist = -neighbour_dist;
                     if (thresh_dist > neighbour_dist)
                         continue;
 
                     neighbour_values[p] = value_at_neighbour;
-                    bits |= (1 << p);
+                    edge_proximity_flags |= (1 << p);
                 }
-
+                sample_crossing_flags[index] = edge_crossing_flags;
+                    
                 // perform vertex generation & merging
                 // TODO: actually implement merging!
                 EdgeReferences edges; for (int p = 0; p < 14; ++p) edges.references[p] = -1;
-                if (bits == 0)
+                if (edge_proximity_flags == 0)
                 {
                     // skip this entire sample point if there are no intersections at all
                     sample_edge_indices[index] = edges;
@@ -369,7 +380,7 @@ void MTVTBuilder::vertexPass()
                 Vector3 position = sample_positions[index];
                 for (int p = 0; p < 14; ++p)
                 {
-                    if (!(bits & (1 << p)))
+                    if (!(edge_proximity_flags & (1 << p)))
                         continue;
                     float value_at_neighbour = neighbour_values[p];
                     Vector3 position_at_neighbour = sample_positions[connected_indices[p]];
@@ -520,22 +531,28 @@ void MTVTBuilder::geometryPass()
             for (int xi = 0; xi < cubes_x; ++xi)
             {
                 // compute central sample point index
-                const size_t central_sample_point_index = (2ull * zi * samples_x * samples_y) + (static_cast<size_t>(yi) * samples_x) + (xi)
+                const size_t central_sample_index = (2ull * zi * samples_x * samples_y) + (static_cast<size_t>(yi) * samples_x) + (xi)
                                                          + 1 + samples_x + (2ull * samples_x * samples_y);
-                
-                // use that to compute all the sample point indices in this lattice segment
+                // fetch information about which of the neighbours are on
+                // the other side of the threshold
+                const uint16_t central_sample_crossing_flags = sample_crossing_flags[central_sample_index];
+                if (central_sample_crossing_flags == 0)
+                    continue; // HUGE SPEEDUP!! 0.03538 -> 0.00412
+                // compute all the neighbouring indices in this lattice segment
                 for (int e = 0; e < 14; ++e)
-                    connected_indices[e] = central_sample_point_index + index_offsets_evenz[e];
+                    connected_indices[e] = central_sample_index + index_offsets_evenz[e];
+
+                bool center_greater_thresh = (sample_values[central_sample_index] > threshold);
 
                 // TODO: skip out some tetrahedra depending where we are in the lattice, otherwise we'll be marching lots of tetrahedra twice over
                 // TODO: this can be accelerated by reducing this to a uint8
                 uint32_t tflags = 0;
-                if (xi > 0)
+                /*if (xi > 0)
                     tflags |= 0b1111;
                 if (yi > 0)
                     tflags |= 0b111100000000;
                 if (zi > 0)
-                    tflags |= 0b11110000000000000000;
+                    tflags |= 0b11110000000000000000;*/
 
                 // 24 tetrahedra per cube
                 // each tetrahedra has sample point indices generated from its the current cube position (xi,yi,zi)
@@ -555,22 +572,30 @@ void MTVTBuilder::geometryPass()
                     // cube face).
                     const size_t tetrahedra_sample_indices[4] =
                     {
-                        central_sample_point_index,                                   // C = center
+                        central_sample_index,                                         // C = center
                         connected_indices[(tetrahedra_sample_index_templates[t])[0]], // P = pyramid
                         connected_indices[(tetrahedra_sample_index_templates[t])[1]], // U = upper
                         connected_indices[(tetrahedra_sample_index_templates[t])[2]]  // L = lower
                     };
 
+                    // TODO: should we cache this before the per-tetrahedron loop?
+                    const bool sample_neighbours_crossing_flags[3] =
+                    {
+                        central_sample_crossing_flags & (1 << (tetrahedra_sample_index_templates[t])[0]),
+                        central_sample_crossing_flags & (1 << (tetrahedra_sample_index_templates[t])[1]),
+                        central_sample_crossing_flags & (1 << (tetrahedra_sample_index_templates[t])[2])
+                    };
+
                     // check which SPs are inside/outside and use that to build a pattern
                     // which identifies this tetrahedral configuration for geometry generation
                     const uint8_t pattern_ident =
-                        ((sample_values[tetrahedra_sample_indices[0]] > threshold) ? 1 : 0) +
-                        ((sample_values[tetrahedra_sample_indices[1]] > threshold) ? 2 : 0) +
-                        ((sample_values[tetrahedra_sample_indices[2]] > threshold) ? 4 : 0) +
-                        ((sample_values[tetrahedra_sample_indices[3]] > threshold) ? 8 : 0);
+                        (center_greater_thresh ? 1 : 0) +
+                        ((sample_neighbours_crossing_flags[0] != center_greater_thresh) ? 2 : 0) +
+                        ((sample_neighbours_crossing_flags[1] != center_greater_thresh) ? 4 : 0) +
+                        ((sample_neighbours_crossing_flags[2] != center_greater_thresh) ? 8 : 0);
                     if (pattern_ident == 0 || pattern_ident == 0b1111)
                         continue;
-                    
+
                     // collect the 12 relevant edge addresses (6 pairs, since one of each pair 
                     // will be filled). this is essentially an expansion of the template for 
                     // edge addresses for this tetrahedron (t).
@@ -664,4 +689,6 @@ void MTVTBuilder::geometryPass()
 // TODO: different merging techniques
 // TODO: parallelise (bifurcate Z layers in vertex and geometry passes)
 // FIXME: mesh with fucked up faces?
+//  extra faces appear when one of the indices is -1!
 // FIXME: duplicate tetras? why does cutting some out not make any difference, or breaks things
+//  update we are in fact generating two of every triangle, and some of them definitely have -1's
