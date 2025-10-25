@@ -11,3 +11,20 @@ mentions that the interconnectivity of lattices lend poorly to parallelisation (
 # Isosurface stuffing: fast tetrahedral meshes with good dihedral angles
 link - https://dl.acm.org/doi/10.1145/1275808.1276448
 guarantees dihedral angles of between 10.78 and 164.74 degrees. algorithms which smooth off edges are significantly faster. notes that these algorithms are rarely framerate-capable. algorithm uses octrees and BCDL as a background grid for applying a stencil (just like MC). "it only took us two days to implement" okay nerd. should take another look at this one, it seems like it could have more insights.
+
+## Isosurface Extraction using On-The-Fly Delaunay Tetrahedral Grids for Gradient-Based Mesh Optimisation
+link - https://dl.acm.org/doi/abs/10.1145/3730851
+works by creating a cloud of sample points, each carrying a signed distance field. these points are then joined into a collection of tetrahedra using delaunay triangulation. then the geometry is built from points computed on the edges of each tetrahedron, like any other MT.
+impressively efficient memory usage, grid adapts to the geometry for best results and efficiency.
+guarantees **water-tightness and lack of overlaps**. this is something to talk about!
+introduces directional signed distance, described with spherical harmonics. uses a 'fairness' metric to minimise bad triangles.
+**specifically intended for gradient-based mesh processing, not generic fixed scalar fields**
+big applications in 3D reconstruction.
+should talk about how perfect sharp-point and topology preservation are not important concerns for my algorithm/problem space.
+
+## A Comprehensive Survey of Isocontouring Methods: Applications, Limitations and Perspectives
+link - https://doi.org/10.3390/a17020083
+different algorithms may be better adapted for the structure of the input data. main applications are geoegraphic modelling, weather mapping, medical imaging, and computer graphics.
+marching cubes, dual marching cubes, marching tetrahedra, regularised marching tetrahedra, multi-regional marching tetrahedra, surface nets, ray tracing, RT with kd-trees or octrees.
+
+**is there a way more efficient way to store stuff in C++? if the cube centers were separated into their own array, and edges were stored per-cube?.... should we doing per-tetrahedron right from the start?**

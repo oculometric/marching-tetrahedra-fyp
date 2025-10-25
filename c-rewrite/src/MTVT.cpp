@@ -536,6 +536,8 @@ void MTVTBuilder::geometryPass()
                 // fetch information about which of the neighbours are on
                 // the other side of the threshold
                 const uint16_t central_sample_crossing_flags = sample_crossing_flags[central_sample_index];
+                // FIXME: this means we can't skip tetrahedra later!
+                // -> store a flag for computed cubes as to whether that cube was skipped or not, then read it later
                 if (central_sample_crossing_flags == 0)
                     continue; // HUGE SPEEDUP!! 0.03538 -> 0.00412
                 // compute all the neighbouring indices in this lattice segment
@@ -547,9 +549,9 @@ void MTVTBuilder::geometryPass()
                 // TODO: skip out some tetrahedra depending where we are in the lattice, otherwise we'll be marching lots of tetrahedra twice over
                 // TODO: this can be accelerated by reducing this to a uint8
                 uint32_t tflags = 0;
-                /*if (xi > 0)
-                    tflags |= 0b1111;
-                if (yi > 0)
+                //if (xi > 0)
+                //    tflags |= 0b11110000;
+                /*if (yi > 0)
                     tflags |= 0b111100000000;
                 if (zi > 0)
                     tflags |= 0b11110000000000000000;*/
