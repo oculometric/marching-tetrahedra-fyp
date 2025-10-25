@@ -4,6 +4,11 @@
 
 using namespace std;
 
+static inline size_t computeCubicFunction(size_t x, size_t y, size_t z, size_t a, size_t b, size_t c, size_t d)
+{
+    return (a * x * y * z) + (b * ((x * y) + (x * z) + (y * z))) + (c * (x + y + z)) + d;
+}
+
 MTVTBuilder::MTVTBuilder()
 {
 	configure({ -1, -1, -1 }, { 1, 1, 1 }, 0.1f, [](Vector3 v) -> float { return mag(v); }, 1.0f);
@@ -63,26 +68,24 @@ MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
     geometryPass();
     float geometry = ((chrono::duration<float>)(chrono::high_resolution_clock::now() - geometry_start)).count();
 
-    stats.cubes_x = cubes_x;
-    stats.cubes_y = cubes_y;
-    stats.cubes_z = cubes_z;
-    stats.allocation_time += allocation;
-    stats.sampling_time += sampling;
-    stats.vertex_time += vertex;
-    stats.geometry_time += geometry;
-    stats.sample_points_allocated = grid_data_length;
-    stats.edges_allocated = grid_data_length * 14;
-    stats.min_sample_points = (2 * stats.cubes_x * stats.cubes_y * stats.cubes_z)
-                                + (3 * stats.cubes_x * stats.cubes_y) + (3 * stats.cubes_y * stats.cubes_z) + (3 * stats.cubes_x * stats.cubes_z)
-                                + stats.cubes_x + stats.cubes_y + stats.cubes_z
-                                + 1;
-    stats.min_edges         = (14 * stats.cubes_x * stats.cubes_y * stats.cubes_z)
-                                + (11 * stats.cubes_x * stats.cubes_y) + (11 * stats.cubes_y * stats.cubes_z) + (11 * stats.cubes_x * stats.cubes_z)
-                                + stats.cubes_x + stats.cubes_y + stats.cubes_z;
-    stats.vertices = vertices.size();
-    stats.indices = indices.size();
-    stats.degenerate_triangles = degenerate_triangles;
-    stats.tetrahedra = tetrahedra_evaluated;
+    stats.allocation_time          += allocation;
+    stats.sampling_time            += sampling;
+    stats.vertex_time              += vertex;
+    stats.geometry_time            += geometry;
+    stats.sample_points_allocated   = grid_data_length;
+    stats.min_sample_points         = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 2, 3, 1, 1);
+    stats.mem_sample_points         = (sizeof(float) + sizeof(Vector3)) * grid_data_length;
+    stats.edges_allocated           = grid_data_length * 14;
+    stats.min_edges                 = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 14, 11, 1, 0);
+    stats.mem_edges                 = (sizeof(uint16_t) + sizeof(EdgeReferences)) * grid_data_length;
+    stats.tetrahedra_evaluated      = tetrahedra_evaluated;
+    stats.max_tetrahedra            = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 12, 4, 0, 0);
+    stats.vertices                  = vertices.size();
+    stats.indices                   = indices.size();
+    stats.cubes_x                   = cubes_x;
+    stats.cubes_y                   = cubes_y;
+    stats.cubes_z                   = cubes_z;
+    stats.degenerate_triangles      = degenerate_triangles;
 
     destroyBuffers();
 

@@ -124,10 +124,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\fbm.h" />
     <ClInclude Include="src\MTVT.h" />
     <ClInclude Include="src\Vector3.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\fbm.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MTVT.cpp" />
   </ItemGroup>

@@ -20,9 +20,12 @@ struct MTVTDebugStats
     double geometry_time = 0;
     size_t sample_points_allocated = 0;
     size_t min_sample_points = 0;
+    size_t mem_sample_points = 0;
     size_t edges_allocated = 0;
     size_t min_edges = 0;
-    size_t tetrahedra = 0;
+    size_t mem_edges = 0;
+    size_t tetrahedra_evaluated = 0;
+    size_t max_tetrahedra = 0;
     size_t vertices = 0;
     size_t indices = 0;
     size_t cubes_x = 0;

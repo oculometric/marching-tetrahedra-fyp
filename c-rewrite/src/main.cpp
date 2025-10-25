@@ -4,8 +4,21 @@
 #include <fstream>
 
 #include "MTVT.h"
+#include "fbm.h"
 
 using namespace std;
+
+static string memorySize(size_t bytes)
+{
+    if (bytes >= 2048ull * 1024 * 1024)
+        return format("{0:.1f} GiB", (float)bytes / (1024ull * 1024 * 1024));
+    else if (bytes >= 2048ull * 1024)
+        return format("{0:.1f} MiB", (float)bytes / (1024ull * 1024));
+    else if (bytes >= 2048ull)
+        return format("{0:.1f} KiB", (float)bytes / 1024);
+    else
+        return format("{0} B", bytes);
+}
 
 void runBenchmark(string name, int iterations, Vector3 min, Vector3 max, float cube_size, float (*sampler)(Vector3), float threshold)
 {
@@ -21,6 +34,8 @@ void runBenchmark(string name, int iterations, Vector3 min, Vector3 max, float c
         mesh = builder.generate(stats);
     }
 
+    float total_time = stats.allocation_time + stats.sampling_time + stats.vertex_time + stats.geometry_time;
+
     cout << '\b';
     cout <<        "-- summary -----------------------------" << endl;
     cout << format("  {0} test ({1} iterations)", name, iterations) << endl;
@@ -28,15 +43,19 @@ void runBenchmark(string name, int iterations, Vector3 min, Vector3 max, float c
     cout <<        "  results:" << endl;
     cout << format("    sample points:  {0} ({1} allocated)", stats.min_sample_points, stats.sample_points_allocated) << endl;
     cout << format("    edges:          {0} ({1} allocated)", stats.min_edges, stats.edges_allocated) << endl;
-    cout << format("    tetrahedra:     {0}", stats.tetrahedra) << endl;
+    cout << format("    tetrahedra:     {0} ({1} evaluated)", stats.max_tetrahedra, stats.tetrahedra_evaluated) << endl;
     cout << format("    vertices:       {0}", stats.vertices) << endl;
     cout << format("    indices:        {0}", stats.indices) << endl;
     cout << format("    degenerates:    {0}", stats.degenerate_triangles) << endl;
-    cout << format("  performance:      {0:.6f}s", (stats.allocation_time + stats.sampling_time + stats.vertex_time + stats.geometry_time) / iterations) << endl;
-    cout << format("    allocation:     {0:.6f}s", stats.allocation_time / iterations) << endl;
-    cout << format("    sampling:       {0:.6f}s", stats.sampling_time / iterations) << endl;
-    cout << format("    vertex:         {0:.6f}s", stats.vertex_time / iterations) << endl;
-    cout << format("    geometry:       {0:.6f}s", stats.geometry_time / iterations) << endl;
+    cout << format("  timing:           {0:.6f}s total", total_time / iterations) << endl;
+    cout << format("    allocation:     {0:.6f}s ({1:5f}% of total)", stats.allocation_time / iterations, (stats.allocation_time / total_time) * 100.0f) << endl;
+    cout << format("    sampling:       {0:.6f}s ({1:5f}% of total)", stats.sampling_time / iterations, (stats.sampling_time / total_time) * 100.0f) << endl;
+    cout << format("    vertex:         {0:.6f}s ({1:5f}% of total)", stats.vertex_time / iterations, (stats.vertex_time / total_time) * 100.0f) << endl;
+    cout << format("    geometry:       {0:.6f}s ({1:5f}% of total)", stats.geometry_time / iterations, (stats.geometry_time / total_time) * 100.0f) << endl;
+    cout <<        "  efficiency (lower number better):" << endl;
+    cout << format("    SP allocation:  {0:6f}% ({1})", ((float)stats.sample_points_allocated / stats.min_sample_points) * 100.0f, memorySize(stats.mem_sample_points)) << endl;
+    cout << format("    E allocation:   {0:6f}% ({1})", ((float)stats.edges_allocated / stats.min_edges) * 100.0f, memorySize(stats.mem_edges)) << endl;
+    cout << format("    T evaluation:   {0:6f}%", ((float)stats.tetrahedra_evaluated / stats.max_tetrahedra) * 100.0f) << endl;
     cout <<        "----------------------------------------" << endl << endl;
 
     ofstream file(name + ".obj");
@@ -51,12 +70,20 @@ void runBenchmark(string name, int iterations, Vector3 min, Vector3 max, float c
     file.close();
 }
 
+
 float sphereFunc(Vector3 v)
 {
     return mag(v);
 }
 
+float fbmFunc(Vector3 v)
+{
+    return fbm(v, 2, 2.0f, 0.5f);
+}
+
 int main()
 {
     runBenchmark("sphere", 100, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f);
+    // FIXME: fbm benchmark completely broken, possibly due to geometry on the edges of the sample volume (need to introduce handling and add back in the -1 checks for debugging, also are we going out of bounds??)
+    //runBenchmark("fbm", 20, { -2, -2, -2 }, { 2, 2, 2 }, 0.1f, fbmFunc, 1.0f);
 }
