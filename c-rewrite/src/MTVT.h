@@ -76,6 +76,7 @@ private:
     std::vector<Vector3> vertices;
     std::vector<uint16_t> indices;
     size_t degenerate_triangles;
+    size_t tetrahedra_evaluated;
 
 public:
     MTVTBuilder();

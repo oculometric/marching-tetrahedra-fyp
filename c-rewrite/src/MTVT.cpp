@@ -45,6 +45,7 @@ MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
 
     auto allocation_start = chrono::high_resolution_clock::now();
     degenerate_triangles = 0;
+    tetrahedra_evaluated = 0;
     prepareBuffers();
     vertices.clear(); // TODO: test size reservation for speed
     indices.clear();
@@ -81,6 +82,7 @@ MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
     stats.vertices = vertices.size();
     stats.indices = indices.size();
     stats.degenerate_triangles = degenerate_triangles;
+    stats.tetrahedra = tetrahedra_evaluated;
 
     destroyBuffers();
 
@@ -203,6 +205,8 @@ void MTVTBuilder::vertexPass()
     // our position in the array, saves recomputing this all the time
     size_t index = 0;
     size_t connected_indices[14] = { 0 };
+    EdgeReferences edges;
+    EdgeReferences edges_template; for (int p = 0; p < 14; ++p) edges_template.references[p] = -1;
 
     bool is_odd_z = true;
     for (int zi = 0; zi < samples_z; ++zi)
@@ -349,7 +353,8 @@ void MTVTBuilder::vertexPass()
                 float thresh_dist = thresh_diff;
                 bool thresh_less = thresh_dist < 0.0f;
                 if (thresh_less) thresh_dist = -thresh_dist;
-                for (int p = 0; p < 14; ++p)
+                uint16_t mask = 1;
+                for (int p = 0; p < 14; ++p, mask <<= 1)
                 {
                     if (connected_indices[p] == (size_t)-1)
                         continue;
@@ -357,19 +362,18 @@ void MTVTBuilder::vertexPass()
                     float neighbour_dist = threshold - value_at_neighbour;
                     if (neighbour_dist < 0.0f == thresh_less)
                         continue;
-                    edge_crossing_flags |= (1 << p);
-                    if (!thresh_less) neighbour_dist = -neighbour_dist;
-                    if (thresh_dist > neighbour_dist)
+                    edge_crossing_flags |= mask;
+                    if (thresh_dist > (thresh_less ? neighbour_dist : -neighbour_dist))
                         continue;
 
                     neighbour_values[p] = value_at_neighbour;
-                    edge_proximity_flags |= (1 << p);
+                    edge_proximity_flags |= mask;
                 }
                 sample_crossing_flags[index] = edge_crossing_flags;
                     
                 // perform vertex generation & merging
                 // TODO: actually implement merging!
-                EdgeReferences edges; for (int p = 0; p < 14; ++p) edges.references[p] = -1;
+                memcpy(&edges, &edges_template, sizeof(EdgeReferences));
                 if (edge_proximity_flags == 0)
                 {
                     // skip this entire sample point if there are no intersections at all
@@ -378,9 +382,10 @@ void MTVTBuilder::vertexPass()
                     continue;
                 }
                 Vector3 position = sample_positions[index];
-                for (int p = 0; p < 14; ++p)
+                mask = 1;
+                for (int p = 0; p < 14; ++p, mask <<= 1)
                 {
-                    if (!(edge_proximity_flags & (1 << p)))
+                    if (!(edge_proximity_flags & mask))
                         continue;
                     float value_at_neighbour = neighbour_values[p];
                     Vector3 position_at_neighbour = sample_positions[connected_indices[p]];
@@ -494,25 +499,24 @@ static constexpr uint8_t tetrahedra_edge_address_templates[24][6] =
 // these sequences combine the per-edge vertex references into triangles.
 // the last values may be -1 (aka 255) if there is only one triangle
 // TODO: can we cut this in half?
-// TODO: can we reduce the size of double-triangle entries to only 4 indices?
-static constexpr uint8_t tetrahedral_edge_address_patterns[16][6] =
+static constexpr uint8_t tetrahedral_edge_address_patterns[16][4] =
 {
-    { -1, -1, -1, -1, -1, -1 },                 // no bits set
-    {  0,  1,  2, -1, -1, -1 },                 // 0b0001
-    {  0,  4,  3, -1, -1, -1 },                 // 0b0010
-    {  2,  4,  1,  3,  1,  4 },                 // 0b0011
-    {  3,  5,  1, -1, -1, -1 },                 // 0b0100
-    {  5,  2,  3,  0,  3,  2 },                 // 0b0101
-    {  0,  4,  1,  5,  1,  4 },                 // 0b0110
-    {  5,  2,  4, -1, -1, -1 },                 // 0b0111
-    {  5,  4,  2, -1, -1, -1 },                 // 0b1000
-    {  5,  4,  1,  0,  1,  4 },                 // 0b1001
-    {  0,  2,  3,  5,  3,  2 },                 // 0b1010
-    {  1,  5,  3, -1, -1, -1 },                 // 0b1011
-    {  4,  2,  3,  1,  3,  2 },                 // 0b1100
-    {  0,  3,  4, -1, -1, -1 },                 // 0b1101
-    {  1,  0,  2, -1, -1, -1 },                 // 0b1110
-    { -1, -1, -1, -1, -1, -1 },                 // all bits set
+    { -1, -1, -1, -1 }, // no bits set
+    {  0,  1,  2, -1 }, // 0b0001
+    {  0,  4,  3, -1 }, // 0b0010
+    {  2,  4,  1,  3 }, // 0b0011
+    {  3,  5,  1, -1 }, // 0b0100
+    {  5,  2,  3,  0 }, // 0b0101
+    {  0,  4,  1,  5 }, // 0b0110
+    {  5,  2,  4, -1 }, // 0b0111
+    {  5,  4,  2, -1 }, // 0b1000
+    {  5,  4,  1,  0 }, // 0b1001
+    {  0,  2,  3,  5 }, // 0b1010
+    {  1,  5,  3, -1 }, // 0b1011
+    {  4,  2,  3,  1 }, // 0b1100
+    {  0,  3,  4, -1 }, // 0b1101
+    {  1,  0,  2, -1 }, // 0b1110
+    { -1, -1, -1, -1 }, // all bits set
 };
 
 // this macro simply turns an edge address into the edge address pointing in the 
@@ -562,6 +566,8 @@ void MTVTBuilder::geometryPass()
                 {
                     if (tflags & (1 << t))
                         continue;
+
+                    tetrahedra_evaluated++;
                     
                     // collect the four sample point indices involved with this tetrahedron,
                     // specific to this orientation of tetrahedron (i.e. the first 4 are on
