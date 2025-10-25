@@ -458,7 +458,7 @@ static constexpr uint8_t tetrahedra_edge_address_templates[24][6] =
 {
     // +x side
     { PX, PXNYPZ, PXNYNZ, NXNYPZ, NXNYNZ, NZ },
-    { PX, PXNYNZ, PXPYNZ, NXNYNZ, PXNYNZ, PY },
+    { PX, PXNYNZ, PXPYNZ, NXNYNZ, NXPYNZ, PY },
     { PX, PXPYNZ, PXPYPZ, NXPYNZ, NXPYPZ, PZ },
     { PX, PXPYPZ, PXNYPZ, NXPYPZ, NXNYPZ, NY },
     // -x side
@@ -536,8 +536,7 @@ void MTVTBuilder::geometryPass()
                 // fetch information about which of the neighbours are on
                 // the other side of the threshold
                 const uint16_t central_sample_crossing_flags = sample_crossing_flags[central_sample_index];
-                // FIXME: this means we can't skip tetrahedra later!
-                // -> store a flag for computed cubes as to whether that cube was skipped or not, then read it later
+                // if the entire cube has no crossings, we can just skip it!
                 if (central_sample_crossing_flags == 0)
                     continue; // HUGE SPEEDUP!! 0.03538 -> 0.00412
                 // compute all the neighbouring indices in this lattice segment
@@ -546,15 +545,16 @@ void MTVTBuilder::geometryPass()
 
                 bool center_greater_thresh = (sample_values[central_sample_index] > threshold);
 
-                // TODO: skip out some tetrahedra depending where we are in the lattice, otherwise we'll be marching lots of tetrahedra twice over
+                // skip out some tetrahedra depending where we are in the lattice,
+                // otherwise we'll be marching lots of tetrahedra twice over
                 // TODO: this can be accelerated by reducing this to a uint8
                 uint32_t tflags = 0;
-                //if (xi > 0)
-                //    tflags |= 0b11110000;
-                /*if (yi > 0)
-                    tflags |= 0b111100000000;
+                if (xi > 0)
+                    tflags |= 0b000000000000000011110000;
+                if (yi > 0)
+                    tflags |= 0b000000001111000000000000;
                 if (zi > 0)
-                    tflags |= 0b11110000000000000000;*/
+                    tflags |= 0b111100000000000000000000;
 
                 // 24 tetrahedra per cube
                 // each tetrahedra has sample point indices generated from its the current cube position (xi,yi,zi)
@@ -562,7 +562,7 @@ void MTVTBuilder::geometryPass()
                 {
                     if (tflags & (1 << t))
                         continue;
-
+                    
                     // collect the four sample point indices involved with this tetrahedron,
                     // specific to this orientation of tetrahedron (i.e. the first 4 are on
                     // the +x side of the cube, etc)
@@ -648,8 +648,6 @@ void MTVTBuilder::geometryPass()
                         triangle_indices[i] = vertex_ref;
                     }
 
-                    // TODO: check for -1's (which shouldn't be possible)
-
                     // add the generated triangles to the index buffer, checking
                     // for degenerate triangles (i.e. where two or more vertices
                     // are the same)
@@ -662,12 +660,6 @@ void MTVTBuilder::geometryPass()
                     if (triangle_indices[0] == triangle_indices[1]
                         || triangle_indices[0] == triangle_indices[2])
                         ++degenerate_triangles;
-                    else if (triangle_indices[0] == (uint16_t)-1
-                        || triangle_indices[1] == (uint16_t)-1
-                        || triangle_indices[2] == (uint16_t)-1)
-                    {
-                        degenerate_triangles += 100;
-                    }
                     else
                     {
                         indices.push_back(triangle_indices[0]);
@@ -680,12 +672,6 @@ void MTVTBuilder::geometryPass()
                         if (triangle_indices[3] == triangle_indices[1]
                             || triangle_indices[3] == triangle_indices[2])
                             ++degenerate_triangles;
-                        else if (triangle_indices[3] == (uint16_t)-1
-                            || triangle_indices[1] == (uint16_t)-1
-                            || triangle_indices[2] == (uint16_t)-1)
-                        {
-                            degenerate_triangles += 100;
-                        }
                         else
                         {
                             indices.push_back(triangle_indices[3]);
@@ -702,10 +688,3 @@ void MTVTBuilder::geometryPass()
 // TODO: different lattice structures
 // TODO: different merging techniques
 // TODO: parallelise (bifurcate Z layers in vertex and geometry passes)
-// FIXME: mesh with fucked up faces?
-//  some faces do have -1s in them
-//  extra faces appear stacked on top of valid geometry
-//  more bad faces appear when the faces with -1s are removed??
-//  no idea how the -1s are getting in, and removing them seems to completely break the mesh.
-// FIXME: duplicate tetras? why does cutting some out not make any difference, or breaks things
-//  update we are in fact generating two of every triangle, and some of them definitely have -1's
