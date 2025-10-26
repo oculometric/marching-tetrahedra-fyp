@@ -71,6 +71,7 @@ private:
 
     int index_offsets_evenz[14];
     int index_offsets_oddz[14];
+    Vector3 vector_offsets[14];
 
     float* sample_values = nullptr;
     Vector3* sample_positions = nullptr;

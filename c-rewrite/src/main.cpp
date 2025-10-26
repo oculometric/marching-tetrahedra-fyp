@@ -78,12 +78,13 @@ float sphereFunc(Vector3 v)
 
 float fbmFunc(Vector3 v)
 {
-    return fbm(v, 2, 2.0f, 0.5f);
+    return fbm_noise({ v.x / 4.0f, v.y / 4.0f, 0.0f });
 }
 
 int main()
 {
     runBenchmark("sphere", 100, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f);
     // FIXME: fbm benchmark completely broken, possibly due to geometry on the edges of the sample volume (need to introduce handling and add back in the -1 checks for debugging, also are we going out of bounds??)
-    //runBenchmark("fbm", 20, { -2, -2, -2 }, { 2, 2, 2 }, 0.1f, fbmFunc, 1.0f);
+    //runBenchmark("fbm", 2, { -1, -1, -1 }, { 1, 1, 1 }, 0.05f, fbmFunc, 0.0f);
+    //runBenchmark("divider", 10, { -5, -5, -5 }, { 5, 5, 5 }, 1.0f, [](Vector3 v) { return v.x * v.y; }, 1.0f);
 }

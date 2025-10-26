@@ -20,7 +20,7 @@ float fbm_noise(Vector3 coord)
     float blf = fbm_random(flr + Vector3{ 0, 1, 1 });
     float brf = fbm_random(flr + Vector3{ 1, 1, 1 });
 
-    Vector3 m = frc * frc * (Vector3{ 3.0f, 3.0f, 3.0f } - (Vector3{ 2.0f, 2.0f, 2.0f } *frc));
+    Vector3 m = frc * frc * (Vector3{ 3.0f, 3.0f, 3.0f } - (Vector3{ 2.0f, 2.0f, 2.0f } * frc));
 
     float result =
         lerp(
