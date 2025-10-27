@@ -25,7 +25,7 @@ void Builder::configure(Vector3 minimum_extent, Vector3 maximum_extent, float cu
 {
     sampler = sample_func;
     threshold = threshold_value;
-    resolution = abs(cube_size);
+    resolution = ::abs(cube_size);
     min_extent = min(minimum_extent, maximum_extent);
     max_extent = max(minimum_extent, maximum_extent);
     size = max_extent - min_extent;
@@ -621,7 +621,6 @@ void Builder::geometryPass()
 
                 // skip out some tetrahedra depending where we are in the lattice,
                 // otherwise we'll be marching lots of tetrahedra twice over
-                // TODO: this can be accelerated by reducing this to a uint8
                 uint32_t tflags = 0;
                 if (xi > 0)
                     tflags |= 0b000000000000000011110000;

@@ -41,13 +41,13 @@ inline Vector3 operator%(const Vector3& a, const Vector3& b) { return Vector3{ (
 inline float sq_mag(const Vector3& a) { return a ^ a; }
 inline float mag(const Vector3& a) { return sqrt(sq_mag(a)); }
 inline Vector3 norm(const Vector3& a) { return a / mag(a); }
-inline Vector3 abs(const Vector3& a) { return Vector3{ abs(a.x), fabs(a.y), fabs(a.z) }; }
+inline Vector3 abs(const Vector3& a) { return Vector3{ fabs(a.x), fabs(a.y), fabs(a.z) }; }
 inline Vector3 min(const Vector3& a, const Vector3& b) { return Vector3{ std::min(a.x, b.x), std::min(a.y, b.y), std::min(a.z, b.z) }; }
 inline Vector3 max(const Vector3& a, const Vector3& b) { return Vector3{ std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z) }; }
 inline Vector3 lerp(const Vector3& a, const Vector3& b, const float f) { return a + ((b - a) * f); }
-inline Vector3 floor(const Vector3& a) { return Vector3{ floor(a.x), floor(a.y), floor(a.z) }; }
-inline Vector3 ceil(const Vector3& a) { return Vector3{ ceil(a.x), ceil(a.y), ceil(a.z) }; }
-inline Vector3 fract(const Vector3& a) { return Vector3{ a.x - floor(a.x), a.y - floor(a.y), a.z - floor(a.z) }; }
+inline Vector3 floor(const Vector3& a) { return Vector3{ ::floor(a.x), ::floor(a.y), ::floor(a.z)}; }
+inline Vector3 ceil(const Vector3& a) { return Vector3{ ::ceil(a.x), ::ceil(a.y), ::ceil(a.z) }; }
+inline Vector3 fract(const Vector3& a) { return Vector3{ a.x - ::floor(a.x), a.y - ::floor(a.y), a.z - ::floor(a.z) }; }
 inline float lerp(const float a, const float b, const float x) { return a + ((b - a) * x); }
 
 }

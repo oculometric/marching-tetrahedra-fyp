@@ -84,9 +84,9 @@ float fbmFunc(Vector3 v)
 
 int main()
 {
-    //runBenchmark("sphere", 100, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f);
-    runBenchmark("fbm", 1, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f);
-    runBenchmark("bump", 1, { -4, -4, -4 }, { 4, 4, 4 }, 0.08f, [](Vector3 v) { return (1.0f / ((v.x * v.x) + (v.y * v.y) + 1)) - v.z; }, 0.0f);
+    runBenchmark("sphere", 100, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f);
+    //runBenchmark("fbm", 1, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f);
+    //runBenchmark("bump", 1, { -4, -4, -4 }, { 4, 4, 4 }, 0.08f, [](Vector3 v) { return (1.0f / ((v.x * v.x) + (v.y * v.y) + 1)) - v.z; }, 0.0f);
 }
 
 // FIXME: hitting 16 bit integer limit with high vertex count. add limits to check for this (and large cube count)
