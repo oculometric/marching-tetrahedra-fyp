@@ -3,6 +3,7 @@
 #include <chrono>
 #include <fstream>
 #include <format>
+#include <thread>
 
 #define VERTEX_NULL (VertexRef)-1
 #define INDEX_NULL (size_t)-1
@@ -18,7 +19,7 @@ static inline size_t computeCubicFunction(size_t x, size_t y, size_t z, size_t a
 Builder::Builder()
 {
 	configure({ -1, -1, -1 }, { 1, 1, 1 }, 1.0f, [](Vector3 v) -> float { return mag(v); }, 1.0f);
-	configureModes(LatticeType::BODY_CENTERED_DIAMOND, ClusteringMode::NONE);
+	configureModes(LatticeType::BODY_CENTERED_DIAMOND, ClusteringMode::NONE, 1);
 }
 
 void Builder::configure(Vector3 minimum_extent, Vector3 maximum_extent, float cube_size, float(*sample_func)(Vector3), float threshold_value)
@@ -59,10 +60,11 @@ void Builder::configure(Vector3 minimum_extent, Vector3 maximum_extent, float cu
     populateIndexOffsets();
 }
 
-void Builder::configureModes(LatticeType lattice_type, ClusteringMode clustering_mode)
+void Builder::configureModes(LatticeType lattice_type, ClusteringMode clustering_mode, size_t parallel_threads)
 {
     structure = lattice_type;
     clustering = clustering_mode;
+    thread_count = ::max((size_t)1, parallel_threads);
 }
 
 Mesh Builder::generate(DebugStats& stats)
@@ -237,14 +239,26 @@ void Builder::populateIndexOffsets()
 
 void Builder::samplingPass()
 {
+    int layers_each = samples_z / thread_count;
+    int remainder = samples_z - (layers_each * thread_count);
+    vector<thread*> threads;
+    for (size_t i = 0; i < thread_count - 1; ++i)
+        threads.push_back(new thread(&Builder::samplingLayer, this, layers_each * i, layers_each));
+    samplingLayer(layers_each * (thread_count - 1), layers_each + remainder);
+    for (thread* t : threads)
+        t->join();
+}
+
+void MTVT::Builder::samplingLayer(const int start, const int layers)
+{
     // sampling pass - compute the values at all of the sample points
-    float step = resolution / 2.0f;
+    const float step = resolution / 2.0f;
 
     // our position in the array, saves recomputing this all the time
-    Index index = 0;
+    Index index = static_cast<Index>(start) * samples_x * samples_y;
     // current sample point position
-    Vector3 position = Vector3{ 0, 0, min_extent.z - step };
-    for (int zi = 0; zi < samples_z; ++zi)
+    Vector3 position = Vector3{ 0, 0, (min_extent.z - step) + (static_cast<Index>(start) * step) };
+    for (int zi = start; zi < layers + start; ++zi)
     {
         // reset the Y position according to whether this is a key row (zi % 2 = 1)
         // or an off row (zi % 2 = 0). this creates the diamond pattern
@@ -261,7 +275,7 @@ void Builder::samplingPass()
                 sample_positions[index] = position;
 #endif
                 position.x += resolution;
-                index++;
+                ++index;
             }
             position.y += resolution;
         }

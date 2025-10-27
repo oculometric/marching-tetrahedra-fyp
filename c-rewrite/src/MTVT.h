@@ -73,6 +73,7 @@ private:
     int cubes_x, cubes_y, cubes_z;
     int samples_x, samples_y, samples_z;
     float resolution;
+    size_t thread_count;
     size_t grid_data_length;
 
     LatticeType structure;
@@ -97,7 +98,7 @@ public:
     Builder();
 
     void configure(Vector3 minimum_extent, Vector3 maximum_extent, float cube_size, float (*sample_func)(Vector3), float threshold_value);
-    void configureModes(LatticeType lattice_type, ClusteringMode clustering_mode);
+    void configureModes(LatticeType lattice_type, ClusteringMode clustering_mode, size_t parallel_threads);
     Mesh generate(DebugStats& stats);
 
 private:
@@ -105,6 +106,7 @@ private:
     void destroyBuffers();
     void populateIndexOffsets();
     void samplingPass();
+    void samplingLayer(const int start, const int layers);
     void vertexPass();
     void geometryPass();
 };
