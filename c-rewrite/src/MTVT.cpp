@@ -78,6 +78,9 @@ MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
     stats.vertex_time              += vertex;
     stats.geometry_time            += geometry;
     stats.sample_points_allocated   = grid_data_length;
+    stats.cubes_x = cubes_x;
+    stats.cubes_y = cubes_y;
+    stats.cubes_z = cubes_z;
     stats.min_sample_points         = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 2, 3, 1, 1);
     stats.mem_sample_points         = sizeof(float) * grid_data_length;
 #if defined DEBUG_GRID
@@ -90,9 +93,6 @@ MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
     stats.max_tetrahedra            = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 12, 4, 0, 0);
     stats.vertices                  = vertices.size();
     stats.indices                   = indices.size();
-    stats.cubes_x                   = cubes_x;
-    stats.cubes_y                   = cubes_y;
-    stats.cubes_z                   = cubes_z;
     stats.degenerate_triangles      = degenerate_triangles;
 
     // DEBUG ZONE
