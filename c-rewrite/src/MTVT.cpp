@@ -17,21 +17,33 @@ static inline size_t computeCubicFunction(size_t x, size_t y, size_t z, size_t a
 
 Builder::Builder()
 {
-	configure({ -1, -1, -1 }, { 1, 1, 1 }, 0.1f, [](Vector3 v) -> float { return mag(v); }, 1.0f);
+	configure({ -1, -1, -1 }, { 1, 1, 1 }, 1.0f, [](Vector3 v) -> float { return mag(v); }, 1.0f);
 	configureModes(LatticeType::BODY_CENTERED_DIAMOND, ClusteringMode::NONE);
 }
 
 void Builder::configure(Vector3 minimum_extent, Vector3 maximum_extent, float cube_size, float(*sample_func)(Vector3), float threshold_value)
 {
+    if (cube_size <= 0.0f)
+        throw exception("mesh builder: invalid cube size");
+
     sampler = sample_func;
     threshold = threshold_value;
     resolution = ::abs(cube_size);
     min_extent = min(minimum_extent, maximum_extent);
     max_extent = max(minimum_extent, maximum_extent);
     size = max_extent - min_extent;
-    cubes_x = (int)ceilf(size.x / resolution);
-    cubes_y = (int)ceilf(size.y / resolution);
-    cubes_z = (int)ceilf(size.z / resolution);
+    float tmp = ceilf(size.x / resolution);
+    if (tmp >= INT_MAX - 2) throw exception("mesh builder: sample volume X size too big");
+    if (tmp < 1) throw exception("mesh builder: sample volume X size too small");
+    cubes_x = (int)tmp;
+    tmp = ceilf(size.y / resolution);
+    if (tmp >= INT_MAX - 2) throw exception("mesh builder: sample volume Y size too big");
+    if (tmp < 1) throw exception("mesh builder: sample volume X size too small");
+    cubes_y = (int)tmp;
+    tmp = ceilf(size.z / resolution);
+    if (tmp >= (INT_MAX / 2) - 3) throw exception("mesh builder: sample volume Z size too big");
+    if (tmp < 1) throw exception("mesh builder: sample volume X size too small");
+    cubes_z = (int)tmp;
     // sample points will contain space for the entire lattice
     // this means we need space for cubes_s + 1 + cubes_s + 2 points for the BCDL
     // and every other layer in each direction is one sample shorter (and we just leave the last one blank)
@@ -39,7 +51,11 @@ void Builder::configure(Vector3 minimum_extent, Vector3 maximum_extent, float cu
     samples_y = cubes_y + 2;
     samples_z = (cubes_z * 2) + 3;
     grid_data_length = static_cast<size_t>(samples_x) * static_cast<size_t>(samples_y) * static_cast<size_t>(samples_z);
-
+    if ((grid_data_length / static_cast<size_t>(samples_x)) / static_cast<size_t>(samples_y) != static_cast<size_t>(samples_z))
+        throw exception("mesh builder: sample volume dimensions too big");
+    int s_z = samples_x * samples_y * 2;
+    if ((s_z / samples_x) / samples_y != 2)
+        throw exception("mesh builder: sample volume X/Y size too big");
     populateIndexOffsets();
 }
 
@@ -69,6 +85,14 @@ Mesh Builder::generate(DebugStats& stats)
     auto vertex_start = chrono::high_resolution_clock::now();
     vertexPass();
     float vertex = ((chrono::duration<float>)(chrono::high_resolution_clock::now() - vertex_start)).count();
+
+    VertexRef vert_max = VERTEX_NULL;
+    if (vertices.size() >= (size_t)vert_max)
+    {
+        destroyBuffers();
+        vertices.clear();
+        throw exception("mesh builder: too many vertices generated, aborting");
+    }
 
     auto geometry_start = chrono::high_resolution_clock::now();
     geometryPass();

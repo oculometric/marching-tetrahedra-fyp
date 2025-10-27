@@ -24,7 +24,16 @@ static string memorySize(size_t bytes)
 void runBenchmark(string name, int iterations, Vector3 min, Vector3 max, float cube_size, float (*sampler)(Vector3), float threshold)
 {
     Builder builder;
-    builder.configure(min, max, cube_size, sampler, threshold);
+    try
+    {
+        builder.configure(min, max, cube_size, sampler, threshold);
+    }
+    catch (exception e)
+    {
+        cout << "exception during " << name << " benchmark:" << endl;
+        cout << e.what() << endl;
+        return;
+    }
     DebugStats stats;
     Mesh mesh;
 
@@ -32,7 +41,16 @@ void runBenchmark(string name, int iterations, Vector3 min, Vector3 max, float c
     {
         cout << format("{0} test iteration {1}/{2}\r", name, i, iterations);
         cout.flush();
-        mesh = builder.generate(stats);
+        try
+        {
+            mesh = builder.generate(stats);
+        }
+        catch (exception e)
+        {
+            cout << "exception during " << name << " benchmark:" << endl;
+            cout << e.what() << endl;
+            return;
+        }
     }
 
     float total_time = stats.allocation_time + stats.sampling_time + stats.vertex_time + stats.geometry_time;
@@ -71,7 +89,6 @@ void runBenchmark(string name, int iterations, Vector3 min, Vector3 max, float c
     file.close();
 }
 
-
 float sphereFunc(Vector3 v)
 {
     return mag(v);
@@ -84,9 +101,7 @@ float fbmFunc(Vector3 v)
 
 int main()
 {
-    runBenchmark("sphere", 100, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f);
-    //runBenchmark("fbm", 1, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f);
+    //runBenchmark("sphere", 100, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f);
+    runBenchmark("fbm", 1, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f);
     //runBenchmark("bump", 1, { -4, -4, -4 }, { 4, 4, 4 }, 0.08f, [](Vector3 v) { return (1.0f / ((v.x * v.x) + (v.y * v.y) + 1)) - v.z; }, 0.0f);
 }
-
-// FIXME: hitting 16 bit integer limit with high vertex count. add limits to check for this (and large cube count)
