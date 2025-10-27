@@ -6,21 +6,22 @@ kanban-plugin: board
 
 ## in focus
 
-- [ ] [Adaptive marching cubes (1995)](https://link.springer.com/article/10.1007/BF01901516)(REQUESTED)
-- [ ] [multi labelled RMT (2024)](https://link.springer.com/article/10.1007/s11004-023-10075-9) (REQUESTED)
-- [ ] [fast isocontouring for improved interactivity (1996)](https://dl.acm.org/doi/10.5555/236226.236231)
-- [ ] [constrained elastic surface nets (1996)](https://www.researchgate.net/publication/226670264_Constrained_elastic_surface_nets_Generating_smooth_surfaces_from_binary_segmented_data)
+- [ ] [Adaptive marching cubes (1995)](https://link.springer.com/article/10.1007/BF01901516) [[adaptive marching cubes 1995.pdf]]
+- [ ] [multi labelled RMT (2024)](https://link.springer.com/article/10.1007/s11004-023-10075-9) [[multi-labeled rmt 2023.pdf]]
+- [ ] [fast isocontouring for improved interactivity (1996)](https://dl.acm.org/doi/10.5555/236226.236231) [[fast isosurface contouring 1996.pdf]]
+- [ ] [constrained elastic surface nets (1996)](https://www.researchgate.net/publication/226670264_Constrained_elastic_surface_nets_Generating_smooth_surfaces_from_binary_segmented_data) [[Constrained_Elastic_SurfaceNets 1999.pdf]]
 - [ ] [A generalized combinatorial marching hypercube algorithm](https://doi.org/10.1007/s40314-024-02627-4)
-- [ ] [fast marching-cubes-style volume evaluation (2022)](https://dspacemainprd01.lib.uwaterloo.ca/server/api/core/bitstreams/6487b452-e1d9-4b37-bd92-8270c4b202ea/content)
+- [ ] [fast marching-cubes-style volume evaluation (2022)](https://dspacemainprd01.lib.uwaterloo.ca/server/api/core/bitstreams/6487b452-e1d9-4b37-bd92-8270c4b202ea/content) [[fast marching-cubes-style volume evaluation 2022.pdf]]
 - [ ] [sample lit review](https://www.researchgate.net/profile/Faizan-Hussain-2/publication/348917348_Unity_Game_Development_Engine_A_Technical_Survey/links/60167daf45851517ef2b2c0d/Unity-Game-Development-Engine-A-Technical-Survey.pdf)
 - [ ] [Tetrahedral grid refinement (1995)](https://link.springer.com/article/10.1007/BF02238487)
+- [ ] [Molecular surface generation using marching tetrahedra (1998)](https://doi.org/10.1002/\(SICI\)1096-987X\(199808\)19:11<1268::AID-JCC6>3.0.CO;2-I) [[molecular surface generation 1998.pdf]]
 
 
 ## todo
 
 - [ ] delaunay triangulations
-- [ ] FlexiCubes 2023
-- [ ] DMTet 2021
+- [ ] [Flexible Isosurface Extraction for Gradient-Based Mesh Optimization (2023)](https://dl.acm.org/doi/10.1145/3592430)
+- [ ] [Deep marching tetrahedra: a hybrid representation for high-resolution 3D shape synthesis (2021)](https://dl.acm.org/doi/10.5555/3540261.3540727)
 - [ ] c++/c# performance comparison
 - [ ] [large isosurface simplification (2016)](https://link.springer.com/article/10.1007/s12650-016-0359-5)
 - [ ] [Tetrahedron Splatting for 3D Generation (2024)](https://proceedings.neurips.cc/paper_files/paper/2024/hash/92ce40962b4098f7bf6eed33128fc606-Abstract-Conference.html)

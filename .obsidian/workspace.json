@@ -74,8 +74,7 @@
               "title": "regularised marching tetrahedra 1999"
             }
           }
-        ],
-        "currentTab": 2
+        ]
       }
     ],
     "direction": "vertical"
@@ -221,23 +220,23 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "0467a2410ef122c9",
+  "active": "d6c5fb8c18675b10",
   "lastOpenFiles": [
     "doc/papers/regularised marching tetrahedra 1999.pdf",
+    "tesselations.blend@",
+    "doc/research kanban.md",
+    "doc/papers/molecular surface generation 1998.pdf",
+    "doc/papers/fast marching-cubes-style volume evaluation 2022.pdf",
+    "doc/papers/Constrained_Elastic_SurfaceNets 1999.pdf",
+    "doc/papers/fast isosurface contouring 1996.pdf",
+    "doc/papers/adaptive marching cubes 1995.pdf",
+    "doc/papers/multi-labeled rmt 2023.pdf",
+    "doc/task board.md",
     "c-rewrite/x64/Release/c-rewrite.tlog/link.read.29.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.write.1.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.read.1.tlog",
-    "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.write.1.tlog",
-    "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.read.1.tlog",
-    "c-rewrite/x64/Release/main.obj",
-    "c-rewrite/x64/Release/c-rewrite.tlog/unsuccessfulbuild",
-    "c-rewrite/bunny.obj",
-    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.41.tlog",
-    "fbm test.blend@",
-    "doc/task board.md",
     "doc/misc shit.md",
     "doc/research notes/miscellaneous notes.md",
-    "doc/research kanban.md",
     "doc/sample point and edge counting.md",
     "doc/research notes/Regularised marching tetrahedra (1999).md",
     "doc/research notes/tetrahedron subdivision.png",

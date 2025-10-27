@@ -24,6 +24,10 @@ things to actually compare:
 
 STORE THE EDGE VERTEX DATA ON THE SAMPLE POINTS! ONLY ONE SAMPLE POINT WILL KNOW ABOUT THE VERTEX ANYWAY!
 
+to paralellise the vertex pass, just use an amortised counter to uniquely index vertices, then merge the arrays (in order) at the end.
+
+to merge vertices, first check if only one, none, or all are set, then find vertices with the most set neighbours, and merge the neighbours into them, then try again with the remaining.
+
 my questionnaire:
 do you consent
 do you consent
