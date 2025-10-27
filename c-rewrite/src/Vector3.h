@@ -44,5 +44,5 @@ inline Vector3 max(const Vector3& a, const Vector3& b) { return Vector3{ std::ma
 inline Vector3 lerp(const Vector3& a, const Vector3& b, const float f) { return a + ((b - a) * f); }
 inline Vector3 floor(const Vector3& a) { return Vector3{ floor(a.x), floor(a.y), floor(a.z) }; }
 inline Vector3 ceil(const Vector3& a) { return Vector3{ ceil(a.x), ceil(a.y), ceil(a.z) }; }
-inline Vector3 fract(const Vector3& a) { return Vector3{ a.x - (long)a.x, a.y - (long)a.y, a.z - (long)a.z }; }
+inline Vector3 fract(const Vector3& a) { return Vector3{ a.x - floor(a.x), a.y - floor(a.y), a.z - floor(a.z) }; }
 inline float lerp(const float a, const float b, const float x) { return a + ((b - a) * x); }

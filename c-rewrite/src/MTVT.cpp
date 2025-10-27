@@ -554,7 +554,6 @@ static constexpr uint8_t tetrahedra_edge_address_templates[24][6] =
 // from the sample point at the other end of the edge, and this is checked at each step.
 // these sequences combine the per-edge vertex references into triangles.
 // the last values may be -1 (aka 255) if there is only one triangle
-// TODO: can we cut this in half?
 static constexpr uint8_t tetrahedral_edge_address_patterns[16][4] =
 {
     { -1, -1, -1, -1 }, // no bits set
@@ -758,6 +757,8 @@ void MTVTBuilder::geometryPass()
 // TODO: different lattice structures
 // TODO: different merging techniques
 // TODO: parallelise (bifurcate Z layers in vertex and geometry passes)
+// -> tried this and it really didn't give much of a boost?
 
 // FIXME: still have degenerates, still generating weirdly pyramid-y surfaces, also i think the fbm function is just straight up wrong
+// -> the fbm function was in fact just wrong!
 // TODO: lock edges to overall cube to allow chunking
