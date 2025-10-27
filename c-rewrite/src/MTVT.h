@@ -5,11 +5,16 @@
 
 #include "Vector3.h"
 
+typedef uint32_t VertexRef;
+typedef uint16_t EdgeFlags;
+typedef size_t Index;
+// TODO: wrap all of this in a namespace
+
 struct MTVTMesh
 {
     std::vector<Vector3> vertices;
     std::vector<Vector3> normals;
-    std::vector<uint16_t> indices;
+    std::vector<VertexRef> indices;
 };
 
 struct MTVTDebugStats
@@ -53,7 +58,7 @@ public:
 private:
     struct EdgeReferences
     {
-        uint16_t references[14];
+        VertexRef references[14];
     };
 
 private:
@@ -75,10 +80,10 @@ private:
 
     float* sample_values = nullptr;
     Vector3* sample_positions = nullptr;
-    uint16_t* sample_crossing_flags = nullptr;
+    EdgeFlags* sample_crossing_flags = nullptr;
     EdgeReferences* sample_edge_indices = nullptr;
     std::vector<Vector3> vertices;
-    std::vector<uint16_t> indices;
+    std::vector<VertexRef> indices;
     size_t degenerate_triangles;
     size_t tetrahedra_evaluated;
 

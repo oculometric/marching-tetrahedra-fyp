@@ -4,6 +4,9 @@
 #include <fstream>
 #include <format>
 
+#define VERTEX_NULL (VertexRef)-1
+#define INDEX_NULL (size_t)-1
+
 using namespace std;
 
 static inline size_t computeCubicFunction(size_t x, size_t y, size_t z, size_t a, size_t b, size_t c, size_t d)
@@ -79,7 +82,7 @@ MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
     stats.mem_sample_points         = (sizeof(float) + sizeof(Vector3)) * grid_data_length;
     stats.edges_allocated           = grid_data_length * 14;
     stats.min_edges                 = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 14, 11, 1, 0);
-    stats.mem_edges                 = (sizeof(uint16_t) + sizeof(EdgeReferences)) * grid_data_length;
+    stats.mem_edges                 = (sizeof(EdgeFlags) + sizeof(EdgeReferences)) * grid_data_length;
     stats.tetrahedra_evaluated      = tetrahedra_evaluated;
     stats.max_tetrahedra            = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 12, 4, 0, 0);
     stats.vertices                  = vertices.size();
@@ -101,7 +104,7 @@ MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
     file.close();
 
     destroyBuffers();
-
+    // TODO: implement normal generation
     return MTVTMesh{ vertices, {}, indices };
 }
 
@@ -110,7 +113,7 @@ void MTVTBuilder::prepareBuffers()
     // TODO: experiment with un-caching this (recomputing position each step)
     sample_values = new float[grid_data_length];
     sample_positions = new Vector3[grid_data_length];
-    sample_crossing_flags = new uint16_t[grid_data_length];
+    sample_crossing_flags = new EdgeFlags[grid_data_length];
     sample_edge_indices = new EdgeReferences[grid_data_length];
 }
 
@@ -181,7 +184,6 @@ void MTVTBuilder::populateIndexOffsets()
 
     float step = resolution;
     float diag = step / 2;
-    //float diag = sqrt(step * step * 3.0f / 4.0f);
 
     vector_offsets[PX] = {  step, 0, 0 };
     vector_offsets[NX] = { -step, 0, 0 };
@@ -206,7 +208,7 @@ void MTVTBuilder::samplingPass()
     float step = resolution / 2.0f;
 
     // our position in the array, saves recomputing this all the time
-    size_t index = 0;
+    Index index = 0;
     // current sample point position
     Vector3 position = Vector3{ 0, 0, min_extent.z - step };
     for (int zi = 0; zi < samples_z; ++zi)
@@ -222,7 +224,7 @@ void MTVTBuilder::samplingPass()
             {
                 // i tested logic for skipping out points whose values will never be used, but it was actually less efficient!
                 sample_values[index] = sampler(position);
-                sample_positions[index] = position;
+                sample_positions[index] = position; // FIXME: sample_positions can be removed entirely now!
                 position.x += resolution;
                 index++;
             }
@@ -241,10 +243,10 @@ void MTVTBuilder::vertexPass()
     // our position in the array, saves recomputing this all the time
     float step = resolution / 2.0f;
     Vector3 position;
-    size_t index = 0;
-    size_t connected_indices[14] = { 0 };
+    Index index = 0;
+    Index connected_indices[14] = { 0 };
     EdgeReferences edges;
-    EdgeReferences edges_template; for (int p = 0; p < 14; ++p) edges_template.references[p] = -1;
+    EdgeReferences edges_template; for (int p = 0; p < 14; ++p) edges_template.references[p] = VERTEX_NULL;
 
     bool is_odd_z = true;
     for (int zi = 0; zi < samples_z; ++zi)
@@ -304,98 +306,98 @@ void MTVTBuilder::vertexPass()
                 // indices would be invalid)
                 if (is_min_z)
                 {
-                    connected_indices[NZ] = -1;
-                    connected_indices[PXPYNZ] = -1;
-                    connected_indices[NXPYNZ] = -1;
-                    connected_indices[PXNYNZ] = -1;
-                    connected_indices[NXNYNZ] = -1;
+                    connected_indices[NZ] = INDEX_NULL;
+                    connected_indices[PXPYNZ] = INDEX_NULL;
+                    connected_indices[NXPYNZ] = INDEX_NULL;
+                    connected_indices[PXNYNZ] = INDEX_NULL;
+                    connected_indices[NXNYNZ] = INDEX_NULL;
                     if (!is_odd_z)
                     {
-                        connected_indices[PX] = -1;
-                        connected_indices[NX] = -1;
-                        connected_indices[PY] = -1;
-                        connected_indices[NY] = -1;
+                        connected_indices[PX] = INDEX_NULL;
+                        connected_indices[NX] = INDEX_NULL;
+                        connected_indices[PY] = INDEX_NULL;
+                        connected_indices[NY] = INDEX_NULL;
                     }
                 }
                 if (is_min_y)
                 {
-                    connected_indices[NY] = -1;
-                    connected_indices[PXNYPZ] = -1;
-                    connected_indices[NXNYPZ] = -1;
-                    connected_indices[PXNYNZ] = -1;
-                    connected_indices[NXNYNZ] = -1;
+                    connected_indices[NY] = INDEX_NULL;
+                    connected_indices[PXNYPZ] = INDEX_NULL;
+                    connected_indices[NXNYPZ] = INDEX_NULL;
+                    connected_indices[PXNYNZ] = INDEX_NULL;
+                    connected_indices[NXNYNZ] = INDEX_NULL;
                     if (!is_odd_z)
                     {
-                        connected_indices[PX] = -1;
-                        connected_indices[NX] = -1;
-                        connected_indices[PZ] = -1;
-                        connected_indices[NZ] = -1;
+                        connected_indices[PX] = INDEX_NULL;
+                        connected_indices[NX] = INDEX_NULL;
+                        connected_indices[PZ] = INDEX_NULL;
+                        connected_indices[NZ] = INDEX_NULL;
                     }
                 }
                 if (is_min_x)
                 {
-                    connected_indices[NX] = -1;
-                    connected_indices[NXPYPZ] = -1;
-                    connected_indices[NXNYPZ] = -1;
-                    connected_indices[NXPYNZ] = -1;
-                    connected_indices[NXNYNZ] = -1;
+                    connected_indices[NX] = INDEX_NULL;
+                    connected_indices[NXPYPZ] = INDEX_NULL;
+                    connected_indices[NXNYPZ] = INDEX_NULL;
+                    connected_indices[NXPYNZ] = INDEX_NULL;
+                    connected_indices[NXNYNZ] = INDEX_NULL;
                     if (!is_odd_z)
                     {
-                        connected_indices[PY] = -1;
-                        connected_indices[NY] = -1;
-                        connected_indices[PZ] = -1;
-                        connected_indices[NZ] = -1;
+                        connected_indices[PY] = INDEX_NULL;
+                        connected_indices[NY] = INDEX_NULL;
+                        connected_indices[PZ] = INDEX_NULL;
+                        connected_indices[NZ] = INDEX_NULL;
                     }
                 }
                 if (is_max_z)
                 {
-                    connected_indices[PZ] = -1;
-                    connected_indices[PXPYPZ] = -1;
-                    connected_indices[NXPYPZ] = -1;
-                    connected_indices[PXNYPZ] = -1;
-                    connected_indices[NXNYPZ] = -1;
+                    connected_indices[PZ] = INDEX_NULL;
+                    connected_indices[PXPYPZ] = INDEX_NULL;
+                    connected_indices[NXPYPZ] = INDEX_NULL;
+                    connected_indices[PXNYPZ] = INDEX_NULL;
+                    connected_indices[NXNYPZ] = INDEX_NULL;
                     if (!is_odd_z)
                     {
-                        connected_indices[PX] = -1;
-                        connected_indices[NX] = -1;
-                        connected_indices[PY] = -1;
-                        connected_indices[NY] = -1;
+                        connected_indices[PX] = INDEX_NULL;
+                        connected_indices[NX] = INDEX_NULL;
+                        connected_indices[PY] = INDEX_NULL;
+                        connected_indices[NY] = INDEX_NULL;
                     }
                 }
                 if (is_max_y)
                 {
-                    connected_indices[PY] = -1;
-                    connected_indices[PXPYPZ] = -1;
-                    connected_indices[NXPYPZ] = -1;
-                    connected_indices[PXPYNZ] = -1;
-                    connected_indices[NXPYNZ] = -1;
+                    connected_indices[PY] = INDEX_NULL;
+                    connected_indices[PXPYPZ] = INDEX_NULL;
+                    connected_indices[NXPYPZ] = INDEX_NULL;
+                    connected_indices[PXPYNZ] = INDEX_NULL;
+                    connected_indices[NXPYNZ] = INDEX_NULL;
                     if (!is_odd_z)
                     {
-                        connected_indices[PX] = -1;
-                        connected_indices[NX] = -1;
-                        connected_indices[PZ] = -1;
-                        connected_indices[NZ] = -1;
+                        connected_indices[PX] = INDEX_NULL;
+                        connected_indices[NX] = INDEX_NULL;
+                        connected_indices[PZ] = INDEX_NULL;
+                        connected_indices[NZ] = INDEX_NULL;
                     }
                 }
                 if (is_max_x)
                 {
-                    connected_indices[PX] = -1;
-                    connected_indices[PXPYPZ] = -1;
-                    connected_indices[PXNYPZ] = -1;
-                    connected_indices[PXPYNZ] = -1;
-                    connected_indices[PXNYNZ] = -1;
+                    connected_indices[PX] = INDEX_NULL;
+                    connected_indices[PXPYPZ] = INDEX_NULL;
+                    connected_indices[PXNYPZ] = INDEX_NULL;
+                    connected_indices[PXPYNZ] = INDEX_NULL;
+                    connected_indices[PXNYNZ] = INDEX_NULL;
                     if (!is_odd_z)
                     {
-                        connected_indices[PY] = -1;
-                        connected_indices[NY] = -1;
-                        connected_indices[PZ] = -1;
-                        connected_indices[NZ] = -1;
+                        connected_indices[PY] = INDEX_NULL;
+                        connected_indices[NY] = INDEX_NULL;
+                        connected_indices[PZ] = INDEX_NULL;
+                        connected_indices[NZ] = INDEX_NULL;
                     }
                 }
 
                 // grab useful data about ourself
-                uint16_t edge_proximity_flags = 0;
-                uint16_t edge_crossing_flags = 0;
+                EdgeFlags edge_proximity_flags = 0;
+                EdgeFlags edge_crossing_flags = 0;
                 float value = sample_values[index];
                 float thresh_diff = threshold - value;
                 float neighbour_values[14];
@@ -411,10 +413,10 @@ void MTVTBuilder::vertexPass()
                 float thresh_dist = thresh_diff;
                 bool thresh_less = thresh_dist < 0.0f;
                 if (thresh_less) thresh_dist = -thresh_dist;
-                uint16_t mask = 1;
+                EdgeFlags mask = 1;
                 for (int p = 0; p < 14; ++p, mask <<= 1)
                 {
-                    if (connected_indices[p] == (size_t)-1)
+                    if (connected_indices[p] == INDEX_NULL)
                         continue;
                     float value_at_neighbour = sample_values[connected_indices[p]];
                     float neighbour_dist = threshold - value_at_neighbour;
@@ -448,7 +450,7 @@ void MTVTBuilder::vertexPass()
                     float value_at_neighbour = neighbour_values[p];
                     Vector3 vertex_position = (vector_offsets[p] * (thresh_diff / (value_at_neighbour - value))) + position;
                     vertices.push_back(vertex_position);
-                    edges.references[p] = static_cast<uint16_t>(vertices.size() - 1);
+                    edges.references[p] = static_cast<VertexRef>(vertices.size() - 1);
                 }
                 sample_edge_indices[index] = edges;
                 ++index;
@@ -580,9 +582,11 @@ static constexpr uint8_t tetrahedral_edge_address_patterns[16][4] =
 
 void MTVTBuilder::geometryPass()
 {
-    // geometry pass - generate per-tetrahedron geometry from the edge/sample point info, discard triangles which zero size
+    // geometry pass - generate per-tetrahedron geometry from the 
+    // edge/sample point info, discard triangles with zero size, 
+    // skip sample cubes with no edge crossings.
 
-    size_t connected_indices[14] = { 0 };
+    Index connected_indices[14] = { 0 };
     for (int zi = 0; zi < cubes_z; ++zi)
     {
         for (int yi = 0; yi < cubes_y; ++yi)
@@ -590,11 +594,11 @@ void MTVTBuilder::geometryPass()
             for (int xi = 0; xi < cubes_x; ++xi)
             {
                 // compute central sample point index
-                const size_t central_sample_index = (2ull * zi * samples_x * samples_y) + (static_cast<size_t>(yi) * samples_x) + (xi)
+                const Index central_sample_index = (2ull * zi * samples_x * samples_y) + (static_cast<size_t>(yi) * samples_x) + (xi)
                                                          + 1 + samples_x + (2ull * samples_x * samples_y);
                 // fetch information about which of the neighbours are on
                 // the other side of the threshold
-                const uint16_t central_sample_crossing_flags = sample_crossing_flags[central_sample_index];
+                const EdgeFlags central_sample_crossing_flags = sample_crossing_flags[central_sample_index];
                 // if the entire cube has no crossings, we can just skip it!
                 if (central_sample_crossing_flags == 0)
                     continue; // HUGE SPEEDUP!! 0.03538 -> 0.00412
@@ -602,7 +606,7 @@ void MTVTBuilder::geometryPass()
                 for (int e = 0; e < 14; ++e)
                     connected_indices[e] = central_sample_index + index_offsets_evenz[e];
 
-                bool center_greater_thresh = (sample_values[central_sample_index] > threshold);
+                const bool center_greater_thresh = (sample_values[central_sample_index] > threshold);
 
                 // skip out some tetrahedra depending where we are in the lattice,
                 // otherwise we'll be marching lots of tetrahedra twice over
@@ -633,7 +637,7 @@ void MTVTBuilder::geometryPass()
                     // direction, index 2 is the clockwise SP when looking at the relevant cube
                     // face, index 3 is the counter-clockwise SP when looking at the relevant
                     // cube face).
-                    const size_t tetrahedra_sample_indices[4] =
+                    const Index tetrahedra_sample_indices[4] =
                     {
                         central_sample_index,                                         // C = center
                         connected_indices[(tetrahedra_sample_index_templates[t])[0]], // P = pyramid
@@ -683,7 +687,7 @@ void MTVTBuilder::geometryPass()
                     // find the edge usage sequence (and thus index sequence) based on the pattern
                     auto pattern = tetrahedral_edge_address_patterns[pattern_ident];
                     // build one or two triangles
-                    uint16_t triangle_indices[4] = { -1, -1, -1, -1 };
+                    VertexRef triangle_indices[4] = { -1, -1, -1, -1 };
                     const bool two_triangles = pattern[3] != (uint8_t)-1;
                     const int imax = (two_triangles ? 4 : 3);
                     for (int i = 0; i < imax; ++i)
@@ -697,13 +701,13 @@ void MTVTBuilder::geometryPass()
                         const uint8_t edge_address_b = tetrahedra_edge_addresses[(edge_address_index * 2) + 1];
                         // these find the two sample points which are at 
                         // either end of the given edge index
-                        const size_t sample_point_index_a = tetrahedra_sample_indices[tetrahedra_edge_sample_point_indices[edge_address_index * 2]];
-                        const size_t sample_point_index_b = tetrahedra_sample_indices[tetrahedra_edge_sample_point_indices[(edge_address_index * 2) + 1]];
+                        const Index sample_point_index_a = tetrahedra_sample_indices[tetrahedra_edge_sample_point_indices[edge_address_index * 2]];
+                        const Index sample_point_index_b = tetrahedra_sample_indices[tetrahedra_edge_sample_point_indices[(edge_address_index * 2) + 1]];
 
                         // assume initial interpretation, but if there is no data on 
                         // that edge, use the alternative interpretation
-                        uint16_t vertex_ref = sample_edge_indices[sample_point_index_a].references[edge_address_a];
-                        if (vertex_ref == (uint16_t)-1)
+                        VertexRef vertex_ref = sample_edge_indices[sample_point_index_a].references[edge_address_a];
+                        if (vertex_ref == VERTEX_NULL)
                             vertex_ref = sample_edge_indices[sample_point_index_b].references[edge_address_b];
 
                         triangle_indices[i] = vertex_ref;
@@ -721,9 +725,9 @@ void MTVTBuilder::geometryPass()
                     if (triangle_indices[0] == triangle_indices[1]
                         || triangle_indices[0] == triangle_indices[2])
                         ++degenerate_triangles;
-                    else if (triangle_indices[0] == (uint16_t)-1
-                        || triangle_indices[1] == (uint16_t)-1
-                        || triangle_indices[2] == (uint16_t)-1)
+                    else if (triangle_indices[0] == VERTEX_NULL
+                        || triangle_indices[1] == VERTEX_NULL
+                        || triangle_indices[2] == VERTEX_NULL)
                         degenerate_triangles += 100000;
                     else
                     {
@@ -737,9 +741,9 @@ void MTVTBuilder::geometryPass()
                         if (triangle_indices[3] == triangle_indices[1]
                             || triangle_indices[3] == triangle_indices[2])
                             ++degenerate_triangles;
-                        else if (triangle_indices[3] == (uint16_t)-1
-                            || triangle_indices[1] == (uint16_t)-1
-                            || triangle_indices[2] == (uint16_t)-1)
+                        else if (triangle_indices[3] == VERTEX_NULL
+                            || triangle_indices[1] == VERTEX_NULL
+                            || triangle_indices[2] == VERTEX_NULL)
                             degenerate_triangles += 100000;
                         else
                         {
