@@ -61,8 +61,21 @@
               "icon": "lucide-trello",
               "title": "task board"
             }
+          },
+          {
+            "id": "493d279c8517e25c",
+            "type": "leaf",
+            "state": {
+              "type": "pdf",
+              "state": {
+                "file": "doc/papers/regularised marching tetrahedra 1999.pdf"
+              },
+              "icon": "lucide-file-text",
+              "title": "regularised marching tetrahedra 1999"
+            }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -208,23 +221,23 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "d6c5fb8c18675b10",
+  "active": "0467a2410ef122c9",
   "lastOpenFiles": [
-    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.28.tlog",
+    "doc/papers/regularised marching tetrahedra 1999.pdf",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.29.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.write.1.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.read.1.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.write.1.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.read.1.tlog",
     "c-rewrite/x64/Release/main.obj",
     "c-rewrite/x64/Release/c-rewrite.tlog/unsuccessfulbuild",
-    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.29.tlog",
-    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.40.tlog",
-    "tesselations.blend@",
-    "stanford_bunny/bunny_touchup.obj",
+    "c-rewrite/bunny.obj",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.41.tlog",
+    "fbm test.blend@",
+    "doc/task board.md",
     "doc/misc shit.md",
     "doc/research notes/miscellaneous notes.md",
     "doc/research kanban.md",
-    "doc/task board.md",
     "doc/sample point and edge counting.md",
     "doc/research notes/Regularised marching tetrahedra (1999).md",
     "doc/research notes/tetrahedron subdivision.png",

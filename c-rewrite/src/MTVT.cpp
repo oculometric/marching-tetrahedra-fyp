@@ -176,6 +176,9 @@ void Builder::destroyBuffers()
 #define PXNYNZ 12
 #define NXNYNZ 13
 
+#define IS_POSITIVE_X(p) ((p == PX) || ((p >= 6) && ((p % 2) == 0)))
+#define IS_NEGATIVE_X(p) ((p == NX) || ((p >= 6) && ((p % 2) == 1)))
+
 void Builder::populateIndexOffsets()
 {
     // generate a set of index offsets for surrounding sample points,
@@ -467,6 +470,7 @@ void Builder::vertexPass()
                 {
                     if (connected_indices[p] == INDEX_NULL)
                         continue;
+
                     float value_at_neighbour = sample_values[connected_indices[p]];
                     float neighbour_dist = threshold - value_at_neighbour;
                     if ((neighbour_dist < 0.0f) == thresh_less)
@@ -497,7 +501,23 @@ void Builder::vertexPass()
                     if (!(edge_proximity_flags & mask))
                         continue;
                     float value_at_neighbour = neighbour_values[p];
-                    Vector3 vertex_position = (vector_offsets[p] * (thresh_diff / (value_at_neighbour - value))) + position;
+                    
+                    
+                    // TODO: check if this edge is an outer-edge and if so, snap the position to be on the cube-face
+                    // -> this would need some kind of trimming, not just moving. i.e. we might need to generate extra tris.
+                    Vector3 vertex_position;
+                    //if (is_min_x && (is_odd_z ? IS_NEGATIVE_X(p) : IS_POSITIVE_X(p)))
+                    //{
+                    //    vertex_position = position;
+                    //    vertex_position.x = min_extent.x;
+                    //    /*if (!is_odd_z)
+                    //        vertex_position += vector_offsets[p];*/
+                    //}
+                    //else
+                    //{
+                        vertex_position = (vector_offsets[p] * (thresh_diff / (value_at_neighbour - value))) + position;
+                    //}
+                    
                     vertices.push_back(vertex_position);
                     edges.references[p] = static_cast<VertexRef>(vertices.size() - 1);
                 }
@@ -811,4 +831,3 @@ void Builder::geometryPass()
 
 // FIXME: still have degenerates, still generating weirdly pyramid-y surfaces, also i think the fbm function is just straight up wrong
 // -> the fbm function was in fact just wrong!
-// TODO: lock edges to overall cube to allow chunking

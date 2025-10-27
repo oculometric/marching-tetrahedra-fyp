@@ -5,6 +5,7 @@
 
 #include "MTVT.h"
 #include "fbm.h"
+#include "obj_loader.h"
 
 using namespace std;
 using namespace MTVT;
@@ -100,11 +101,62 @@ float fbmFunc(Vector3 v)
     return fbm(v * 2.0f, 3, 2.0f, 0.5f);
 }
 
+vector<Vector3> bunny_verts;
+vector<uint16_t> bunny_inds;
+vector<Vector3> bunny_norms;
+vector<Vector3> bunny_cents;
+
+float bunnyFunc(Vector3 v)
+{
+    float min_dist = INFINITY;
+    float best_sdf = 0.0f;
+    // find closest triangle
+    // return closest distance to triangle (signed)
+    for (size_t i = 0; i < bunny_cents.size(); ++i)
+    {
+        Vector3 vc = bunny_cents[i];
+        float vcx_dist = vc.x - v.x;
+        if (::abs(vcx_dist) > min_dist)
+            continue;
+        float vcy_dist = vc.y - v.y;
+        if (::abs(vcy_dist) > min_dist)
+            continue;
+        float vcz_dist = vc.z - v.z;
+        if (::abs(vcz_dist) > min_dist)
+            continue;
+        Vector3 c_to_v = { -vcx_dist, -vcy_dist, -vcz_dist };
+        if (mag(c_to_v) >= min_dist)
+            continue;
+        float sdf = c_to_v ^ bunny_norms[i];
+        if (::abs(sdf) < min_dist)
+        {
+            min_dist = mag(c_to_v);
+            best_sdf = sdf;
+        }
+    }
+    return -best_sdf;
+}
+
 int main()
 {
     //runBenchmark("sphere", 1, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f);
-    runBenchmark("fbm", 1, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f);
+    //runBenchmark("fbm", 1, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f);
     //runBenchmark("bump", 1, { -4, -4, -4 }, { 4, 4, 4 }, 0.08f, [](Vector3 v) { return (1.0f / ((v.x * v.x) + (v.y * v.y) + 1)) - v.z; }, 0.0f);
-}
+    
+    readObj("../stanford_bunny/bunny_touchup.obj", bunny_verts, bunny_inds);
+    for (size_t i = 0; i < bunny_inds.size() - 2; i += 3)
+    {
+        Vector3 v1 = bunny_verts[bunny_inds[i]];
+        Vector3 v2 = bunny_verts[bunny_inds[i + 1]];
+        Vector3 v3 = bunny_verts[bunny_inds[i + 2]];
 
-// TODO: implement bunny benchmark
+        Vector3 a = v2 - v1;
+        Vector3 b = v3 - v1;
+        bunny_norms.push_back(norm(a % b));
+        bunny_cents.push_back((v1 + v2 + v3) / 3.0f);
+    }
+
+    runBenchmark("bunny", 1, { -0.1f, -0.06f, -0.01f }, { 0.1f, 0.08f, 0.16f }, 0.01f, bunnyFunc, 0.0f);
+
+    return 0;
+}
