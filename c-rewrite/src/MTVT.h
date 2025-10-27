@@ -5,6 +5,8 @@
 
 #include "Vector3.h"
 
+//#define DEBUG_GRID
+
 typedef uint32_t VertexRef;
 typedef uint16_t EdgeFlags;
 typedef size_t Index;
@@ -79,7 +81,9 @@ private:
     Vector3 vector_offsets[14];
 
     float* sample_values = nullptr;
+#if defined DEBUG_GRID
     Vector3* sample_positions = nullptr;
+#endif
     EdgeFlags* sample_crossing_flags = nullptr;
     EdgeReferences* sample_edge_indices = nullptr;
     std::vector<Vector3> vertices;
