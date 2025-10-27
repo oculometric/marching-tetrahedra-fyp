@@ -6,7 +6,8 @@
 #include <thread>
 
 #define VERTEX_NULL (VertexRef)-1
-#define INDEX_NULL (size_t)-1
+#define INDEX_NULL (Index)-1
+#define EDGE_NULL (EdgeAddr)-1
 
 using namespace std;
 using namespace MTVT;
@@ -160,6 +161,8 @@ void Builder::destroyBuffers()
     delete[] sample_edge_indices; sample_edge_indices = nullptr;
 }
 
+// these are all the possible EdgeAddr values, the defines give them
+// readable names. specific to the diamond lattice pattern!
 #define PX 0
 #define NX 1
 #define PY 2
@@ -285,6 +288,81 @@ void MTVT::Builder::samplingLayer(const int start, const int layers)
         // move along by one sample point
         position.z += step;
     }
+}
+
+// each entry defines the set of either 4 or 6 edges which are closest 
+// to the edge used to index the array
+static constexpr EdgeAddr edge_neighbour_addresses[14][6] =
+{
+    { PXPYPZ, PXNYPZ, PXPYNZ, PXNYNZ, EDGE_NULL },      // PX
+    { NXPYPZ, NXNYPZ, NXPYNZ, NXNYNZ, EDGE_NULL },      // NX
+    { PXPYPZ, NXPYPZ, PXPYNZ, NXPYNZ, EDGE_NULL },      // PY
+    { PXNYPZ, NXNYPZ, PXNYNZ, NXNYNZ, EDGE_NULL },      // NY
+    { PXPYPZ, NXPYPZ, PXNYPZ, NXNYPZ, EDGE_NULL },      // PZ
+    { PXPYNZ, NXPYNZ, PXNYNZ, NXNYNZ, EDGE_NULL },      // NZ
+    { PX,     PY,     PZ,     NXPYPZ, PXNYPZ, PXPYNZ }, // PXPYPZ
+    { NX,     PY,     PZ,     PXPYPZ, NXNYPZ, NXPYNZ }, // NXPYPZ
+    { PX,     NY,     PZ,     NXNYPZ, PXPYPZ, PXNYNZ }, // PXNYPZ
+    { NX,     NY,     PZ,     PXNYPZ, NXPYPZ, NXNYNZ }, // NXNYPZ
+    { PX,     PY,     NZ,     NXPYNZ, PXNYNZ, PXPYPZ }, // PXPYNZ
+    { NX,     PY,     NZ,     PXPYNZ, NXNYNZ, NXPYPZ }, // NXPYNZ
+    { PX,     NY,     NZ,     NXNYNZ, PXPYNZ, PXNYPZ }, // PXNYNZ
+    { NX,     NY,     NZ,     PXNYNZ, NXPYNZ, NXNYPZ }, // NXNYNZ
+};
+
+#define VERTEX_POSITION(vec, td, van, val, pos) ((vec * (td / (van - val))) + pos)
+
+inline VertexRef Builder::addVertex(const float* neighbour_values, const EdgeAddr p, const float thresh_diff, const float value, const Vector3& position, vector<Vector3>& verts)
+{
+    float value_at_neighbour = neighbour_values[p];
+    Vector3 vertex_position = VERTEX_POSITION(vector_offsets[p], thresh_diff, value_at_neighbour, value, position);
+
+    verts.push_back(vertex_position);
+    return static_cast<VertexRef>(vertices.size() - 1);
+}
+
+inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const EdgeAddr p, const float thresh_diff, const float value, const Vector3 position, bool* usable_neighbours, vector<Vector3>& verts, EdgeReferences& edge_refs)
+{
+    // check which neighbours are actually usable and populate active_edges, 
+    // marking the last item with an EDGE_NULL
+    auto pattern = edge_neighbour_addresses[p];
+    EdgeAddr active_edges[6];
+    int j = 0;
+    for (int i = 0; i < 6; ++i)
+    {
+        if (pattern[i] == EDGE_NULL)
+        {
+            active_edges[j] = EDGE_NULL;
+            break;
+        }
+        if (usable_neighbours[pattern[i]])
+        {
+            active_edges[j] = pattern[i];
+            j++;
+            continue;
+        }
+        active_edges[j] = EDGE_NULL;
+    }
+    
+    Vector3 vertex = { 0, 0, 0 };
+    VertexRef ref = static_cast<VertexRef>(vertices.size());
+    int i;
+    for (i = 0; i < 6; ++i)
+    {
+        if (active_edges[i] == EDGE_NULL)
+            break;
+
+        EdgeAddr q = active_edges[i];
+        float value_at_neighbour = neighbour_values[q];
+        vertex += VERTEX_POSITION(vector_offsets[q], thresh_diff, value_at_neighbour, value, position);
+
+        usable_neighbours[q] = false;
+        edge_refs.references[q] = ref;
+    }
+    edge_refs.references[p] = ref;
+    verts.push_back(vertex / i);
+
+    return ref;
 }
 
 void Builder::vertexPass()
@@ -466,7 +544,7 @@ void Builder::vertexPass()
                 bool thresh_less = thresh_dist < 0.0f;
                 if (thresh_less) thresh_dist = -thresh_dist;
                 EdgeFlags mask = 1;
-                for (int p = 0; p < 14; ++p, mask <<= 1)
+                for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
                 {
                     if (connected_indices[p] == INDEX_NULL)
                         continue;
@@ -494,33 +572,83 @@ void Builder::vertexPass()
                     ++index;
                     continue;
                 }
-                position.x = (xi * resolution) + (is_odd_z ? min_extent.x : (min_extent.x - step));
+                uint8_t num_flagged_edges = 0;
+                EdgeAddr one_edge = EDGE_NULL;
+                bool usable_edges[14];
                 mask = 1;
-                for (int p = 0; p < 14; ++p, mask <<= 1)
+                for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
                 {
-                    if (!(edge_proximity_flags & mask))
+                    usable_edges[p] = edge_proximity_flags & mask;
+                    if (!usable_edges[p])
                         continue;
-                    float value_at_neighbour = neighbour_values[p];
+                    ++num_flagged_edges;
+                    one_edge = p;
                     
-                    
-                    // TODO: check if this edge is an outer-edge and if so, snap the position to be on the cube-face
-                    // -> this would need some kind of trimming, not just moving. i.e. we might need to generate extra tris.
-                    Vector3 vertex_position;
-                    //if (is_min_x && (is_odd_z ? IS_NEGATIVE_X(p) : IS_POSITIVE_X(p)))
-                    //{
-                    //    vertex_position = position;
-                    //    vertex_position.x = min_extent.x;
-                    //    /*if (!is_odd_z)
-                    //        vertex_position += vector_offsets[p];*/
-                    //}
-                    //else
-                    //{
-                        vertex_position = (vector_offsets[p] * (thresh_diff / (value_at_neighbour - value))) + position;
-                    //}
-                    
-                    vertices.push_back(vertex_position);
-                    edges.references[p] = static_cast<VertexRef>(vertices.size() - 1);
                 }
+                position.x = (xi * resolution) + (is_odd_z ? min_extent.x : (min_extent.x - step));
+                if (num_flagged_edges == 1)
+                {
+                    // if only one edge is flagged, do the vertex and skip onward (no need to traverse the array again)
+                    edges.references[one_edge] = addVertex(neighbour_values, one_edge, thresh_diff, value, position, vertices);
+                    sample_edge_indices[index] = edges;
+                    ++index;
+                    continue;
+                }
+                if (num_flagged_edges == 14)
+                {
+                    // if all edges are flagged, no merging and we just do them all individually
+                    for (EdgeAddr p = 0; p < 14u; ++p)
+                        edges.references[p] = addVertex(neighbour_values, p, thresh_diff, value, position, vertices);
+                    sample_edge_indices[index] = edges;
+                    ++index;
+                    continue;
+                }
+
+                // until we run out of mergeable edges: check usable_edges to find the edge 
+                // with the most neighbours, calculate and merge those into one and clear 
+                // those usable_edges flags, then repeat
+                while (true)
+                {
+                    uint8_t highest_neighbour_count = 0;
+                    EdgeAddr highest_neighboured_edge = EDGE_NULL;
+                    for (EdgeAddr p = 0; p < 14u; ++p)
+                    {
+                        auto pattern = edge_neighbour_addresses[p];
+                        uint8_t neighbours_cur = 0;
+                        neighbours_cur += usable_edges[pattern[0]];
+                        neighbours_cur += usable_edges[pattern[1]];
+                        neighbours_cur += usable_edges[pattern[2]];
+                        neighbours_cur += usable_edges[pattern[3]];
+                        if (p >= 6)
+                        {
+                            neighbours_cur += usable_edges[pattern[4]];
+                            neighbours_cur += usable_edges[pattern[5]];
+                        }
+                        if (neighbours_cur > highest_neighbour_count)
+                        {
+                            highest_neighbour_count = neighbours_cur;
+                            highest_neighboured_edge = p;
+                        }
+                    }
+
+                    // merging logic
+                    if (highest_neighbour_count == 0)
+                        break;
+
+                    addMergedVertex(neighbour_values, highest_neighboured_edge, thresh_diff, value, position, usable_edges, vertices, edges);
+                }
+
+                // create vertices for any remaining (unmerged) edges
+                for (EdgeAddr p = 0; p < 14u; ++p)
+                {
+                    if (!usable_edges[p])
+                        continue;
+                    edges.references[p] = addVertex(neighbour_values, p, thresh_diff, value, position, vertices);
+                }
+
+                // FIXME: this kinda works but it actually doesnt and it looks horrible.
+
+                // write back the sample edge indices and continue to the next sample point
                 sample_edge_indices[index] = edges;
                 ++index;
             }
@@ -531,7 +659,7 @@ void Builder::vertexPass()
 // each entry defines a collection of indices into the list of neighbouring sample points.
 // the 24 entries represent the 24 tetrahedra embedded in each cube.
 // the cube center is always assumed to be treated as the first sample point
-static constexpr uint8_t tetrahedra_sample_index_templates[24][3] =
+static constexpr EdgeAddr tetrahedra_sample_index_templates[24][3] =
 {
     // +x side
     { PX, PXNYPZ, PXNYNZ },
@@ -586,7 +714,7 @@ static constexpr uint8_t tetrahedra_edge_sample_point_indices[12] =
 // data.
 // hence, entries represent the 6 edges in the tetrahedron and are ordered
 //     CP, CU, CL, PU, PL, UL
-static constexpr uint8_t tetrahedra_edge_address_templates[24][6] =
+static constexpr EdgeAddr tetrahedra_edge_address_templates[24][6] =
 {
     // +x side
     { PX, PXNYPZ, PXNYNZ, NXNYPZ, NXNYNZ, NZ },
@@ -736,7 +864,7 @@ void Builder::geometryPass()
                     // edge addresses for this tetrahedron (t).
                     // these will then be used to read data out of the correct edges on each
                     // of the sample points for this tetrahedron
-                    const uint8_t tetrahedra_edge_addresses[12] =
+                    const EdgeAddr tetrahedra_edge_addresses[12] =
                     {
                                           tetrahedra_edge_address_templates[t][0],  // relative to C
                         INVERT_EDGE_INDEX(tetrahedra_edge_address_templates[t][0]), // relative to P
@@ -765,8 +893,8 @@ void Builder::geometryPass()
                         // these find the edge addresses for the two alternate 
                         // interpretations of the given edge index, each of which
                         // is relative to one of the sample points on the edge
-                        const uint8_t edge_address_a = tetrahedra_edge_addresses[edge_address_index * 2];
-                        const uint8_t edge_address_b = tetrahedra_edge_addresses[(edge_address_index * 2) + 1];
+                        const EdgeAddr edge_address_a = tetrahedra_edge_addresses[edge_address_index * 2];
+                        const EdgeAddr edge_address_b = tetrahedra_edge_addresses[(edge_address_index * 2) + 1];
                         // these find the two sample points which are at 
                         // either end of the given edge index
                         const Index sample_point_index_a = tetrahedra_sample_indices[tetrahedra_edge_sample_point_indices[edge_address_index * 2]];
@@ -831,3 +959,6 @@ void Builder::geometryPass()
 
 // FIXME: still have degenerates, still generating weirdly pyramid-y surfaces, also i think the fbm function is just straight up wrong
 // -> the fbm function was in fact just wrong!
+
+// TODO: check if this edge is an outer-edge and if so, snap the position to be on the cube-face
+// -> this would need some kind of trimming, not just moving. i.e. we might need to generate extra tris. probably do this in the geometry pass instead?

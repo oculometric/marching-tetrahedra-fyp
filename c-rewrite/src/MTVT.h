@@ -13,6 +13,7 @@ namespace MTVT
 typedef uint32_t VertexRef;
 typedef uint16_t EdgeFlags;
 typedef size_t Index;
+typedef uint8_t EdgeAddr;
 
 struct Mesh
 {
@@ -107,6 +108,8 @@ private:
     void populateIndexOffsets();
     void samplingPass();
     void samplingLayer(const int start, const int layers);
+    VertexRef addVertex(const float* neighbour_values, const EdgeAddr p, const float thresh_diff, const float value, const Vector3& position, std::vector<Vector3>& verts);
+    VertexRef addMergedVertex(const float* neighbour_values, const EdgeAddr p, const float thresh_diff, const float value, const Vector3 position, bool* usable_neighbours, std::vector<Vector3>& verts, EdgeReferences& edge_refs);
     void vertexPass();
     void geometryPass();
 };
