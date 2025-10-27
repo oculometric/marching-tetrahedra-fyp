@@ -5,21 +5,23 @@
 
 #include "Vector3.h"
 
+namespace MTVT
+{
+
 //#define DEBUG_GRID
 
 typedef uint32_t VertexRef;
 typedef uint16_t EdgeFlags;
 typedef size_t Index;
-// TODO: wrap all of this in a namespace
 
-struct MTVTMesh
+struct Mesh
 {
     std::vector<Vector3> vertices;
     std::vector<Vector3> normals;
     std::vector<VertexRef> indices;
 };
 
-struct MTVTDebugStats
+struct DebugStats
 {
     double allocation_time = 0;
     double sampling_time = 0;
@@ -41,7 +43,7 @@ struct MTVTDebugStats
     size_t degenerate_triangles = 0;
 };
 
-class MTVTBuilder
+class Builder
 {
 public:
     enum LatticeType
@@ -92,11 +94,11 @@ private:
     size_t tetrahedra_evaluated;
 
 public:
-    MTVTBuilder();
+    Builder();
 
     void configure(Vector3 minimum_extent, Vector3 maximum_extent, float cube_size, float (*sample_func)(Vector3), float threshold_value);
     void configureModes(LatticeType lattice_type, ClusteringMode clustering_mode);
-    MTVTMesh generate(MTVTDebugStats& stats);
+    Mesh generate(DebugStats& stats);
 
 private:
     void prepareBuffers();
@@ -106,3 +108,5 @@ private:
     void vertexPass();
     void geometryPass();
 };
+
+}

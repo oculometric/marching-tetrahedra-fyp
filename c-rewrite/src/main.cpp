@@ -7,6 +7,7 @@
 #include "fbm.h"
 
 using namespace std;
+using namespace MTVT;
 
 static string memorySize(size_t bytes)
 {
@@ -22,10 +23,10 @@ static string memorySize(size_t bytes)
 
 void runBenchmark(string name, int iterations, Vector3 min, Vector3 max, float cube_size, float (*sampler)(Vector3), float threshold)
 {
-    MTVTBuilder builder;
+    Builder builder;
     builder.configure(min, max, cube_size, sampler, threshold);
-    MTVTDebugStats stats;
-    MTVTMesh mesh;
+    DebugStats stats;
+    Mesh mesh;
 
     for (int i = 0; i < iterations; ++i)
     {

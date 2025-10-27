@@ -1,5 +1,7 @@
 #include "fbm.h"
 
+using namespace MTVT;
+
 float fbm_random(Vector3 coord)
 {
     float f = sin((coord ^ Vector3{ 12.98f, 78.23f, 35.63f })) * 43758.5f;

@@ -8,19 +8,20 @@
 #define INDEX_NULL (size_t)-1
 
 using namespace std;
+using namespace MTVT;
 
 static inline size_t computeCubicFunction(size_t x, size_t y, size_t z, size_t a, size_t b, size_t c, size_t d)
 {
     return (a * x * y * z) + (b * ((x * y) + (x * z) + (y * z))) + (c * (x + y + z)) + d;
 }
 
-MTVTBuilder::MTVTBuilder()
+Builder::Builder()
 {
 	configure({ -1, -1, -1 }, { 1, 1, 1 }, 0.1f, [](Vector3 v) -> float { return mag(v); }, 1.0f);
 	configureModes(LatticeType::BODY_CENTERED_DIAMOND, ClusteringMode::NONE);
 }
 
-void MTVTBuilder::configure(Vector3 minimum_extent, Vector3 maximum_extent, float cube_size, float(*sample_func)(Vector3), float threshold_value)
+void Builder::configure(Vector3 minimum_extent, Vector3 maximum_extent, float cube_size, float(*sample_func)(Vector3), float threshold_value)
 {
     sampler = sample_func;
     threshold = threshold_value;
@@ -42,16 +43,16 @@ void MTVTBuilder::configure(Vector3 minimum_extent, Vector3 maximum_extent, floa
     populateIndexOffsets();
 }
 
-void MTVTBuilder::configureModes(LatticeType lattice_type, ClusteringMode clustering_mode)
+void Builder::configureModes(LatticeType lattice_type, ClusteringMode clustering_mode)
 {
     structure = lattice_type;
     clustering = clustering_mode;
 }
 
-MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
+Mesh Builder::generate(DebugStats& stats)
 {
     if (sampler == nullptr)
-        return MTVTMesh();
+        return Mesh();
 
     auto allocation_start = chrono::high_resolution_clock::now();
     degenerate_triangles = 0;
@@ -110,10 +111,10 @@ MTVTMesh MTVTBuilder::generate(MTVTDebugStats& stats)
 
     destroyBuffers();
     // TODO: implement normal generation
-    return MTVTMesh{ vertices, {}, indices };
+    return Mesh{ vertices, {}, indices };
 }
 
-void MTVTBuilder::prepareBuffers()
+void Builder::prepareBuffers()
 {
     sample_values = new float[grid_data_length];
 #if defined DEBUG_GRID
@@ -123,7 +124,7 @@ void MTVTBuilder::prepareBuffers()
     sample_edge_indices = new EdgeReferences[grid_data_length];
 }
 
-void MTVTBuilder::destroyBuffers()
+void Builder::destroyBuffers()
 {
     delete[] sample_values; sample_values = nullptr;
 #if defined DEBUG_GRID
@@ -149,7 +150,7 @@ void MTVTBuilder::destroyBuffers()
 #define PXNYNZ 12
 #define NXNYNZ 13
 
-void MTVTBuilder::populateIndexOffsets()
+void Builder::populateIndexOffsets()
 {
     // generate a set of index offsets for surrounding sample points,
     // used in the flagging pass
@@ -210,7 +211,7 @@ void MTVTBuilder::populateIndexOffsets()
     vector_offsets[NXNYNZ] = { -diag, -diag, -diag };
 }
 
-void MTVTBuilder::samplingPass()
+void Builder::samplingPass()
 {
     // sampling pass - compute the values at all of the sample points
     float step = resolution / 2.0f;
@@ -245,7 +246,7 @@ void MTVTBuilder::samplingPass()
     }
 }
 
-void MTVTBuilder::vertexPass()
+void Builder::vertexPass()
 {
     // flagging pass - check all of the edges around each sample point, and set the edge flag bits
     // vertex pass - generate vertices for edges with flags set, and merge them where possible, assigning vertex references to these edges
@@ -590,7 +591,7 @@ static constexpr uint8_t tetrahedral_edge_address_patterns[16][4] =
 // opposite direction
 #define INVERT_EDGE_INDEX(i) ((i < 6) ? (i + 1 - ((i % 2) * 2)) : (19 - i))
 
-void MTVTBuilder::geometryPass()
+void Builder::geometryPass()
 {
     // geometry pass - generate per-tetrahedron geometry from the 
     // edge/sample point info, discard triangles with zero size, 

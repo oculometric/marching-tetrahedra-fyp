@@ -3,6 +3,9 @@
 #include <math.h>
 #include <cmath>
 
+namespace MTVT
+{
+
 struct Vector3
 {
     float x, y, z;
@@ -46,3 +49,5 @@ inline Vector3 floor(const Vector3& a) { return Vector3{ floor(a.x), floor(a.y),
 inline Vector3 ceil(const Vector3& a) { return Vector3{ ceil(a.x), ceil(a.y), ceil(a.z) }; }
 inline Vector3 fract(const Vector3& a) { return Vector3{ a.x - floor(a.x), a.y - floor(a.y), a.z - floor(a.z) }; }
 inline float lerp(const float a, const float b, const float x) { return a + ((b - a) * x); }
+
+}
