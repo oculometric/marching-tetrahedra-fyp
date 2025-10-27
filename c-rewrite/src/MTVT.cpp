@@ -808,8 +808,6 @@ void Builder::geometryPass()
 
 // TODO: different lattice structures
 // TODO: different merging techniques
-// TODO: parallelise (bifurcate Z layers in vertex and geometry passes)
-// -> tried this and it really didn't give much of a boost?
 
 // FIXME: still have degenerates, still generating weirdly pyramid-y surfaces, also i think the fbm function is just straight up wrong
 // -> the fbm function was in fact just wrong!
