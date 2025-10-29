@@ -6,7 +6,7 @@ kanban-plugin: board
 
 ## current
 
-- [ ] tetrahedral meshing research [1440 -> 480...] #literature
+- [ ] tetrahedral meshing research [1440 -> 720] #literature
 - [ ] draft literature review #research [180]
 - [ ] implement vertex clustering [600] #development
 - [ ] optimisation research [300] #literature

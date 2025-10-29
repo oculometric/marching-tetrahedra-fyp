@@ -28,3 +28,16 @@ different algorithms may be better adapted for the structure of the input data. 
 marching cubes, dual marching cubes, marching tetrahedra, regularised marching tetrahedra, multi-regional marching tetrahedra, surface nets, ray tracing, RT with kd-trees or octrees.
 
 **is there a way more efficient way to store stuff in C++? if the cube centers were separated into their own array, and edges were stored per-cube?.... should we doing per-tetrahedron right from the start?**
+
+## Multi-labeled Regularized Marching Tetrahedra Method for Implicit Geological Modeling
+link - https://link.springer.com/article/10.1007/s11004-023-10075-9
+looks at extending RMT for surface reconstruction for multi-layer geological interfaces. basically works by labelling each sample point with whether it is inside/outside *multiple* different implicit surfaces.
+applies some extra checks during the vertex clustering to prevent topology alteration with the extra intersections, and also perform curvature weighting to keep merged vertex positions on the isosurface. clever.
+expand the triangle patch lookup table to cover all the extra cases. they don't seem to be producing manifold meshes but i guess that's not the point.
+
+they seem to work from the tetrahedron level?
+they mention subdivision to recover finer details.
+
+## Fast Isocontouring For Improved Interactivity
+link - https://dl.acm.org/doi/10.5555/236226.236231
+this seems useful! i want interactivity.

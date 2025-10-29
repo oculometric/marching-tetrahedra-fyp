@@ -6,6 +6,7 @@
       {
         "id": "68b5b1153b5047a7",
         "type": "tabs",
+        "dimension": 40.81325301204819,
         "children": [
           {
             "id": "d6c5fb8c18675b10",
@@ -19,27 +20,6 @@
               },
               "icon": "lucide-file",
               "title": "misc shit"
-            }
-          },
-          {
-            "id": "c0c54553f9d4410f",
-            "type": "leaf",
-            "state": {
-              "type": "kanban",
-              "state": {
-                "file": "doc/research kanban.md",
-                "kanbanViewState": {
-                  "kanban-plugin": "board",
-                  "list-collapse": [
-                    false,
-                    false,
-                    false,
-                    false
-                  ]
-                }
-              },
-              "icon": "lucide-trello",
-              "title": "research kanban"
             }
           },
           {
@@ -63,15 +43,43 @@
             }
           },
           {
-            "id": "493d279c8517e25c",
+            "id": "a4940339f26bada4",
+            "type": "leaf",
+            "state": {
+              "type": "kanban",
+              "state": {
+                "file": "doc/research kanban.md",
+                "kanbanViewState": {
+                  "kanban-plugin": "board",
+                  "list-collapse": [
+                    false,
+                    false,
+                    false,
+                    false
+                  ]
+                }
+              },
+              "icon": "lucide-trello",
+              "title": "research kanban"
+            }
+          }
+        ]
+      },
+      {
+        "id": "acdb40b726ac385b",
+        "type": "tabs",
+        "dimension": 59.18674698795181,
+        "children": [
+          {
+            "id": "5aa9647dad2ac257",
             "type": "leaf",
             "state": {
               "type": "pdf",
               "state": {
-                "file": "doc/papers/regularised marching tetrahedra 1999.pdf"
+                "file": "doc/papers/fast isosurface contouring 1996.pdf"
               },
               "icon": "lucide-file-text",
-              "title": "regularised marching tetrahedra 1999"
+              "title": "fast isosurface contouring 1996"
             }
           }
         ]
@@ -131,7 +139,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "f9232ef4b6037c5b",
@@ -222,26 +231,30 @@
   },
   "active": "d6c5fb8c18675b10",
   "lastOpenFiles": [
-    "doc/papers/regularised marching tetrahedra 1999.pdf",
-    "tesselations.blend@",
-    "doc/research kanban.md",
-    "doc/papers/molecular surface generation 1998.pdf",
-    "doc/papers/fast marching-cubes-style volume evaluation 2022.pdf",
-    "doc/papers/Constrained_Elastic_SurfaceNets 1999.pdf",
-    "doc/papers/fast isosurface contouring 1996.pdf",
-    "doc/papers/adaptive marching cubes 1995.pdf",
-    "doc/papers/multi-labeled rmt 2023.pdf",
-    "doc/task board.md",
     "c-rewrite/x64/Release/c-rewrite.tlog/link.read.29.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.write.1.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.read.1.tlog",
-    "doc/misc shit.md",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.write.1.tlog",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.read.1.tlog",
+    "c-rewrite/x64/Release/MTVT.obj",
+    "c-rewrite/x64/Release/c-rewrite.tlog/unsuccessfulbuild",
+    "c-rewrite/bunny.obj",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.27.tlog",
+    "Untitled.canvas",
     "doc/research notes/miscellaneous notes.md",
+    "2025-10-29.md",
+    "doc/papers/fast isosurface contouring 1996.pdf",
+    "doc/task board.md",
+    "doc/misc shit.md",
+    "doc/research kanban.md",
+    "doc/papers/multi-labeled rmt 2023.pdf",
+    "doc/research notes/Adaptive marching cubes 1995.md",
+    "amc crack problem.png",
+    "doc/research notes/Marching Cubes (1987).md",
     "doc/sample point and edge counting.md",
     "doc/research notes/Regularised marching tetrahedra (1999).md",
     "doc/research notes/tetrahedron subdivision.png",
     "doc/research notes/deformable nerf.png",
-    "doc/research notes/Marching Cubes (1987).md",
     "doc/research notes.md",
     "doc/research notes/A new tetrahedral tessellation scheme for isosurface generation (1998).md",
     "doc/questionnaire template.md",
@@ -253,7 +266,6 @@
     "doc/image.png",
     "doc/research notes/simple cubic lattice.png",
     "doc/research notes/primitives comparison.png",
-    "doc/research notes/marching cubes ambiguity.png",
     "doc/kanban task board.md"
   ]
 }

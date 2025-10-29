@@ -347,11 +347,8 @@ inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const E
     Vector3 vertex = { 0, 0, 0 };
     VertexRef ref = static_cast<VertexRef>(vertices.size());
     int i;
-    for (i = 0; i < 6; ++i)
+    for (i = 0; i < j; ++i)
     {
-        if (active_edges[i] == EDGE_NULL)
-            break;
-
         EdgeAddr q = active_edges[i];
         float value_at_neighbour = neighbour_values[q];
         vertex += VERTEX_POSITION(vector_offsets[q], thresh_diff, value_at_neighbour, value, position);
@@ -360,6 +357,7 @@ inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const E
         edge_refs.references[q] = ref;
     }
     edge_refs.references[p] = ref;
+    usable_neighbours[p] = false;
     verts.push_back(vertex / i);
 
     return ref;

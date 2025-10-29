@@ -6,8 +6,6 @@ kanban-plugin: board
 
 ## in focus
 
-- [ ] [Adaptive marching cubes (1995)](https://link.springer.com/article/10.1007/BF01901516) [[adaptive marching cubes 1995.pdf]]
-- [ ] [multi labelled RMT (2024)](https://link.springer.com/article/10.1007/s11004-023-10075-9) [[multi-labeled rmt 2023.pdf]]
 - [ ] [fast isocontouring for improved interactivity (1996)](https://dl.acm.org/doi/10.5555/236226.236231) [[fast isosurface contouring 1996.pdf]]
 - [ ] [constrained elastic surface nets (1996)](https://www.researchgate.net/publication/226670264_Constrained_elastic_surface_nets_Generating_smooth_surfaces_from_binary_segmented_data) [[Constrained_Elastic_SurfaceNets 1999.pdf]]
 - [ ] [A generalized combinatorial marching hypercube algorithm](https://doi.org/10.1007/s40314-024-02627-4)
@@ -15,6 +13,9 @@ kanban-plugin: board
 - [ ] [sample lit review](https://www.researchgate.net/profile/Faizan-Hussain-2/publication/348917348_Unity_Game_Development_Engine_A_Technical_Survey/links/60167daf45851517ef2b2c0d/Unity-Game-Development-Engine-A-Technical-Survey.pdf)
 - [ ] [Tetrahedral grid refinement (1995)](https://link.springer.com/article/10.1007/BF02238487)
 - [ ] [Molecular surface generation using marching tetrahedra (1998)](https://doi.org/10.1002/\(SICI\)1096-987X\(199808\)19:11<1268::AID-JCC6>3.0.CO;2-I) [[molecular surface generation 1998.pdf]]
+- [ ] [Dual Marching Tetrahedra (2008)](https://www.researchgate.net/publication/220845354_Dual_Marching_Tetrahedra_Contouring_in_the_Tetrahedronal_Environment)
+- [ ] [Surface Shading in the Cuberille Environment (1985)](https://researchoutput.ncku.edu.tw/en/publications/surface-shading-in-the-cuberille-environment/)
+- [ ] [Re-Tiling Polygonal Surfaces (1992)](https://dl.acm.org/doi/pdf/10.1145/133994.134008)
 
 
 ## todo
@@ -52,6 +53,8 @@ kanban-plugin: board
 - [ ] [Isosurface stuffing (2007)](https://dl.acm.org/doi/10.1145/1275808.1276448) [[isosurface stuffing 2007.pdf]] -> [[miscellaneous notes]]
 - [ ] [isosurface extraction using delaunay tetrahedral grids (2025)](https://dl.acm.org/doi/abs/10.1145/3730851) [[delaunay tetrahedral grids 2025.pdf]] -> [[miscellaneous notes]]
 - [ ] [A Comprehensive Survey of Isocontouring Methods: Applications, Limitations and Perspectives (2024)](https://doi.org/10.3390/a17020083) [[Isosurface contouring methods survey 2024.pdf]] -> [[miscellaneous notes]]
+- [ ] [Adaptive marching cubes (1995)](https://link.springer.com/article/10.1007/BF01901516) [[adaptive marching cubes 1995.pdf]] -> [[Adaptive marching cubes 1995]]
+- [ ] [multi labelled RMT (2024)](https://link.springer.com/article/10.1007/s11004-023-10075-9) [[multi-labeled rmt 2023.pdf]] -> [[miscellaneous notes]]
 
 
 ## discarded

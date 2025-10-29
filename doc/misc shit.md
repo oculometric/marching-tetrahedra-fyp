@@ -1,10 +1,3 @@
-- [x] do project plan/proposal doc (include key sources)
-- [x] whittle down key sources
-- [x] update proposal  + add paper refs
-- [x] tempalte questionnaire
-- [x] fill out ethics form
-- [ ] forum
-- [x] decide on what we're actually researching: what are we comparing?
 no gantt charts! just do kanbans
 
 compare body-centered-lattice vs simple cube
