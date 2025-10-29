@@ -28,7 +28,7 @@ void runBenchmark(string name, int iterations, Vector3 min, Vector3 max, float c
     try
     {
         builder.configure(min, max, cube_size, sampler, threshold);
-        builder.configureModes(Builder::LatticeType::BODY_CENTERED_DIAMOND, Builder::ClusteringMode::NONE, 4);
+        builder.configureModes(Builder::LatticeType::BODY_CENTERED_DIAMOND, Builder::ClusteringMode::INTEGRATED, 4);
     }
     catch (exception e)
     {
@@ -139,8 +139,8 @@ float bunnyFunc(Vector3 v)
 
 int main()
 {
-    //runBenchmark("sphere", 1, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f);
-    //runBenchmark("fbm", 1, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f);
+    runBenchmark("sphere", 1, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f);
+    runBenchmark("fbm", 1, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f);
     //runBenchmark("bump", 1, { -4, -4, -4 }, { 4, 4, 4 }, 0.08f, [](Vector3 v) { return (1.0f / ((v.x * v.x) + (v.y * v.y) + 1)) - v.z; }, 0.0f);
     
     readObj("../stanford_bunny/bunny_touchup.obj", bunny_verts, bunny_inds);

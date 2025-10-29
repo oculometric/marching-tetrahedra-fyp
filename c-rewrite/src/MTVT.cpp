@@ -570,6 +570,20 @@ void Builder::vertexPass()
                     ++index;
                     continue;
                 }
+                position.x = (xi * resolution) + (is_odd_z ? min_extent.x : (min_extent.x - step));
+
+                if (clustering != ClusteringMode::INTEGRATED)
+                {
+                    mask = 1;
+                    // if not in clustering mode, skip the clustering bit!
+                    for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
+                        if (edge_proximity_flags & mask)
+                            edges.references[p] = addVertex(neighbour_values, p, thresh_diff, value, position, vertices);
+                    sample_edge_indices[index] = edges;
+                    ++index;
+                    continue;
+                }
+
                 uint8_t num_flagged_edges = 0;
                 EdgeAddr one_edge = EDGE_NULL;
                 bool usable_edges[14];
@@ -581,9 +595,7 @@ void Builder::vertexPass()
                         continue;
                     ++num_flagged_edges;
                     one_edge = p;
-                    
                 }
-                position.x = (xi * resolution) + (is_odd_z ? min_extent.x : (min_extent.x - step));
                 if (num_flagged_edges == 1)
                 {
                     // if only one edge is flagged, do the vertex and skip onward (no need to traverse the array again)
@@ -611,6 +623,8 @@ void Builder::vertexPass()
                     EdgeAddr highest_neighboured_edge = EDGE_NULL;
                     for (EdgeAddr p = 0; p < 14u; ++p)
                     {
+                        if (!usable_edges[p])
+                            continue;
                         auto pattern = edge_neighbour_addresses[p];
                         uint8_t neighbours_cur = 0;
                         neighbours_cur += usable_edges[pattern[0]];
