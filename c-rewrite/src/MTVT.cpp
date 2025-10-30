@@ -292,7 +292,9 @@ void MTVT::Builder::samplingLayer(const int start, const int layers)
 
 // each entry defines the set of either 4 or 6 edges which are closest 
 // to the edge used to index the array
-static constexpr EdgeAddr edge_neighbour_addresses[14][6] =
+// FIXME: expand this to cover more neighbours! then maybe it will merge correctly! 4->8, 6->6?
+// alternatively we could grow our edges
+static constexpr EdgeAddr edge_neighbour_addresses[14][8] =
 {
     { PXPYPZ, PXNYPZ, PXPYNZ, PXNYNZ, EDGE_NULL },      // PX
     { NXPYPZ, NXNYPZ, NXPYNZ, NXNYNZ, EDGE_NULL },      // NX

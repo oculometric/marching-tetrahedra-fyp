@@ -124,6 +124,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\mesh_closest.h" />
     <ClInclude Include="src\fbm.h" />
     <ClInclude Include="src\MTVT.h" />
     <ClInclude Include="src\obj_loader.h" />
@@ -132,6 +133,7 @@
   <ItemGroup>
     <ClCompile Include="src\fbm.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\mesh_closest.cpp" />
     <ClCompile Include="src\MTVT.cpp" />
     <ClCompile Include="src\obj_loader.cpp" />
   </ItemGroup>
