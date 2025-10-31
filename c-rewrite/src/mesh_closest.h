@@ -19,6 +19,7 @@ private:
 	std::vector<std::pair<MTVT::Vector3, MTVT::Vector3>> edge_vectors;
 
 	void buildReverseIndexBuffer();
+	void closestPointOnTri(size_t triangle_ind, MTVT::Vector3 test_point, float& best_sq_dist, MTVT::Vector3& closest_point, float& best_sdf);
 
 public:
 	void load(std::string file);

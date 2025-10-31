@@ -31,79 +31,66 @@ void MappedMesh::load(string file)
     buildReverseIndexBuffer();
 }
 
+// based on this https://github.com/ranjeethmahankali/galproject/blob/main/galcore/Mesh.cpp
+void MappedMesh::closestPointOnTri(size_t triangle_ind, Vector3 test_point, float& best_sq_dist, Vector3& closest_point, float& best_sdf)
+{
+    const uint32_t i0 = indices[(triangle_ind * 3) + 0];
+    const uint32_t i1 = indices[(triangle_ind * 3) + 1];
+    const uint32_t i2 = indices[(triangle_ind * 3) + 2];
+    const Vector3 v0 = vertices[i0];
+    const Vector3 v1 = vertices[i1];
+    const Vector3 v2 = vertices[i2];
+    const Vector3 vs[3] = { v0, v1, v2 };
+
+    const Vector3 norm = normals[triangle_ind];
+    const Vector3 proj = norm * ((v0 - test_point) ^ norm);
+    const float sq_dist = sq_mag(proj);
+    if (sq_dist >= best_sq_dist)
+        return;
+
+    const Vector3 proj_point = test_point + proj;
+
+    int num_failed = 0;
+    for (int i = 0; i < 3; ++i)
+    {
+        const Vector3 va = vs[i];
+        const Vector3 vb = vs[(i + 1) % 3];
+        const bool is_outside = (((va - proj_point) % (vb - proj_point)) ^ norm) < 0.0f;
+        if (is_outside)
+        {
+            ++num_failed;
+            const Vector3 vl = vb - va;
+            const float r = ::min(::max((vl ^ (proj_point - va)) / mag(vl), 0.0f), 1.0f);
+            const Vector3 clamped_proj_point = (vb * r) + (va * (1.0f - r));
+            const float clamped_sq_dist = sq_mag(clamped_proj_point - test_point);
+            if (clamped_sq_dist < best_sq_dist)
+            {
+                best_sq_dist = clamped_sq_dist;
+                closest_point = clamped_proj_point;
+                best_sdf = (closest_point - test_point) ^ norm;
+            }
+        }
+        if (num_failed > 1)
+            break;
+    }
+    if (num_failed == 0)
+    {
+        best_sq_dist = sq_dist;
+        closest_point = proj_point;
+        best_sdf = (closest_point - test_point) ^ norm;
+    }
+}
+
 float MappedMesh::closestPointSDF(MTVT::Vector3 vec)
 {
-    size_t closest_vertex = 0;
-    float min_distance = INFINITY;
-    Vector3 best_vert_to_vec;
-    for (size_t i = 0; i < vertices.size(); ++i)
+    float best_sq_dist = INFINITY;
+    Vector3 closest_point = Vector3{ 0, 0, 0 };
+    float best_sdf = 0;
+
+    for (size_t i = 0; i < indices.size() / 3; ++i)
     {
-        Vector3 vert = vertices[i];
-        float d_x = vert.x - vec.x;
-        if (::abs(d_x) >= min_distance)
-            continue;
-        float d_y = vert.y - vec.y;
-        if (::abs(d_y) >= min_distance)
-            continue;
-        float d_z = vert.z - vec.z;
-        if (::abs(d_z) >= min_distance)
-            continue;
-        Vector3 vert_to_vec = { -d_x, -d_y, -d_z };
-        float mag_v = mag(vert_to_vec);
-        if (mag_v >= min_distance)
-            continue;
-        closest_vertex = i;
-        best_vert_to_vec = vert_to_vec;
-        min_distance = mag_v;
+        closestPointOnTri(i, vec, best_sq_dist, closest_point, best_sdf);
     }
 
-    auto triangles_involved = vertex_uses[closest_vertex];
-    float min_sdf = INFINITY;
-    for (size_t triangle : triangles_involved)
-    {
-        Vector3 v0 = vertices[indices[(triangle * 3) + 0]];
-        Vector3 v1 = vertices[indices[(triangle * 3) + 1]];
-        Vector3 v2 = vertices[indices[(triangle * 3) + 2]];
-        float sdf = (vec - v0) ^ normals[triangle];
-        Vector3 P = vec - (normals[triangle] * sdf);
-        
-        // compute plane's normal
-        Vector3 v0v1 = v1 - v0;
-        Vector3 v0v2 = v2 - v0;
-        // no need to normalize
-        Vector3 N = v0v1 % v0v2; // N
-
-        // Compute the intersection point P
-        //Vector3 P = orig + dir * t;
-
-        // Step 2: Calculate area of the triangle
-        float area = mag(N) / 2; // Area of the full triangle
-
-        // Step 3: Inside-outside test using barycentric coordinates
-        Vector3 C;
-
-        // Calculate u (for triangle BCP)
-        Vector3 v1p = P - v1;
-        Vector3 v1v2 = v2 - v1;
-        C = v1v2 % v1p;
-        float u = (mag(C) / 2) / area;
-        if ((N ^ C) < 0) continue; // P is on the wrong side
-
-        // Calculate v (for triangle CAP)
-        Vector3 v2p = P - v2;
-        Vector3 v2v0 = v0 - v2;
-        C = v2v0 % v2p;
-        float v = (mag(C) / 2) / area;
-        if ((N ^ C) < 0) continue; // P is on the wrong side
-
-        // Third edge
-        Vector3 v0p = P - v0;
-        // Vec3f v0v1 = v1 - v0; -> already defined
-        C = v0v1 % v0p;
-        if ((N ^ C) < 0) continue; // P is on the right side
-
-        if (::abs(sdf) < ::abs(min_sdf))
-            min_sdf = sdf;
-    }
-    return -min_sdf;
+    return best_sdf;
 }

@@ -28,7 +28,7 @@ void runBenchmark(string name, int iterations, Vector3 min, Vector3 max, float c
     try
     {
         builder.configure(min, max, cube_size, sampler, threshold);
-        builder.configureModes(Builder::LatticeType::BODY_CENTERED_DIAMOND, Builder::ClusteringMode::NONE, 4);
+        builder.configureModes(Builder::LatticeType::BODY_CENTERED_DIAMOND, Builder::ClusteringMode::NONE, 8);
     }
     catch (exception e)
     {

@@ -41,3 +41,4 @@ they mention subdivision to recover finer details.
 ## Fast Isocontouring For Improved Interactivity
 link - https://dl.acm.org/doi/10.5555/236226.236231
 this seems useful! i want interactivity.
+accelerates contouring by skipping out a lot of cells. roughly $n^{\frac{2}{3}}$, where n is the number of cells, are occupied on average. this technique is specifically looking at 
