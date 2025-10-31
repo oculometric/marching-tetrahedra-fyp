@@ -6,7 +6,6 @@
       {
         "id": "68b5b1153b5047a7",
         "type": "tabs",
-        "dimension": 40.81325301204819,
         "children": [
           {
             "id": "d6c5fb8c18675b10",
@@ -78,26 +77,7 @@
             }
           }
         ],
-        "currentTab": 3
-      },
-      {
-        "id": "acdb40b726ac385b",
-        "type": "tabs",
-        "dimension": 59.18674698795181,
-        "children": [
-          {
-            "id": "5aa9647dad2ac257",
-            "type": "leaf",
-            "state": {
-              "type": "pdf",
-              "state": {
-                "file": "doc/papers/fast isosurface contouring 1996.pdf"
-              },
-              "icon": "lucide-file-text",
-              "title": "fast isosurface contouring 1996"
-            }
-          }
-        ]
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -244,8 +224,12 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "e6b3ca38541220cd",
+  "active": "a4940339f26bada4",
   "lastOpenFiles": [
+    "doc/research notes/miscellaneous notes.md",
+    "doc/research kanban.md",
+    "doc/misc shit.md",
+    "doc/papers/fast isosurface contouring 1996.pdf",
     "enc_temp_folder/6b8085f41c80fee9243f880a75ebe0/main.cpp",
     "enc_temp_folder/6b8085f41c80fee9243f880a75ebe0",
     "enc_temp_folder",
@@ -255,12 +239,7 @@
     "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.write.1.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.read.1.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/unsuccessfulbuild",
-    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.29.tlog",
-    "c-rewrite/x64/Release/mesh_closest.obj",
-    "doc/research kanban.md",
-    "doc/misc shit.md",
     "Untitled.canvas",
-    "doc/research notes/miscellaneous notes.md",
     "2025-10-29.md",
     "doc/task board.md",
     "doc/research notes/Adaptive marching cubes 1995.md",

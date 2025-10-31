@@ -14,6 +14,7 @@ things to actually compare:
 - performance with different clustering methods (as above)
 - performance with different tessellations
 
+- [ ] add some options to keep the buffers around, skip sampling pass (like if you're only changing the isovalue)
 
 STORE THE EDGE VERTEX DATA ON THE SAMPLE POINTS! ONLY ONE SAMPLE POINT WILL KNOW ABOUT THE VERTEX ANYWAY!
 

@@ -41,4 +41,5 @@ they mention subdivision to recover finer details.
 ## Fast Isocontouring For Improved Interactivity
 link - https://dl.acm.org/doi/10.5555/236226.236231
 this seems useful! i want interactivity.
-accelerates contouring by skipping out a lot of cells. roughly $n^{\frac{2}{3}}$, where n is the number of cells, are occupied on average. this technique is specifically looking at 
+accelerates contouring by skipping out a lot of cells. roughly $n^{\frac{2}{3}}$, where n is the number of cells, are occupied on average. this technique is specifically looking at pre-filtering cells for surface intersections.
+works by preprocessing the data to extract a set of cells for which every component of the isocontour defined by a given isovalue will intersect a cell in S. S is then sorted into a search structure according to minimum and maximum value for each cell. the isocontour can then be extracted by efficiently searching for cells in S which intersect the isosurface and then propagating tests through adjacent cells.
