@@ -43,3 +43,22 @@ link - https://dl.acm.org/doi/10.5555/236226.236231
 this seems useful! i want interactivity.
 accelerates contouring by skipping out a lot of cells. roughly $n^{\frac{2}{3}}$, where n is the number of cells, are occupied on average. this technique is specifically looking at pre-filtering cells for surface intersections.
 works by preprocessing the data to extract a set of cells for which every component of the isocontour defined by a given isovalue will intersect a cell in S. S is then sorted into a search structure according to minimum and maximum value for each cell. the isocontour can then be extracted by efficiently searching for cells in S which intersect the isosurface and then propagating tests through adjacent cells.
+
+## Constrained Elastic SurfaceNets: Generating Smooth Models from Binary Segmented Data
+link - https://www.researchgate.net/publication/226670264_Constrained_elastic_surface_nets_Generating_smooth_surfaces_from_binary_segmented_data
+creates vertices on the isosurface (within individual cubes), then adjusts them to minimise the deviation from the surface. maintains small details. aims to smooth out the problems of volumetric rendering by defining a geometric surface.
+each sample point (input volume element) stores a scalar value and a signed distance to the closest surface point. alternative to MC as a method for triangulating binary segmented data (i.e. data where you expect to find a surface). tries to eliminate the terracing artefacts of simple techniques, and preserve details lost by MC, and also minimise the number of triangles compared to MC.
+mentions spline/parametric surface representations, where the number of control points needed to ensure detail in the final model is unknown.
+![[me when i relax my nodes.png]]
+1. create nodes in each data segment
+2. link them together
+3. relax/smooth the node positions to match the surface best, without allowing them to leave their parent segments (cubes)
+each initial node can have 6 links, to its neighbouring cells.
+
+## Molecular Surface Generation Using Marching Tetrahedra
+link - https://doi.org/10.1002/(SICI)1096-987X(199808)19:11%3C1268::AID-JCC6%3E3.0.CO;2-I
+uses BCDL marching tetrahedra to visualise molecular surfaces. good edge aspect ratio, only one tetrahedron shape (all hail BCDL). 
+
+## Surface Shading in the Cuberille Environment
+link - https://researchoutput.ncku.edu.tw/en/publications/surface-shading-in-the-cuberille-environment/
+avoids using surface geometry because it's too expensive. due to the expensiveness of generating and rendering geometry, the algorithm focuses on simply rendering the data directly (visualisation). shades pixels according to normal of each cube face (i.e. this algorithm involves the stepped data talked about by the surface nets paper), and distance to viewer.

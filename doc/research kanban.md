@@ -6,15 +6,14 @@ kanban-plugin: board
 
 ## in focus
 
-- [ ] [constrained elastic surface nets (1996)](https://www.researchgate.net/publication/226670264_Constrained_elastic_surface_nets_Generating_smooth_surfaces_from_binary_segmented_data) [[Constrained_Elastic_SurfaceNets 1999.pdf]]
-- [ ] [Molecular surface generation using marching tetrahedra (1998)](https://doi.org/10.1002/\(SICI\)1096-987X\(199808\)19:11<1268::AID-JCC6>3.0.CO;2-I) [[molecular surface generation 1998.pdf]]
+- [ ] [Re-Tiling Polygonal Surfaces (1992)](https://dl.acm.org/doi/pdf/10.1145/133994.134008) [[retiling polygonal surfaces.pdf]]
 - [ ] [A generalized combinatorial marching hypercube algorithm](https://doi.org/10.1007/s40314-024-02627-4)
 - [ ] [fast marching-cubes-style volume evaluation (2022)](https://dspacemainprd01.lib.uwaterloo.ca/server/api/core/bitstreams/6487b452-e1d9-4b37-bd92-8270c4b202ea/content) [[fast marching-cubes-style volume evaluation 2022.pdf]]
 - [ ] [sample lit review](https://www.researchgate.net/profile/Faizan-Hussain-2/publication/348917348_Unity_Game_Development_Engine_A_Technical_Survey/links/60167daf45851517ef2b2c0d/Unity-Game-Development-Engine-A-Technical-Survey.pdf)
-- [ ] [Tetrahedral grid refinement (1995)](https://link.springer.com/article/10.1007/BF02238487)
+- [ ] [Tetrahedral grid refinement (1995)](https://link.springer.com/article/10.1007/BF02238487) [[Tetrahedral grid refinement 1995.pdf]]
 - [ ] [Dual Marching Tetrahedra (2008)](https://www.researchgate.net/publication/220845354_Dual_Marching_Tetrahedra_Contouring_in_the_Tetrahedronal_Environment)
-- [ ] [Surface Shading in the Cuberille Environment (1985)](https://researchoutput.ncku.edu.tw/en/publications/surface-shading-in-the-cuberille-environment/)
-- [ ] [Re-Tiling Polygonal Surfaces (1992)](https://dl.acm.org/doi/pdf/10.1145/133994.134008)
+- [ ] [An elaborate ambiguity detection method for constructing isosurfaces within tetrahedral meshes (1995)](https://www.sciencedirect.com/science/article/abs/pii/009784939500006X) [[ambiguity detection within tetrahedral meshes 1995.pdf]]
+- [ ] [Exploiting triangulated surface extraction using tetrahedral decomposition (1995)](https://ieeexplore.ieee.org/document/485620) [[triangulated surface extraction using tetrahedral decomposition 1995.pdf]]
 
 
 ## todo
@@ -23,9 +22,9 @@ kanban-plugin: board
 - [ ] [Flexible Isosurface Extraction for Gradient-Based Mesh Optimization (2023)](https://dl.acm.org/doi/10.1145/3592430)
 - [ ] [Deep marching tetrahedra: a hybrid representation for high-resolution 3D shape synthesis (2021)](https://dl.acm.org/doi/10.5555/3540261.3540727)
 - [ ] c++/c# performance comparison
-- [ ] [large isosurface simplification (2016)](https://link.springer.com/article/10.1007/s12650-016-0359-5)
 - [ ] [Tetrahedron Splatting for 3D Generation (2024)](https://proceedings.neurips.cc/paper_files/paper/2024/hash/92ce40962b4098f7bf6eed33128fc606-Abstract-Conference.html)
-- [ ] [octree-based dual contouring (2014)](https://link.springer.com/article/10.1007/s00366-013-0328-8)
+- [ ] [large isosurface simplification (2016)](https://link.springer.com/article/10.1007/s12650-016-0359-5) [[large isosurface simplification 2016.pdf]]
+- [ ] [octree-based dual contouring (2014)](https://link.springer.com/article/10.1007/s00366-013-0328-8) [[octree dual contouring 2013.pdf]]
 - [ ] [scalable mesh generation for volumetric data (2022)](https://ieeexplore.ieee.org/abstract/document/9968044)
 - [ ] [topologically accurate mesh extraction (2023)](https://www.sciencedirect.com/science/article/pii/S001044852300091X)
 - [ ] blender's dynamic topology
@@ -55,6 +54,9 @@ kanban-plugin: board
 - [ ] [Adaptive marching cubes (1995)](https://link.springer.com/article/10.1007/BF01901516) [[adaptive marching cubes 1995.pdf]] -> [[Adaptive marching cubes 1995]]
 - [ ] [multi labelled RMT (2024)](https://link.springer.com/article/10.1007/s11004-023-10075-9) [[multi-labeled rmt 2023.pdf]] -> [[miscellaneous notes]]
 - [ ] [fast isocontouring for improved interactivity (1996)](https://dl.acm.org/doi/10.5555/236226.236231) [[fast isosurface contouring 1996.pdf]] -> [[miscellaneous notes]]
+- [ ] [constrained elastic surface nets (1996)](https://www.researchgate.net/publication/226670264_Constrained_elastic_surface_nets_Generating_smooth_surfaces_from_binary_segmented_data) [[Constrained_Elastic_SurfaceNets 1999.pdf]] -> [[miscellaneous notes]]
+- [ ] [Molecular surface generation using marching tetrahedra (1998)](https://doi.org/10.1002/\(SICI\)1096-987X\(199808\)19:11<1268::AID-JCC6>3.0.CO;2-I) [[molecular surface generation 1998.pdf]] -> [[miscellaneous notes]]
+- [ ] [Surface Shading in the Cuberille Environment (1985)](https://researchoutput.ncku.edu.tw/en/publications/surface-shading-in-the-cuberille-environment/) [[Surface_Shading_in_the_Cuberille_Environment 1985.pdf]] -> [[miscellaneous notes]]
 
 
 ## discarded
