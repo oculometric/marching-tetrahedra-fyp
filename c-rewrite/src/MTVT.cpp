@@ -61,11 +61,11 @@ void Builder::configure(Vector3 minimum_extent, Vector3 maximum_extent, float cu
     populateIndexOffsets();
 }
 
-void Builder::configureModes(LatticeType lattice_type, ClusteringMode clustering_mode, size_t parallel_threads)
+void Builder::configureModes(LatticeType lattice_type, ClusteringMode clustering_mode, unsigned short parallel_threads)
 {
     structure = lattice_type;
     clustering = clustering_mode;
-    thread_count = ::max((size_t)1, parallel_threads);
+    thread_count = ::max((unsigned short)1, parallel_threads);
 }
 
 Mesh Builder::generate(DebugStats& stats)
@@ -248,7 +248,7 @@ void Builder::samplingPass()
     int layers_each = samples_z / thread_count;
     int remainder = samples_z - (layers_each * thread_count);
     vector<thread*> threads;
-    for (size_t i = 0; i < thread_count - 1; ++i)
+    for (int i = 0; i < thread_count - 1; ++i)
         threads.push_back(new thread(&Builder::samplingLayer, this, layers_each * i, layers_each));
     samplingLayer(layers_each * (thread_count - 1), layers_each + remainder);
     for (thread* t : threads)
@@ -359,7 +359,7 @@ inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const E
     }
     edge_refs.references[p] = ref;
     usable_neighbours[p] = false;
-    verts.push_back(vertex / i);
+    verts.push_back(vertex / static_cast<float>(i));
 
     return ref;
 }
@@ -797,7 +797,7 @@ static constexpr uint8_t tetrahedral_edge_address_patterns[16][4] =
 
 // this macro simply turns an edge address into the edge address pointing in the 
 // opposite direction
-#define INVERT_EDGE_INDEX(i) ((i < 6) ? (i + 1 - ((i % 2) * 2)) : (19 - i))
+#define INVERT_EDGE_INDEX(i) (EdgeAddr)((i < 6) ? (i + 1 - ((i % 2) * 2)) : (19 - i))
 
 void Builder::geometryPass()
 {
@@ -905,7 +905,7 @@ void Builder::geometryPass()
                     // find the edge usage sequence (and thus index sequence) based on the pattern
                     auto pattern = tetrahedral_edge_address_patterns[pattern_ident];
                     // build one or two triangles
-                    VertexRef triangle_indices[4] = { -1, -1, -1, -1 };
+                    VertexRef triangle_indices[4] = { VERTEX_NULL, VERTEX_NULL, VERTEX_NULL, VERTEX_NULL };
                     const bool two_triangles = pattern[3] != (uint8_t)-1;
                     const int imax = (two_triangles ? 4 : 3);
                     for (int i = 0; i < imax; ++i)

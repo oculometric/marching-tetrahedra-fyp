@@ -74,7 +74,7 @@ private:
     int cubes_x, cubes_y, cubes_z;
     int samples_x, samples_y, samples_z;
     float resolution;
-    size_t thread_count;
+    unsigned short thread_count;
     size_t grid_data_length;
 
     LatticeType structure;
@@ -99,7 +99,7 @@ public:
     Builder();
 
     void configure(Vector3 minimum_extent, Vector3 maximum_extent, float cube_size, float (*sample_func)(Vector3), float threshold_value);
-    void configureModes(LatticeType lattice_type, ClusteringMode clustering_mode, size_t parallel_threads);
+    void configureModes(LatticeType lattice_type, ClusteringMode clustering_mode, unsigned short parallel_threads);
     Mesh generate(DebugStats& stats);
 
 private:
