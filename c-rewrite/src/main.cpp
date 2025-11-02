@@ -6,6 +6,7 @@
 #include "MTVT.h"
 #include "fbm.h"
 #include "mesh_closest.h"
+#include "mesh_stats.h"
 
 using namespace std;
 using namespace MTVT;
@@ -56,27 +57,45 @@ void runBenchmark(string name, int iterations, Vector3 min, Vector3 max, float c
     }
 
     float total_time = stats.allocation_time + stats.sampling_time + stats.vertex_time + stats.geometry_time;
+    MeshStats triangle_stats = compileStats(mesh);
 
     cout << '\b';
     cout <<        "-- summary -----------------------------" << endl;
     cout << format("  {0} test ({1} iterations)", name, iterations) << endl;
     cout << format("  {0}x{1}x{2} resolution", stats.cubes_x, stats.cubes_y, stats.cubes_z) << endl;
     cout <<        "  results:" << endl;
-    cout << format("    sample points:  {0} ({1} allocated)", stats.min_sample_points, stats.sample_points_allocated) << endl;
-    cout << format("    edges:          {0} ({1} allocated)", stats.min_edges, stats.edges_allocated) << endl;
-    cout << format("    tetrahedra:     {0} ({1} evaluated)", stats.max_tetrahedra, stats.tetrahedra_evaluated) << endl;
-    cout << format("    vertices:       {0}", stats.vertices) << endl;
-    cout << format("    indices:        {0}", stats.indices) << endl;
-    cout << format("    degenerates:    {0}", stats.degenerate_triangles) << endl;
-    cout << format("  timing:           {0:.6f}s total", total_time / iterations) << endl;
-    cout << format("    allocation:     {0:.6f}s ({1:5f}% of total)", stats.allocation_time / iterations, (stats.allocation_time / total_time) * 100.0f) << endl;
-    cout << format("    sampling:       {0:.6f}s ({1:5f}% of total)", stats.sampling_time / iterations, (stats.sampling_time / total_time) * 100.0f) << endl;
-    cout << format("    vertex:         {0:.6f}s ({1:5f}% of total)", stats.vertex_time / iterations, (stats.vertex_time / total_time) * 100.0f) << endl;
-    cout << format("    geometry:       {0:.6f}s ({1:5f}% of total)", stats.geometry_time / iterations, (stats.geometry_time / total_time) * 100.0f) << endl;
+    cout << format(locale("en_US.UTF-8"), "    sample points:  {0:>12L} ({1:L} allocated)", stats.min_sample_points, stats.sample_points_allocated) << endl;
+    cout << format(locale("en_US.UTF-8"), "    edges:          {0:>12L} ({1:L} allocated)", stats.min_edges, stats.edges_allocated) << endl;
+    cout << format(locale("en_US.UTF-8"), "    tetrahedra:     {0:>12L} ({1:L} evaluated)", stats.max_tetrahedra, stats.tetrahedra_evaluated) << endl;
+    cout << format(locale("en_US.UTF-8"), "    vertices:       {0:>12L}", stats.vertices) << endl;
+    cout << format(locale("en_US.UTF-8"), "    triangles:      {0:>12L} ({1:L} indices)", stats.indices / 3, stats.indices) << endl;
+    cout << format(locale("en_US.UTF-8"), "    degenerates:    {0:>12L}", stats.degenerate_triangles) << endl;
+    cout << format("  timing:           {0:.>6f}s total", total_time / iterations) << endl;
+    cout << format("    allocation:     {0:.>6f}s ({1:5f}% of total)", stats.allocation_time / iterations, (stats.allocation_time / total_time) * 100.0f) << endl;
+    cout << format("    sampling:       {0:.>6f}s ({1:5f}% of total)", stats.sampling_time / iterations, (stats.sampling_time / total_time) * 100.0f) << endl;
+    cout << format("    vertex:         {0:.>6f}s ({1:5f}% of total)", stats.vertex_time / iterations, (stats.vertex_time / total_time) * 100.0f) << endl;
+    cout << format("    geometry:       {0:.>6f}s ({1:5f}% of total)", stats.geometry_time / iterations, (stats.geometry_time / total_time) * 100.0f) << endl;
     cout <<        "  efficiency (lower number better):" << endl;
-    cout << format("    SP allocation:  {0:6f}% ({1})", ((float)stats.sample_points_allocated / stats.min_sample_points) * 100.0f, memorySize(stats.mem_sample_points)) << endl;
-    cout << format("    E allocation:   {0:6f}% ({1})", ((float)stats.edges_allocated / stats.min_edges) * 100.0f, memorySize(stats.mem_edges)) << endl;
-    cout << format("    T evaluation:   {0:6f}%", ((float)stats.tetrahedra_evaluated / stats.max_tetrahedra) * 100.0f) << endl;
+    cout << format("    SP allocation:  {0:>6f}% ({1})", ((float)stats.sample_points_allocated / stats.min_sample_points) * 100.0f, memorySize(stats.mem_sample_points)) << endl;
+    cout << format("    E allocation:   {0:>6f}% ({1})", ((float)stats.edges_allocated / stats.min_edges) * 100.0f, memorySize(stats.mem_edges)) << endl;
+    cout << format("    T evaluation:   {0:>6f}%", ((float)stats.tetrahedra_evaluated / stats.max_tetrahedra) * 100.0f) << endl;
+    cout <<        "  geometry stats:" << endl;
+    cout << format("    degenerate fraction:       {0:>6f}%", ((float)stats.degenerate_triangles / ((float)(stats.indices / 3) + (float)stats.degenerate_triangles)) * 100.0f) << endl;
+    cout << format("    vertices per SP:           {0:>6f}", (float)stats.vertices / (float)stats.min_sample_points) << endl;
+    cout << format("    vertices per edge:         {0:>6f}", (float)stats.vertices / (float)stats.min_edges) << endl;
+    cout << format("    vertices per tetrahedron:  {0:>6f}", (float)stats.vertices / (float)stats.max_tetrahedra) << endl;
+    cout << format("    triangles per SP:          {0:>6f}", (float)(stats.indices / 3) / (float)stats.min_sample_points) << endl;
+    cout << format("    triangles per tetrahedron: {0:>6f}", (float)(stats.indices / 3) / (float)stats.min_edges) << endl;
+    cout << format("    triangles per edge:        {0:>6f}", (float)(stats.indices / 3) / (float)stats.max_tetrahedra) << endl;
+    cout <<        "  triangle quality stats:" << endl;
+    cout << format("    area mean:     {0:>6f}", triangle_stats.area_mean) << endl;
+    cout << format("    area max:      {0:>6f}", triangle_stats.area_max) << endl;
+    cout << format("    area min:      {0:>6f}", triangle_stats.area_min) << endl;
+    cout << format("    area StdDev:   {0:>6f}", triangle_stats.area_sd) << endl;
+    cout << format("    aspect mean:   {0:>6f}", triangle_stats.aspect_mean) << endl;
+    cout << format("    aspect max:    {0:>6f}", triangle_stats.aspect_max) << endl;
+    cout << format("    aspect min:    {0:>6f}", triangle_stats.aspect_min) << endl;
+    cout << format("    aspect StdDev: {0:>6f}", triangle_stats.aspect_sd) << endl;
     cout <<        "----------------------------------------" << endl << endl;
 
     ofstream file(name + ".obj");
