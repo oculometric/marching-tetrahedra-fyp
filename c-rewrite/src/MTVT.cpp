@@ -290,26 +290,24 @@ void MTVT::Builder::samplingLayer(const int start, const int layers)
     }
 }
 
-// each entry defines the set of either 4 or 6 edges which are closest 
+// each entry defines the set of either 8 or 6 edges which are closest 
 // to the edge used to index the array
-// FIXME: expand this to cover more neighbours! then maybe it will merge correctly! 4->8, 6->6?
-// alternatively we could grow our edges
 static constexpr EdgeAddr edge_neighbour_addresses[14][8] =
 {
-    { PXPYPZ, PXNYPZ, PXPYNZ, PXNYNZ, EDGE_NULL },      // PX
-    { NXPYPZ, NXNYPZ, NXPYNZ, NXNYNZ, EDGE_NULL },      // NX
-    { PXPYPZ, NXPYPZ, PXPYNZ, NXPYNZ, EDGE_NULL },      // PY
-    { PXNYPZ, NXNYPZ, PXNYNZ, NXNYNZ, EDGE_NULL },      // NY
-    { PXPYPZ, NXPYPZ, PXNYPZ, NXNYPZ, EDGE_NULL },      // PZ
-    { PXPYNZ, NXPYNZ, PXNYNZ, NXNYNZ, EDGE_NULL },      // NZ
-    { PX,     PY,     PZ,     NXPYPZ, PXNYPZ, PXPYNZ }, // PXPYPZ
-    { NX,     PY,     PZ,     PXPYPZ, NXNYPZ, NXPYNZ }, // NXPYPZ
-    { PX,     NY,     PZ,     NXNYPZ, PXPYPZ, PXNYNZ }, // PXNYPZ
-    { NX,     NY,     PZ,     PXNYPZ, NXPYPZ, NXNYNZ }, // NXNYPZ
-    { PX,     PY,     NZ,     NXPYNZ, PXNYNZ, PXPYPZ }, // PXPYNZ
-    { NX,     PY,     NZ,     PXPYNZ, NXNYNZ, NXPYPZ }, // NXPYNZ
-    { PX,     NY,     NZ,     NXNYNZ, PXPYNZ, PXNYPZ }, // PXNYNZ
-    { NX,     NY,     NZ,     PXNYNZ, NXPYNZ, NXNYPZ }, // NXNYNZ
+    { PXPYPZ, PXNYPZ, PXPYNZ, PXNYNZ, PY, PZ, NY, NZ },      // PX
+    { NXPYPZ, NXNYPZ, NXPYNZ, NXNYNZ, PY, PZ, NY, NZ },      // NX
+    { PXPYPZ, NXPYPZ, PXPYNZ, NXPYNZ, PX, PZ, NX, NZ },      // PY
+    { PXNYPZ, NXNYPZ, PXNYNZ, NXNYNZ, PX, PZ, NX, NZ },      // NY
+    { PXPYPZ, NXPYPZ, PXNYPZ, NXNYPZ, PX, PY, NX, NY },      // PZ
+    { PXPYNZ, NXPYNZ, PXNYNZ, NXNYNZ, PX, PY, NX, NY },      // NZ
+    { PX,     PY,     PZ,     NXPYPZ, PXNYPZ, PXPYNZ, EDGE_NULL }, // PXPYPZ
+    { NX,     PY,     PZ,     PXPYPZ, NXNYPZ, NXPYNZ, EDGE_NULL }, // NXPYPZ
+    { PX,     NY,     PZ,     NXNYPZ, PXPYPZ, PXNYNZ, EDGE_NULL }, // PXNYPZ
+    { NX,     NY,     PZ,     PXNYPZ, NXPYPZ, NXNYNZ, EDGE_NULL }, // NXNYPZ
+    { PX,     PY,     NZ,     NXPYNZ, PXNYNZ, PXPYPZ, EDGE_NULL }, // PXPYNZ
+    { NX,     PY,     NZ,     PXPYNZ, NXNYNZ, NXPYPZ, EDGE_NULL }, // NXPYNZ
+    { PX,     NY,     NZ,     NXNYNZ, PXPYNZ, PXNYPZ, EDGE_NULL }, // PXNYNZ
+    { NX,     NY,     NZ,     PXNYNZ, NXPYNZ, NXNYPZ, EDGE_NULL }, // NXNYNZ
 };
 
 #define VERTEX_POSITION(vec, td, van, val, pos) ((vec * (td / (van - val))) + pos)
@@ -327,10 +325,11 @@ inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const E
 {
     // check which neighbours are actually usable and populate active_edges, 
     // marking the last item with an EDGE_NULL
+    // FIXME: prevent us from merging stuff with opposing edges (so we can't merge PX with NX)
     auto pattern = edge_neighbour_addresses[p];
-    EdgeAddr active_edges[6];
+    EdgeAddr active_edges[8];
     int j = 0;
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < 8; ++i)
     {
         if (pattern[i] == EDGE_NULL)
         {
@@ -563,21 +562,20 @@ void Builder::vertexPass()
                 sample_crossing_flags[index] = edge_crossing_flags;
                     
                 // perform vertex generation & merging
-                // TODO: actually implement merging!
                 memcpy(&edges, &edges_template, sizeof(EdgeReferences));
+                // skip this entire sample point if there are no intersections at all
                 if (edge_proximity_flags == 0)
                 {
-                    // skip this entire sample point if there are no intersections at all
                     sample_edge_indices[index] = edges;
                     ++index;
                     continue;
                 }
                 position.x = (xi * resolution) + (is_odd_z ? min_extent.x : (min_extent.x - step));
 
+                // if not in clustering mode, skip the clustering code!
                 if (clustering != ClusteringMode::INTEGRATED)
                 {
                     mask = 1;
-                    // if not in clustering mode, skip the clustering bit!
                     for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
                         if (edge_proximity_flags & mask)
                             edges.references[p] = addVertex(neighbour_values, p, thresh_diff, value, position, vertices);
@@ -586,6 +584,10 @@ void Builder::vertexPass()
                     continue;
                 }
 
+                // count how many edges are available to be merged,
+                // and organise them into a bool array just to save
+                // a bunch of bit-shift logic (i think this is faster?
+                // it's definitely easier to read)
                 uint8_t num_flagged_edges = 0;
                 EdgeAddr one_edge = EDGE_NULL;
                 bool usable_edges[14];
@@ -598,17 +600,19 @@ void Builder::vertexPass()
                     ++num_flagged_edges;
                     one_edge = p;
                 }
+                // if only one edge is flagged, do the vertex and 
+                // skip onward (no need to traverse the array again)
                 if (num_flagged_edges == 1)
                 {
-                    // if only one edge is flagged, do the vertex and skip onward (no need to traverse the array again)
                     edges.references[one_edge] = addVertex(neighbour_values, one_edge, thresh_diff, value, position, vertices);
                     sample_edge_indices[index] = edges;
                     ++index;
                     continue;
                 }
-                if (num_flagged_edges == 14)
+                // if 12 or more edges are flagged, no merging 
+                // and we just do them all individually
+                if (num_flagged_edges >= 12)
                 {
-                    // if all edges are flagged, no merging and we just do them all individually
                     for (EdgeAddr p = 0; p < 14u; ++p)
                         edges.references[p] = addVertex(neighbour_values, p, thresh_diff, value, position, vertices);
                     sample_edge_indices[index] = edges;
@@ -617,8 +621,9 @@ void Builder::vertexPass()
                 }
 
                 // until we run out of mergeable edges: check usable_edges to find the edge 
-                // with the most neighbours, calculate and merge those into one and clear 
-                // those usable_edges flags, then repeat
+                // with the most number of mergeable neighbours, calculate and merge those 
+                // into one vertex, and clear the relevant usable_edges flags. repeat until
+                // the best neighbour-count is zero (i.e. we only have isolated islands left)
                 while (true)
                 {
                     uint8_t highest_neighbour_count = 0;
@@ -633,10 +638,12 @@ void Builder::vertexPass()
                         neighbours_cur += usable_edges[pattern[1]];
                         neighbours_cur += usable_edges[pattern[2]];
                         neighbours_cur += usable_edges[pattern[3]];
-                        if (p >= 6)
+                        neighbours_cur += usable_edges[pattern[4]];
+                        neighbours_cur += usable_edges[pattern[5]]; 
+                        if (p <= 5)
                         {
-                            neighbours_cur += usable_edges[pattern[4]];
-                            neighbours_cur += usable_edges[pattern[5]];
+                            neighbours_cur += usable_edges[pattern[6]];
+                            neighbours_cur += usable_edges[pattern[7]];
                         }
                         if (neighbours_cur > highest_neighbour_count)
                         {
@@ -645,22 +652,23 @@ void Builder::vertexPass()
                         }
                     }
 
-                    // merging logic
+                    // if the best mergeable-neighbour-count we found was zero
+                    // (i.e. we only have isolated islands left), break out
                     if (highest_neighbour_count == 0)
                         break;
 
+                    // otherwise, create a merged vertex from the edges which
+                    // neighbour the best edge we found
                     addMergedVertex(neighbour_values, highest_neighboured_edge, thresh_diff, value, position, usable_edges, vertices, edges);
                 }
 
-                // create vertices for any remaining (unmerged) edges
+                // finally, create vertices for any remaining (unmerged) edges
                 for (EdgeAddr p = 0; p < 14u; ++p)
                 {
                     if (!usable_edges[p])
                         continue;
                     edges.references[p] = addVertex(neighbour_values, p, thresh_diff, value, position, vertices);
                 }
-
-                // FIXME: this kinda works but it actually doesnt and it looks horrible.
 
                 // write back the sample edge indices and continue to the next sample point
                 sample_edge_indices[index] = edges;

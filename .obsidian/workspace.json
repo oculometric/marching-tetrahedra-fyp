@@ -134,8 +134,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "f9232ef4b6037c5b",
@@ -224,25 +223,27 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "a4940339f26bada4",
+  "active": "60e8ac5952277439",
   "lastOpenFiles": [
+    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.29.tlog",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.write.1.tlog",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.read.1.tlog",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.write.1.tlog",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.read.1.tlog",
+    "c-rewrite/x64/Release/MTVT.obj",
+    "c-rewrite/x64/Release/c-rewrite.tlog/unsuccessfulbuild",
+    "tesselations.blend@",
+    "c-rewrite/x64/Release/main.obj",
+    "doc/research kanban.md",
+    "doc/merging reductions.md",
     "doc/research notes/miscellaneous notes.md",
     "doc/papers/Surface_Shading_in_the_Cuberille_Environment 1985.pdf",
-    "doc/research kanban.md",
     "doc/task board.md",
     "doc/misc shit.md",
     "doc/papers/triangulated surface extraction using tetrahedral decomposition 1995.pdf",
-    "doc/papers/ambiguity detection within tetrahedral meshes 1995.pdf",
-    "doc/papers/Tetrahedral grid refinement 1995.pdf",
-    "doc/papers/octree dual contouring 2013.pdf",
-    "doc/papers/large isosurface simplification 2016.pdf",
-    "doc/papers/molecular surface generation 1998.pdf",
     "doc/research notes.md",
     "doc/Pasted image 20251009125842.png",
-    "doc/papers/Constrained_Elastic_SurfaceNets 1999.pdf",
     "doc/research notes/me when i relax my nodes.png",
-    "doc/papers/retiling polygonal surfaces.pdf",
-    "doc/papers/fast isosurface contouring 1996.pdf",
     "Untitled.canvas",
     "2025-10-29.md",
     "doc/research notes/Adaptive marching cubes 1995.md",
