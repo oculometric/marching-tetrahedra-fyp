@@ -27,7 +27,7 @@
             "state": {
               "type": "kanban",
               "state": {
-                "file": "doc/task board.md",
+                "file": "doc/development todos.md",
                 "kanbanViewState": {
                   "kanban-plugin": "board",
                   "list-collapse": [
@@ -38,7 +38,7 @@
                 }
               },
               "icon": "lucide-trello",
-              "title": "task board"
+              "title": "development todos"
             }
           },
           {
@@ -77,7 +77,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -223,8 +223,13 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "60e8ac5952277439",
+  "active": "0467a2410ef122c9",
   "lastOpenFiles": [
+    "doc/research kanban.md",
+    "doc/development todos.md",
+    "doc/Untitled.md",
+    "doc/task board.md",
+    "doc/merging reductions.md",
     "doc/forum archive 021125.pdf",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/styles.js",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/spacer.png",
@@ -238,7 +243,6 @@
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/react_like.png",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/plupload.full.min.js",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/plugin_031.js",
-    "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/plugin_030.js",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.ee5f7ac07bcc2a99730aa9cb8cd57dcd.png",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.b18a76c2192e301724da08e4dfe365f2.png",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.9cb1db92d771c6ba7a76a88670dcc6ad.png",
@@ -246,10 +250,7 @@
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.6b2f50563e9e43eab3e2900be389f1e3.png",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.65f9013df08ee27317edb5e608f64dc2.png",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.2558f6cfb2ddea4defb37d2a9a018777.png",
-    "doc/research kanban.md",
-    "doc/merging reductions.md",
     "doc/research notes/miscellaneous notes.md",
-    "doc/task board.md",
     "doc/misc shit.md",
     "doc/research notes.md",
     "Untitled.canvas",

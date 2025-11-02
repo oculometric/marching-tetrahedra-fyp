@@ -979,8 +979,5 @@ void Builder::geometryPass()
 // TODO: different lattice structures
 // TODO: different merging techniques
 
-// FIXME: still have degenerates, still generating weirdly pyramid-y surfaces, also i think the fbm function is just straight up wrong
-// -> the fbm function was in fact just wrong!
-
 // TODO: check if this edge is an outer-edge and if so, snap the position to be on the cube-face
 // -> this would need some kind of trimming, not just moving. i.e. we might need to generate extra tris. probably do this in the geometry pass instead?
