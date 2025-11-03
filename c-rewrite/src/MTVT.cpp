@@ -75,6 +75,7 @@ Mesh Builder::generate(DebugStats& stats)
 
     auto allocation_start = chrono::high_resolution_clock::now();
     degenerate_triangles = 0;
+    invalid_triangles = 0;
     tetrahedra_evaluated = 0;
     prepareBuffers();
     vertices.clear(); // TODO: test size reservation for speed
@@ -122,6 +123,7 @@ Mesh Builder::generate(DebugStats& stats)
     stats.vertices                  = vertices.size();
     stats.indices                   = indices.size();
     stats.degenerate_triangles      = degenerate_triangles;
+    stats.invalid_triangles         = invalid_triangles;
 
     // DEBUG ZONE
 #if defined DEBUG_GRID
@@ -946,7 +948,7 @@ void Builder::geometryPass()
                     else if (triangle_indices[0] == VERTEX_NULL
                         || triangle_indices[1] == VERTEX_NULL
                         || triangle_indices[2] == VERTEX_NULL)
-                        degenerate_triangles += 100000;
+                        ++invalid_triangles;
                     else
                     {
                         indices.push_back(triangle_indices[0]);
@@ -962,7 +964,7 @@ void Builder::geometryPass()
                         else if (triangle_indices[3] == VERTEX_NULL
                             || triangle_indices[1] == VERTEX_NULL
                             || triangle_indices[2] == VERTEX_NULL)
-                            degenerate_triangles += 100000;
+                            ++invalid_triangles;
                         else
                         {
                             indices.push_back(triangle_indices[3]);

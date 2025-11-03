@@ -63,6 +63,26 @@
             }
           },
           {
+            "id": "bf840b46f3fa0349",
+            "type": "leaf",
+            "state": {
+              "type": "kanban",
+              "state": {
+                "file": "doc/task board.md",
+                "kanbanViewState": {
+                  "kanban-plugin": "board",
+                  "list-collapse": [
+                    false,
+                    false,
+                    false
+                  ]
+                }
+              },
+              "icon": "lucide-trello",
+              "title": "task board"
+            }
+          },
+          {
             "id": "f8274699f4f6a8f7",
             "type": "leaf",
             "state": {
@@ -225,21 +245,23 @@
   },
   "active": "0467a2410ef122c9",
   "lastOpenFiles": [
+    "c-rewrite/benchmark_03_11_2025 13.40.06.1933068.csv",
     "c-rewrite/x64/Release/c-rewrite.tlog/link.read.29.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.write.1.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.read.1.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.write.1.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.read.1.tlog",
-    "c-rewrite/x64/Release/main.obj",
     "c-rewrite/x64/Release/c-rewrite.tlog/unsuccessfulbuild",
-    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.41.tlog",
-    "x64/Release/c-rewrite.exe",
-    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.31.tlog",
-    "c-rewrite/x64/Release/mesh_stats.obj",
     "doc/research kanban.md",
+    "doc/papers/molecular surface generation 1998.pdf",
     "doc/development todos.md",
-    "doc/Untitled.md",
+    "doc/research notes/miscellaneous notes.md",
     "doc/task board.md",
+    "doc/misc shit.md",
+    "c-rewrite/benchmark_03_11_2025 13.25.55.5908203.csv",
+    "c-rewrite/x64/Release/main.obj",
+    "c-rewrite/benchmark_03_11_2025 13.24.49.8032902.csv",
+    "doc/Untitled.md",
     "doc/merging reductions.md",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/spacer.png",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/simplecubiclattice.png.ff7358c464aa56aff4fec803f645a9d9.png",
@@ -251,8 +273,6 @@
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.6b2f50563e9e43eab3e2900be389f1e3.png",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.65f9013df08ee27317edb5e608f64dc2.png",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.2558f6cfb2ddea4defb37d2a9a018777.png",
-    "doc/research notes/miscellaneous notes.md",
-    "doc/misc shit.md",
     "doc/research notes.md",
     "Untitled.canvas",
     "2025-10-29.md",

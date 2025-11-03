@@ -16,7 +16,6 @@ kanban-plugin: board
 
 - [ ] vertex clustering research [1440] #literature
 - [ ] create project pitch presentation [240\] #management
-- [ ] mesh format research [360] #literature
 - [ ] mesh normal generation [120] #development
 - [ ] implement alternate tetrahedron arrangement (BCDL/simple cubic) [240] #development
 - [ ] efficiency pass [720] #development

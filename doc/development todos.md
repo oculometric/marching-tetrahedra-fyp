@@ -8,7 +8,6 @@ kanban-plugin: board
 
 - [ ] fix incorrect merging of opposing edges
 - [ ] fix unexpected degenerate triangles
-- [ ] generate csv data file
 
 
 ## backlog
@@ -22,6 +21,7 @@ kanban-plugin: board
 - [ ] parallelise vertex pass
 - [ ] clean up project (organise files and structure)
 - [ ] wrap with graphical interface to view models live
+- [ ] fix bad aspect ratios and areas
 
 
 ## done
@@ -30,6 +30,7 @@ kanban-plugin: board
 - [ ] implement integrated merging algorithm
 - [x] benchmark number of vertices/triangles relative to number of tetrahedra
 - [x] improve benchmark to include triangles and triangle stats (area, aspect ratio incl mean and sd)
+- [x] generate csv data file
 
 
 

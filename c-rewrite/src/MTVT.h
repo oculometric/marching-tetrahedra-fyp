@@ -42,6 +42,7 @@ struct DebugStats
     size_t cubes_y = 0;
     size_t cubes_z = 0;
     size_t degenerate_triangles = 0;
+    size_t invalid_triangles = 0;
 };
 
 class Builder
@@ -93,6 +94,7 @@ private:
     std::vector<Vector3> vertices;
     std::vector<VertexRef> indices;
     size_t degenerate_triangles;
+    size_t invalid_triangles;
     size_t tetrahedra_evaluated;
 
 public:
