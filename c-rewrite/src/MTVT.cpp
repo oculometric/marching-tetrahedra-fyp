@@ -314,6 +314,10 @@ static constexpr EdgeAddr edge_neighbour_addresses[14][8] =
 
 #define VERTEX_POSITION(vec, td, van, val, pos) ((vec * (td / (van - val))) + pos)
 
+// this macro simply turns an edge address into the edge address pointing in the 
+// opposite direction
+#define INVERT_EDGE_INDEX(i) (EdgeAddr)((i < 6) ? (i + 1 - ((i % 2) * 2)) : (19 - i))
+
 inline VertexRef Builder::addVertex(const float* neighbour_values, const EdgeAddr p, const float thresh_diff, const float value, const Vector3& position, vector<Vector3>& verts)
 {
     float value_at_neighbour = neighbour_values[p];
@@ -341,7 +345,7 @@ inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const E
         if (usable_neighbours[pattern[i]])
         {
             active_edges[j] = pattern[i];
-            j++;
+            ++j;
             continue;
         }
         active_edges[j] = EDGE_NULL;
@@ -796,10 +800,6 @@ static constexpr uint8_t tetrahedral_edge_address_patterns[16][4] =
     {  1,  0,  2, -1 }, // 0b1110
     { -1, -1, -1, -1 }, // all bits set
 };
-
-// this macro simply turns an edge address into the edge address pointing in the 
-// opposite direction
-#define INVERT_EDGE_INDEX(i) (EdgeAddr)((i < 6) ? (i + 1 - ((i % 2) * 2)) : (19 - i))
 
 void Builder::geometryPass()
 {

@@ -6,7 +6,7 @@ kanban-plugin: board
 
 ## todo
 
-- [ ] fix incorrect merging of opposing edges
+- [ ] fix incorrect merging of opposing edges (redesign merging algorithm to use island-growing system)
 - [ ] fix unexpected degenerate triangles
 
 
