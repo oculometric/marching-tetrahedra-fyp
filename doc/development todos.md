@@ -27,6 +27,12 @@ kanban-plugin: board
 ## done
 
 **Complete**
+- [x] implement vertex generation
+- [x] implement triangle generation
+- [x] add fbm benchmark
+- [x] parallelise sampling pass
+- [x] add bunny benchmark
+- [x] code cleanup
 - [ ] implement integrated merging algorithm
 - [x] benchmark number of vertices/triangles relative to number of tetrahedra
 - [x] improve benchmark to include triangles and triangle stats (area, aspect ratio incl mean and sd)

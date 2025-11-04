@@ -154,7 +154,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "f9232ef4b6037c5b",
@@ -245,6 +246,12 @@
   },
   "active": "0467a2410ef122c9",
   "lastOpenFiles": [
+    "doc/research kanban.md",
+    "doc/research notes/miscellaneous notes.md",
+    "mutual tesselation.png",
+    "doc/papers/retiling polygonal surfaces.pdf",
+    "doc/task board.md",
+    "doc/development todos.md",
     "c-rewrite/benchmark_03_11_2025 13.40.06.1933068.csv",
     "c-rewrite/x64/Release/c-rewrite.tlog/link.read.29.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.write.1.tlog",
@@ -252,15 +259,9 @@
     "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.write.1.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.read.1.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/unsuccessfulbuild",
-    "doc/research kanban.md",
     "doc/papers/molecular surface generation 1998.pdf",
-    "doc/development todos.md",
-    "doc/research notes/miscellaneous notes.md",
-    "doc/task board.md",
     "doc/misc shit.md",
     "c-rewrite/benchmark_03_11_2025 13.25.55.5908203.csv",
-    "c-rewrite/x64/Release/main.obj",
-    "c-rewrite/benchmark_03_11_2025 13.24.49.8032902.csv",
     "doc/Untitled.md",
     "doc/merging reductions.md",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/spacer.png",
@@ -272,7 +273,6 @@
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.9b6c5b699b4c55337a022131686f37ca.png",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.6b2f50563e9e43eab3e2900be389f1e3.png",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.65f9013df08ee27317edb5e608f64dc2.png",
-    "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.2558f6cfb2ddea4defb37d2a9a018777.png",
     "doc/research notes.md",
     "Untitled.canvas",
     "2025-10-29.md",

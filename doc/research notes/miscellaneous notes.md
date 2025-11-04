@@ -62,3 +62,10 @@ uses BCDL marching tetrahedra to visualise molecular surfaces. good edge aspect 
 ## Surface Shading in the Cuberille Environment
 link - https://researchoutput.ncku.edu.tw/en/publications/surface-shading-in-the-cuberille-environment/
 avoids using surface geometry because it's too expensive. due to the expensiveness of generating and rendering geometry, the algorithm focuses on simply rendering the data directly (visualisation). shades pixels according to normal of each cube face (i.e. this algorithm involves the stepped data talked about by the surface nets paper), and distance to viewer.
+
+## Re-Tiling Polygonal Surfaces
+link - https://dl.acm.org/doi/pdf/10.1145/133994.134008
+method for simplifying an initial polygonal description of an object. motivated by accelerating real time graphics. specifically suited to smooth/curved models. not super useful for me since it cannot generate data from a purely mathematical isosurface!
+place points on the existing surface randomly, then have each point repel its neighbours. then we form a 'mutual tesselation' involving both the original surface and the new points. then we incrementally remove the old vertices and re-tile the surface locally to preserve topology.
+![[mutual tesselation.png]]
+approximates object curvature and increases point distribution density for first step in those locations, by adjusting repulsion radius.
