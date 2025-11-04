@@ -292,24 +292,24 @@ void MTVT::Builder::samplingLayer(const int start, const int layers)
     }
 }
 
-// each entry defines the set of either 8 or 6 edges which are closest 
+// each entry defines the set of either 4 or 6 edges which are closest 
 // to the edge used to index the array
-static constexpr EdgeAddr edge_neighbour_addresses[14][8] =
+static constexpr EdgeAddr edge_neighbour_addresses[14][6] =
 {
-    { PXPYPZ, PXNYPZ, PXPYNZ, PXNYNZ, PY, PZ, NY, NZ },      // PX
-    { NXPYPZ, NXNYPZ, NXPYNZ, NXNYNZ, PY, PZ, NY, NZ },      // NX
-    { PXPYPZ, NXPYPZ, PXPYNZ, NXPYNZ, PX, PZ, NX, NZ },      // PY
-    { PXNYPZ, NXNYPZ, PXNYNZ, NXNYNZ, PX, PZ, NX, NZ },      // NY
-    { PXPYPZ, NXPYPZ, PXNYPZ, NXNYPZ, PX, PY, NX, NY },      // PZ
-    { PXPYNZ, NXPYNZ, PXNYNZ, NXNYNZ, PX, PY, NX, NY },      // NZ
-    { PX,     PY,     PZ,     NXPYPZ, PXNYPZ, PXPYNZ, EDGE_NULL }, // PXPYPZ
-    { NX,     PY,     PZ,     PXPYPZ, NXNYPZ, NXPYNZ, EDGE_NULL }, // NXPYPZ
-    { PX,     NY,     PZ,     NXNYPZ, PXPYPZ, PXNYNZ, EDGE_NULL }, // PXNYPZ
-    { NX,     NY,     PZ,     PXNYPZ, NXPYPZ, NXNYNZ, EDGE_NULL }, // NXNYPZ
-    { PX,     PY,     NZ,     NXPYNZ, PXNYNZ, PXPYPZ, EDGE_NULL }, // PXPYNZ
-    { NX,     PY,     NZ,     PXPYNZ, NXNYNZ, NXPYPZ, EDGE_NULL }, // NXPYNZ
-    { PX,     NY,     NZ,     NXNYNZ, PXPYNZ, PXNYPZ, EDGE_NULL }, // PXNYNZ
-    { NX,     NY,     NZ,     PXNYNZ, NXPYNZ, NXNYPZ, EDGE_NULL }, // NXNYNZ
+    { PXPYPZ, PXNYPZ, PXPYNZ, PXNYNZ, EDGE_NULL },      // PX
+    { NXPYPZ, NXNYPZ, NXPYNZ, NXNYNZ, EDGE_NULL },      // NX
+    { PXPYPZ, NXPYPZ, PXPYNZ, NXPYNZ, EDGE_NULL },      // PY
+    { PXNYPZ, NXNYPZ, PXNYNZ, NXNYNZ, EDGE_NULL },      // NY
+    { PXPYPZ, NXPYPZ, PXNYPZ, NXNYPZ, EDGE_NULL },      // PZ
+    { PXPYNZ, NXPYNZ, PXNYNZ, NXNYNZ, EDGE_NULL },      // NZ
+    { PX,     PY,     PZ,     NXPYPZ, PXNYPZ, PXPYNZ }, // PXPYPZ
+    { NX,     PY,     PZ,     PXPYPZ, NXNYPZ, NXPYNZ }, // NXPYPZ
+    { PX,     NY,     PZ,     NXNYPZ, PXPYPZ, PXNYNZ }, // PXNYPZ
+    { NX,     NY,     PZ,     PXNYPZ, NXPYPZ, NXNYNZ }, // NXNYPZ
+    { PX,     PY,     NZ,     NXPYNZ, PXNYNZ, PXPYPZ }, // PXPYNZ
+    { NX,     PY,     NZ,     PXPYNZ, NXNYNZ, NXPYPZ }, // NXPYNZ
+    { PX,     NY,     NZ,     NXNYNZ, PXPYNZ, PXNYPZ }, // PXNYNZ
+    { NX,     NY,     NZ,     PXNYNZ, NXPYNZ, NXNYPZ }, // NXNYNZ
 };
 
 #define VERTEX_POSITION(vec, td, van, val, pos) ((vec * (td / (van - val))) + pos)
@@ -333,9 +333,9 @@ inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const E
     // marking the last item with an EDGE_NULL
     // FIXME: prevent us from merging stuff with opposing edges (so we can't merge PX with NX)
     auto pattern = edge_neighbour_addresses[p];
-    EdgeAddr active_edges[8];
+    EdgeAddr active_edges[6];
     int j = 0;
-    for (int i = 0; i < 8; ++i)
+    for (int i = 0; i < 6; ++i)
     {
         if (pattern[i] == EDGE_NULL)
         {
@@ -442,91 +442,92 @@ void Builder::vertexPass()
                 if (is_min_z)
                 {
                     connected_indices[NZ] = INDEX_NULL;
-                    connected_indices[PXPYNZ] = INDEX_NULL;
-                    connected_indices[NXPYNZ] = INDEX_NULL;
-                    connected_indices[PXNYNZ] = INDEX_NULL;
-                    connected_indices[NXNYNZ] = INDEX_NULL;
                     if (!is_odd_z)
                     {
                         connected_indices[PX] = INDEX_NULL;
                         connected_indices[NX] = INDEX_NULL;
                         connected_indices[PY] = INDEX_NULL;
                         connected_indices[NY] = INDEX_NULL;
+                        connected_indices[PXPYNZ] = INDEX_NULL;
+                        connected_indices[NXPYNZ] = INDEX_NULL;
+                        connected_indices[PXNYNZ] = INDEX_NULL;
+                        connected_indices[NXNYNZ] = INDEX_NULL;
                     }
                 }
                 if (is_min_y)
                 {
                     connected_indices[NY] = INDEX_NULL;
-                    connected_indices[PXNYPZ] = INDEX_NULL;
-                    connected_indices[NXNYPZ] = INDEX_NULL;
-                    connected_indices[PXNYNZ] = INDEX_NULL;
-                    connected_indices[NXNYNZ] = INDEX_NULL;
+                    
                     if (!is_odd_z)
                     {
                         connected_indices[PX] = INDEX_NULL;
                         connected_indices[NX] = INDEX_NULL;
                         connected_indices[PZ] = INDEX_NULL;
                         connected_indices[NZ] = INDEX_NULL;
+                        connected_indices[PXNYPZ] = INDEX_NULL;
+                        connected_indices[NXNYPZ] = INDEX_NULL;
+                        connected_indices[PXNYNZ] = INDEX_NULL;
+                        connected_indices[NXNYNZ] = INDEX_NULL;
                     }
                 }
                 if (is_min_x)
                 {
                     connected_indices[NX] = INDEX_NULL;
-                    connected_indices[NXPYPZ] = INDEX_NULL;
-                    connected_indices[NXNYPZ] = INDEX_NULL;
-                    connected_indices[NXPYNZ] = INDEX_NULL;
-                    connected_indices[NXNYNZ] = INDEX_NULL;
                     if (!is_odd_z)
                     {
                         connected_indices[PY] = INDEX_NULL;
                         connected_indices[NY] = INDEX_NULL;
                         connected_indices[PZ] = INDEX_NULL;
                         connected_indices[NZ] = INDEX_NULL;
+                        connected_indices[NXPYPZ] = INDEX_NULL;
+                        connected_indices[NXNYPZ] = INDEX_NULL;
+                        connected_indices[NXPYNZ] = INDEX_NULL;
+                        connected_indices[NXNYNZ] = INDEX_NULL;
                     }
                 }
                 if (is_max_z)
                 {
                     connected_indices[PZ] = INDEX_NULL;
-                    connected_indices[PXPYPZ] = INDEX_NULL;
-                    connected_indices[NXPYPZ] = INDEX_NULL;
-                    connected_indices[PXNYPZ] = INDEX_NULL;
-                    connected_indices[NXNYPZ] = INDEX_NULL;
                     if (!is_odd_z)
                     {
                         connected_indices[PX] = INDEX_NULL;
                         connected_indices[NX] = INDEX_NULL;
                         connected_indices[PY] = INDEX_NULL;
                         connected_indices[NY] = INDEX_NULL;
+                        connected_indices[PXPYPZ] = INDEX_NULL;
+                        connected_indices[NXPYPZ] = INDEX_NULL;
+                        connected_indices[PXNYPZ] = INDEX_NULL;
+                        connected_indices[NXNYPZ] = INDEX_NULL;
                     }
                 }
                 if (is_max_y)
                 {
                     connected_indices[PY] = INDEX_NULL;
-                    connected_indices[PXPYPZ] = INDEX_NULL;
-                    connected_indices[NXPYPZ] = INDEX_NULL;
-                    connected_indices[PXPYNZ] = INDEX_NULL;
-                    connected_indices[NXPYNZ] = INDEX_NULL;
                     if (!is_odd_z)
                     {
                         connected_indices[PX] = INDEX_NULL;
                         connected_indices[NX] = INDEX_NULL;
                         connected_indices[PZ] = INDEX_NULL;
                         connected_indices[NZ] = INDEX_NULL;
+                        connected_indices[PXPYPZ] = INDEX_NULL;
+                        connected_indices[NXPYPZ] = INDEX_NULL;
+                        connected_indices[PXPYNZ] = INDEX_NULL;
+                        connected_indices[NXPYNZ] = INDEX_NULL;
                     }
                 }
                 if (is_max_x)
                 {
                     connected_indices[PX] = INDEX_NULL;
-                    connected_indices[PXPYPZ] = INDEX_NULL;
-                    connected_indices[PXNYPZ] = INDEX_NULL;
-                    connected_indices[PXPYNZ] = INDEX_NULL;
-                    connected_indices[PXNYNZ] = INDEX_NULL;
                     if (!is_odd_z)
                     {
                         connected_indices[PY] = INDEX_NULL;
                         connected_indices[NY] = INDEX_NULL;
                         connected_indices[PZ] = INDEX_NULL;
                         connected_indices[NZ] = INDEX_NULL;
+                        connected_indices[PXPYPZ] = INDEX_NULL;
+                        connected_indices[PXNYPZ] = INDEX_NULL;
+                        connected_indices[PXPYNZ] = INDEX_NULL;
+                        connected_indices[PXNYNZ] = INDEX_NULL;
                     }
                 }
 
@@ -644,12 +645,10 @@ void Builder::vertexPass()
                         neighbours_cur += usable_edges[pattern[1]];
                         neighbours_cur += usable_edges[pattern[2]];
                         neighbours_cur += usable_edges[pattern[3]];
-                        neighbours_cur += usable_edges[pattern[4]];
-                        neighbours_cur += usable_edges[pattern[5]]; 
-                        if (p <= 5)
+                        if (p > 5)
                         {
-                            neighbours_cur += usable_edges[pattern[6]];
-                            neighbours_cur += usable_edges[pattern[7]];
+                            neighbours_cur += usable_edges[pattern[4]];
+                            neighbours_cur += usable_edges[pattern[5]];
                         }
                         if (neighbours_cur > highest_neighbour_count)
                         {
