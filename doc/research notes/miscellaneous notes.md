@@ -86,3 +86,9 @@ dynamically triangulates and refines meshes to be more detailed around complex a
 
 ## AN ELABORATE AMBIGUITY DETECTION METHOD FOR CONSTRUCTING ISOSURFACES WITHIN TETRAHEDRAL MESHES
 link - https://www.sciencedirect.com/science/article/abs/pii/009784939500006X
+works on the simple-cubic-5-irregular tessellation. addresses the ambiguity problem as a result of this tessellation.
+![[mt-5 abiguity.png]]
+
+## Exploiting Triangulated Surface Extraction Using Tetrahedral Decomposition
+link - https://ieeexplore.ieee.org/document/485620
+represents the surface with something something... surface graph, stored per tetrahedron... six edges in each cell between 5 tetrahedra, no tetrahedron ever contains more than one vertex. they use a simplification algorithm which i guess is faster since its a graph with edges (i.e. we don't have to n^2 the vertices).

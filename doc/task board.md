@@ -6,15 +6,14 @@ kanban-plugin: board
 
 ## current
 
-- [ ] tetrahedral meshing research [1440 -> 720] #literature
-- [ ] draft literature review #research [180]
+- [ ] draft literature review #research [180 -> 60]
 - [ ] implement vertex clustering [600 -> 300...] #development
-- [ ] optimisation research [300] #literature
+- [ ] vertex clustering research [1440] #literature
 
 
 ## backlog
 
-- [ ] vertex clustering research [1440] #literature
+- [ ] optimisation research [300] #literature
 - [ ] create project pitch presentation [240\] #management
 - [ ] mesh normal generation [120] #development
 - [ ] implement alternate tetrahedron arrangement (BCDL/simple cubic) [240] #development
@@ -34,6 +33,7 @@ kanban-plugin: board
 - [ ] complete ethics form and documentation for collecting user data [120 -> 180] #management
 - [x] implement mesh generation [720 ->870] #development
 - [x] fix meshing bugs and eliminate duplicate tetrahedra [120 -> 240] #development
+- [x] tetrahedral meshing research [1440 -> 880] #literature
 
 
 
