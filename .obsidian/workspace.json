@@ -6,6 +6,7 @@
       {
         "id": "68b5b1153b5047a7",
         "type": "tabs",
+        "dimension": 41.18975903614458,
         "children": [
           {
             "id": "d6c5fb8c18675b10",
@@ -97,7 +98,38 @@
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 4
+      },
+      {
+        "id": "db0d2aac909e2423",
+        "type": "tabs",
+        "dimension": 58.81024096385542,
+        "children": [
+          {
+            "id": "4940296680e2f3c5",
+            "type": "leaf",
+            "state": {
+              "type": "pdf",
+              "state": {
+                "file": "doc/papers/ambiguity detection within tetrahedral meshes 1995.pdf"
+              },
+              "icon": "lucide-file-text",
+              "title": "ambiguity detection within tetrahedral meshes 1995"
+            }
+          },
+          {
+            "id": "e97fb07b611ac75b",
+            "type": "leaf",
+            "state": {
+              "type": "pdf",
+              "state": {
+                "file": "doc/papers/triangulated surface extraction using tetrahedral decomposition 1995.pdf"
+              },
+              "icon": "lucide-file-text",
+              "title": "triangulated surface extraction using tetrahedral decomposition 1995"
+            }
+          }
+        ]
       }
     ],
     "direction": "vertical"
@@ -244,26 +276,30 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "0467a2410ef122c9",
+  "active": "f8274699f4f6a8f7",
   "lastOpenFiles": [
+    "doc/papers/ambiguity detection within tetrahedral meshes 1995.pdf",
     "doc/research notes/miscellaneous notes.md",
     "doc/research kanban.md",
-    "tesselations.blend@",
-    "c-rewrite/benchmark_04_11_2025 13.11.24.8072584.csv",
-    "c-rewrite/x64/Debug/c-rewrite.tlog/link.read.2.tlog",
-    "c-rewrite/x64/Debug/main.obj",
-    "c-rewrite/x64/Debug/c-rewrite.tlog/unsuccessfulbuild",
-    "c-rewrite/benchmark_04_11_2025 13.10.57.4556574.csv",
-    "c-rewrite/x64/Debug/MTVT.obj",
-    "c-rewrite/benchmark_04_11_2025 13.08.22.7812975.csv",
-    "c-rewrite/benchmark_04_11_2025 13.03.58.5840780.csv",
-    "c-rewrite/x64/Debug/c-rewrite.tlog/link.13112.write.1.tlog",
+    "irregular tetrahedral refinement.png",
+    "doc/papers/Tetrahedral grid refinement 1995.pdf",
+    "regular tetrahedral refinement.png",
+    "c-rewrite/benchmark_05_11_2025 12.07.32.6516942.csv",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.30.tlog",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.write.1.tlog",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.read.1.tlog",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.write.1.tlog",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.read.1.tlog",
+    "c-rewrite/x64/Release/c-rewrite.tlog/unsuccessfulbuild",
+    "doc/lit review template.md",
     "doc/development todos.md",
+    "doc/misc shit.md",
+    "doc/papers/fast marching-cubes-style volume evaluation 2022.pdf",
+    "doc/papers/A generalized combinatorial marching hypercubes algorithm 2022.pdf",
     "doc/task board.md",
     "doc/research notes/Regularised marching tetrahedra (1999).md",
-    "doc/misc shit.md",
     "mutual tesselation.png",
-    "doc/Untitled.md",
+    "doc/lit review template.md",
     "doc/merging reductions.md",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/spacer.png",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/simplecubiclattice.png.ff7358c464aa56aff4fec803f645a9d9.png",
@@ -272,8 +308,6 @@
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.b18a76c2192e301724da08e4dfe365f2.png",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.9cb1db92d771c6ba7a76a88670dcc6ad.png",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.9b6c5b699b4c55337a022131686f37ca.png",
-    "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.6b2f50563e9e43eab3e2900be389f1e3.png",
-    "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.65f9013df08ee27317edb5e608f64dc2.png",
     "doc/research notes.md",
     "Untitled.canvas",
     "2025-10-29.md",
@@ -282,7 +316,6 @@
     "doc/sample point and edge counting.md",
     "doc/research notes/A new tetrahedral tessellation scheme for isosurface generation (1998).md",
     "doc/questionnaire template.md",
-    "Untitled.md",
     "doc/kanban task board.md"
   ]
 }

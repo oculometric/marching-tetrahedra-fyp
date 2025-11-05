@@ -6,10 +6,7 @@ kanban-plugin: board
 
 ## in focus
 
-- [ ] [A generalized combinatorial marching hypercube algorithm](https://doi.org/10.1007/s40314-024-02627-4)
-- [ ] [fast marching-cubes-style volume evaluation (2022)](https://dspacemainprd01.lib.uwaterloo.ca/server/api/core/bitstreams/6487b452-e1d9-4b37-bd92-8270c4b202ea/content) [[fast marching-cubes-style volume evaluation 2022.pdf]]
 - [ ] [sample lit review](https://www.researchgate.net/profile/Faizan-Hussain-2/publication/348917348_Unity_Game_Development_Engine_A_Technical_Survey/links/60167daf45851517ef2b2c0d/Unity-Game-Development-Engine-A-Technical-Survey.pdf)
-- [ ] [Tetrahedral grid refinement (1995)](https://link.springer.com/article/10.1007/BF02238487) [[Tetrahedral grid refinement 1995.pdf]]
 - [ ] [Dual Marching Tetrahedra (2008)](https://www.researchgate.net/publication/220845354_Dual_Marching_Tetrahedra_Contouring_in_the_Tetrahedronal_Environment)
 - [ ] [An elaborate ambiguity detection method for constructing isosurfaces within tetrahedral meshes (1995)](https://www.sciencedirect.com/science/article/abs/pii/009784939500006X) [[ambiguity detection within tetrahedral meshes 1995.pdf]]
 - [ ] [Exploiting triangulated surface extraction using tetrahedral decomposition (1995)](https://ieeexplore.ieee.org/document/485620) [[triangulated surface extraction using tetrahedral decomposition 1995.pdf]]
@@ -57,6 +54,9 @@ kanban-plugin: board
 - [ ] [Molecular surface generation using marching tetrahedra (1998)](https://doi.org/10.1002/\(SICI\)1096-987X\(199808\)19:11<1268::AID-JCC6>3.0.CO;2-I) [[molecular surface generation 1998.pdf]] -> [[miscellaneous notes]]
 - [ ] [Surface Shading in the Cuberille Environment (1985)](https://researchoutput.ncku.edu.tw/en/publications/surface-shading-in-the-cuberille-environment/) [[Surface_Shading_in_the_Cuberille_Environment 1985.pdf]] -> [[miscellaneous notes]]
 - [ ] [Re-Tiling Polygonal Surfaces (1992)](https://dl.acm.org/doi/pdf/10.1145/133994.134008) [[retiling polygonal surfaces.pdf]] -> [[miscellaneous notes]]
+- [ ] [A generalized combinatorial marching hypercube algorithm](https://doi.org/10.1007/s40314-024-02627-4) [[A generalized combinatorial marching hypercubes algorithm 2022.pdf]] -> [[miscellaneous notes]]
+- [ ] [fast marching-cubes-style volume evaluation (2022)](https://dspacemainprd01.lib.uwaterloo.ca/server/api/core/bitstreams/6487b452-e1d9-4b37-bd92-8270c4b202ea/content) [[fast marching-cubes-style volume evaluation 2022.pdf]] -> [[miscellaneous notes]]
+- [ ] [Tetrahedral grid refinement (1995)](https://link.springer.com/article/10.1007/BF02238487) [[Tetrahedral grid refinement 1995.pdf]] -> [[miscellaneous notes]]
 
 
 ## discarded

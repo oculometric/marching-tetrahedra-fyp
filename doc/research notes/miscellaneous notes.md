@@ -1,14 +1,14 @@
-# Deformable NeRF using Recursively Subdivided Tetrahedra
+## Deformable NeRF using Recursively Subdivided Tetrahedra
 link - https://dl.acm.org/doi/abs/10.1145/3664647.3681019
 finds marching cubes and dense tetrahedral grids to be too computationally and memory intensive. uses recursively subdivided tetrahedra instead.
 ![[deformable nerf.png]]
 ![[tetrahedron subdivision.png]]
 
-# Meta-Meshing and Triangulating Lattice Structures at a Large Scale
+## Meta-Meshing and Triangulating Lattice Structures at a Large Scale
 link - https://www.sciencedirect.com/science/article/pii/S0010448524000599
 mentions that the interconnectivity of lattices lend poorly to parallelisation (hence independent marching/separation). they resolve this **by considering planes with interconnections**. they also use compression to overcome the memory barrier.
 
-# Isosurface stuffing: fast tetrahedral meshes with good dihedral angles
+## Isosurface stuffing: fast tetrahedral meshes with good dihedral angles
 link - https://dl.acm.org/doi/10.1145/1275808.1276448
 guarantees dihedral angles of between 10.78 and 164.74 degrees. algorithms which smooth off edges are significantly faster. notes that these algorithms are rarely framerate-capable. algorithm uses octrees and BCDL as a background grid for applying a stencil (just like MC). "it only took us two days to implement" okay nerd. should take another look at this one, it seems like it could have more insights.
 
@@ -69,3 +69,20 @@ method for simplifying an initial polygonal description of an object. motivated 
 place points on the existing surface randomly, then have each point repel its neighbours. then we form a 'mutual tesselation' involving both the original surface and the new points. then we incrementally remove the old vertices and re-tile the surface locally to preserve topology.
 ![[mutual tesselation.png]]
 approximates object curvature and increases point distribution density for first step in those locations, by adjusting repulsion radius.
+
+## A generalised combinatorial marching hypercubes algorithm
+link - https://doi.org/10.1007/s40314-024-02627-4
+applications in superstring theory. extends the marching cubes algorithm to produce arbitrary (n-k) dimensional manifolds embedded in n dimensional space. this is way above my fucking pay grade.
+
+## Fast Marching-Cubes-Style Volume Evaluation for Level Set Surfaces
+link - https://dspacemainprd01.lib.uwaterloo.ca/server/api/core/bitstreams/6487b452-e1d9-4b37-bd92-8270c4b202ea/content
+uses marching cubes for evaluating the volume of an isosurface, although they skip geometry generation and decompose each cube's surface geometry into a set of simple shapes in order to compute volume.
+
+## Tetrahedral Grid Refinement
+link - https://link.springer.com/article/10.1007/BF02238487
+dynamically triangulates and refines meshes to be more detailed around complex areas of a mathematically defined surface. useful in computer graphics for approximating smooth surfaces. recursively bisects the tetrahedral grid where necessary (performs either regular or irregular divisions, where irregular divisions cannot be divided further).
+![[regular tetrahedral refinement.png]]
+![[irregular tetrahedral refinement.png]]
+
+## AN ELABORATE AMBIGUITY DETECTION METHOD FOR CONSTRUCTING ISOSURFACES WITHIN TETRAHEDRAL MESHES
+link - https://www.sciencedirect.com/science/article/abs/pii/009784939500006X
