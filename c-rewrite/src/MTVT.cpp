@@ -312,6 +312,46 @@ static constexpr EdgeAddr edge_neighbour_addresses[14][6] =
     { NX,     NY,     NZ,     PXNYNZ, NXPYNZ, NXNYPZ }, // NXNYNZ
 };
 
+static constexpr EdgeFlags edge_neighbour_masks[14] =
+{  // diag......perp..
+    0b0001010101000000,     // PX
+    0b0010101010000000,     // NX
+    0b0000110011000000,     // PY
+    0b0011001100000000,     // NY
+    0b0000001111000000,     // PZ
+    0b0011110000000000,     // NZ
+    0b0000010110010101,     // PXPYPZ
+    0b0000101001010110,     // NXPYPZ
+    0b0001001001011001,     // PXNYPZ
+    0b0010000110011010,     // NXNYPZ
+    0b0001100001100101,     // PXPYNZ
+    0b0010010010100110,     // NXPYNZ
+    0b0001101000101001,     // PXNYNZ
+   // diag......perp..
+};
+
+static constexpr EdgeFlags edge_exclusion_masks[14] =
+{
+   // diag......perp..
+    0b0010101010000010,     // PX
+    0b0001010101000001,     // NX
+    0b0011001100001000,     // PY
+    0b0000110011000100,     // NY
+    0b0011110000100000,     // PZ
+    0b0000001111010000,     // NZ
+    // TODO: incomplete
+   // diag......perp..
+};
+
+struct EdgePair
+{
+    EdgeAddr a;
+    EdgeAddr b;
+};
+
+// TODO: need a table of candidate edge pairs (links)
+//   and a table of which links use which edges
+
 #define VERTEX_POSITION(vec, td, van, val, pos) ((vec * (td / (van - val))) + pos)
 
 // this macro simply turns an edge address into the edge address pointing in the 
@@ -327,7 +367,7 @@ inline VertexRef Builder::addVertex(const float* neighbour_values, const EdgeAdd
     return static_cast<VertexRef>(vertices.size() - 1);
 }
 
-inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const EdgeAddr p, const float thresh_diff, const float value, const Vector3 position, bool* usable_neighbours, vector<Vector3>& verts, EdgeReferences& edge_refs)
+inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const EdgeAddr p, const float thresh_diff, const float value, const Vector3& position, bool* usable_neighbours, vector<Vector3>& verts, EdgeReferences& edge_refs)
 {
     // check which neighbours are actually usable and populate active_edges, 
     // marking the last item with an EDGE_NULL
@@ -368,6 +408,30 @@ inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const E
     verts.push_back(vertex / static_cast<float>(i));
 
     return ref;
+}
+
+inline void Builder::addVerticesIndividually(const float* neighbour_values, const float thresh_diff, const float value, const Vector3& position, EdgeFlags usable_edges, vector<Vector3>& verts, EdgeReferences& edges)
+{
+    EdgeFlags mask = 1;
+    for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
+    {
+        if (!(usable_edges & mask))
+            continue;
+        edges.references[p] = addVertex(neighbour_values, p, thresh_diff, value, position, vertices);
+    }
+}
+
+static inline uint8_t fastBitCount(EdgeFlags val)
+{
+    static constexpr uint8_t counts[16] =
+    { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
+    return counts[val & 0xf] + counts[(val >> 4) & 0xf] + counts[(val >> 8) & 0xf] + counts[(val >> 12) & 0xf];
+}
+
+#include <intrin.h>
+
+static inline EdgeAddr ilog2(const unsigned x) {
+    return ((8 * sizeof(unsigned)) - (__lzcnt((unsigned)(x))) - 1);
 }
 
 void Builder::vertexPass()
@@ -591,26 +655,14 @@ void Builder::vertexPass()
                     continue;
                 }
 
-                // count how many edges are available to be merged,
-                // and organise them into a bool array just to save
-                // a bunch of bit-shift logic (i think this is faster?
-                // it's definitely easier to read)
-                uint8_t num_flagged_edges = 0;
-                EdgeAddr one_edge = EDGE_NULL;
-                bool usable_edges[14];
-                mask = 1;
-                for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
-                {
-                    usable_edges[p] = edge_proximity_flags & mask;
-                    if (!usable_edges[p])
-                        continue;
-                    ++num_flagged_edges;
-                    one_edge = p;
-                }
+                // count how many edges are available to be merged
+                EdgeFlags usable_edges = edge_proximity_flags;
+                const uint8_t num_flagged_edges = fastBitCount(usable_edges);
                 // if only one edge is flagged, do the vertex and 
                 // skip onward (no need to traverse the array again)
                 if (num_flagged_edges == 1)
                 {
+                    const EdgeAddr one_edge = ilog2(usable_edges);
                     edges.references[one_edge] = addVertex(neighbour_values, one_edge, thresh_diff, value, position, vertices);
                     sample_edge_indices[index] = edges;
                     ++index;
@@ -627,53 +679,81 @@ void Builder::vertexPass()
                     continue;
                 }
 
-                // until we run out of mergeable edges: check usable_edges to find the edge 
-                // with the most number of mergeable neighbours, calculate and merge those 
-                // into one vertex, and clear the relevant usable_edges flags. repeat until
-                // the best neighbour-count is zero (i.e. we only have isolated islands left)
-                while (true)
+                // GRAPH THEORY TIME
+                // build a graph representing which edges may be merged together.
+                // each link in the graph represents a pair of edges which are both
+                // 1. neighbours, and 2. both usable.
+                // the connectivity graph is an adjacency matrix where each bit
+                // represents whether there is a connection between the two
+                // edges used to index that bit in the array
+                EdgeFlags connectivity_graph[14] = { };
+                memcpy(connectivity_graph, edge_neighbour_masks, sizeof(EdgeFlags) * 14);
+                // mergeable candidates represents how many edges can be merged with
+                // each edge (essentially, how many bits are set in each row of the
+                // adjacency matrix)
+                uint8_t mergeable_candidates[14] = { 0 };
+                uint8_t highest_mergeable_count = 0;
+                EdgeAddr highest_counted_edge = EDGE_NULL;
+                // iterate over the edges and strike out candidate edges which
+                // are not both usable
+                mask = 1;
+                for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
                 {
-                    uint8_t highest_neighbour_count = 0;
-                    EdgeAddr highest_neighboured_edge = EDGE_NULL;
-                    for (EdgeAddr p = 0; p < 14u; ++p)
+                    if (!(usable_edges & mask))
                     {
-                        if (!usable_edges[p])
-                            continue;
-                        auto pattern = edge_neighbour_addresses[p];
-                        uint8_t neighbours_cur = 0;
-                        neighbours_cur += usable_edges[pattern[0]];
-                        neighbours_cur += usable_edges[pattern[1]];
-                        neighbours_cur += usable_edges[pattern[2]];
-                        neighbours_cur += usable_edges[pattern[3]];
-                        if (p > 5)
-                        {
-                            neighbours_cur += usable_edges[pattern[4]];
-                            neighbours_cur += usable_edges[pattern[5]];
-                        }
-                        if (neighbours_cur > highest_neighbour_count)
-                        {
-                            highest_neighbour_count = neighbours_cur;
-                            highest_neighboured_edge = p;
-                        }
+                        connectivity_graph[p] = 0;
+                        mergeable_candidates[p] = 0;
+                        continue;
                     }
-
-                    // if the best mergeable-neighbour-count we found was zero
-                    // (i.e. we only have isolated islands left), break out
-                    if (highest_neighbour_count == 0)
-                        break;
-
-                    // otherwise, create a merged vertex from the edges which
-                    // neighbour the best edge we found
-                    addMergedVertex(neighbour_values, highest_neighboured_edge, thresh_diff, value, position, usable_edges, vertices, edges);
+                    else
+                        connectivity_graph[p] &= usable_edges;
+                    mergeable_candidates[p] = fastBitCount(connectivity_graph[p]);
+                    if (mergeable_candidates[p] > highest_mergeable_count)
+                    {
+                        highest_mergeable_count = mergeable_candidates[p];
+                        highest_counted_edge = p;
+                    }
                 }
+
+                // if there are no mergeable edges anywhere, do them all individually and finish
+                if (highest_mergeable_count == 0)
+                {
+                    addVerticesIndividually(neighbour_values, thresh_diff, value, position, usable_edges, vertices, edges);
+                    sample_edge_indices[index] = edges;
+                    ++index;
+                    continue;
+                }
+
+                // if there's an edge where the number of mergeable candidates is equal to 
+                // the number of total usable edges - 1 (i.e. all are mergeable to this edge)
+                // then merge them all together and finish
+                if (highest_mergeable_count == num_flagged_edges - 1)
+                {
+                    Vector3 vertex = { 0, 0, 0 };
+                    VertexRef ref = static_cast<VertexRef>(vertices.size());
+                    EdgeFlags mask = 1;
+                    for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
+                    {
+                        if (!(usable_edges & mask))
+                            continue;
+                        float value_at_neighbour = neighbour_values[p];
+                        edges.references[p] = ref;
+                        vertex += VERTEX_POSITION(vector_offsets[p], thresh_diff, value_at_neighbour, value, position);
+                    }
+                    vertices.push_back(vertex / static_cast<float>(num_flagged_edges));
+                    sample_edge_indices[index] = edges;
+                    ++index;
+                    continue;
+                }
+
+                // otherwise, do something else aka graph traversal (TODO HERE)
+
+
+
+
 
                 // finally, create vertices for any remaining (unmerged) edges
-                for (EdgeAddr p = 0; p < 14u; ++p)
-                {
-                    if (!usable_edges[p])
-                        continue;
-                    edges.references[p] = addVertex(neighbour_values, p, thresh_diff, value, position, vertices);
-                }
+                addVerticesIndividually(neighbour_values, thresh_diff, value, position, usable_edges, vertices, edges);
 
                 // write back the sample edge indices and continue to the next sample point
                 sample_edge_indices[index] = edges;

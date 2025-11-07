@@ -111,7 +111,8 @@ private:
     void samplingPass();
     void samplingLayer(const int start, const int layers);
     VertexRef addVertex(const float* neighbour_values, const EdgeAddr p, const float thresh_diff, const float value, const Vector3& position, std::vector<Vector3>& verts);
-    VertexRef addMergedVertex(const float* neighbour_values, const EdgeAddr p, const float thresh_diff, const float value, const Vector3 position, bool* usable_neighbours, std::vector<Vector3>& verts, EdgeReferences& edge_refs);
+    VertexRef addMergedVertex(const float* neighbour_values, const EdgeAddr p, const float thresh_diff, const float value, const Vector3& position, bool* usable_neighbours, std::vector<Vector3>& verts, EdgeReferences& edge_refs);
+    void addVerticesIndividually(const float* neighbour_values, const float thresh_diff, const float value, const Vector3& position, EdgeFlags usable_edges, std::vector<Vector3>& verts, EdgeReferences& edge_refs);
     void vertexPass();
     void geometryPass();
 };

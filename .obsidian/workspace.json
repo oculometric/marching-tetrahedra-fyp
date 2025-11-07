@@ -96,8 +96,7 @@
               "title": "miscellaneous notes"
             }
           }
-        ],
-        "currentTab": 3
+        ]
       }
     ],
     "direction": "vertical"
@@ -244,27 +243,28 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "bf840b46f3fa0349",
+  "active": "d6c5fb8c18675b10",
   "lastOpenFiles": [
-    "doc/research notes/miscellaneous notes.md",
-    "doc/development todos.md",
-    "doc/research kanban.md",
-    "doc/misc shit.md",
-    "doc/papers/triangulated surface extraction using tetrahedral decomposition 1995.pdf",
-    "mt-5 abiguity.png",
-    "doc/papers/ambiguity detection within tetrahedral meshes 1995.pdf",
-    "irregular tetrahedral refinement.png",
-    "doc/papers/Tetrahedral grid refinement 1995.pdf",
-    "regular tetrahedral refinement.png",
-    "c-rewrite/benchmark_05_11_2025 12.07.32.6516942.csv",
-    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.30.tlog",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.41.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.write.1.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.read.1.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.write.1.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.read.1.tlog",
+    "x64/Release/c-rewrite.exe",
+    "c-rewrite/x64/Release/MTVT.obj",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.27.tlog",
     "c-rewrite/x64/Release/c-rewrite.tlog/unsuccessfulbuild",
-    "doc/lit review template.md",
+    "c-rewrite/src/v0plcjqs.j52~",
+    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.29.tlog",
     "doc/task board.md",
+    "doc/research notes/miscellaneous notes.md",
+    "doc/development todos.md",
+    "doc/research kanban.md",
+    "doc/misc shit.md",
+    "mt-5 abiguity.png",
+    "irregular tetrahedral refinement.png",
+    "regular tetrahedral refinement.png",
+    "doc/lit review template.md",
     "doc/research notes/Regularised marching tetrahedra (1999).md",
     "mutual tesselation.png",
     "doc/lit review template.md",

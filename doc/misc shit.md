@@ -52,3 +52,16 @@ and this?
 and this?
 
 thanks for taking part.
+
+
+
+
+
+represent the merge-ability of edges as a graph. each link in the graph represents a pair of neighbouring edges which are both set to active (and thus can be merged). store this information in an adjacency matrix of bools
+
+first, make a copy of the template adjacency matrix, where all edges satisfy the neighbour condition. then, go through the matrix, and logical AND each value in the table with the usability of the two edges it refers to.
+
+this gives us a graph with some links pruned, where the only links remaining are those which satisfy the both-usable condition.
+
+now, pick some starting points - how???
+
