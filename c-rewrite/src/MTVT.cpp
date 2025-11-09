@@ -746,10 +746,68 @@ void Builder::vertexPass()
                     continue;
                 }
 
-                // otherwise, do something else aka graph traversal (TODO HERE)
+                // otherwise, separate the data into islands by traversing to connected
+                // neighbours and marking them as part of an island, until all edges are
+                // marked. then, we check each island for opposing edges using a bitmask;
+                // if the island has no opposing edges it can be safely merged, otherwise
+                // it must be split into two new groups based on the two opposing edges,
+                // before it can be merged
 
+                // separate the remaining data into islands (continuously connected regions)
+                int group_ids[14] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+                int current_group_index = 0;
+                int total_grouped_size = 0;
+                EdgeAddr current_edge = 0;
+                vector<EdgeAddr> edge_queue; edge_queue.reserve(14);
+                vector<EdgeFlags> groups; edge_queue.reserve(8);
+                EdgeFlags current_group = 0;
+                // traverse breadth-first to neighbours, marking each as part of the current group
+                // when this is complete, if there are unmarked edges, find the first unmarked
+                // and repeat traversal.
+                while (total_grouped_size < num_flagged_edges)
+                {
+                    while (group_ids[current_edge] != -1 && !(usable_edges & (1 << current_edge)))
+                        ++current_edge;
+                    // add this edge to the current group
+                    edge_queue.push_back(current_edge);
+                    group_ids[current_edge] = current_group_index;
+                    int queue_index = 0;
+                    // repeat until we run out
+                    while (queue_index < edge_queue.size())
+                    {
+                        mask = 1;
+                        // jump to the current edge in the queue
+                        current_edge = edge_queue[queue_index];
+                        current_group |= (1 << current_edge);
+                        for (EdgeAddr next_edge = 0; next_edge < 14u; ++next_edge, mask <<= 1)
+                        {
+                            // check this edge for connected neighbours, mark each one
+                            // and add it to the queue (if it isn't already marked!)
+                            if ((connectivity_graph[current_edge] & mask) && group_ids[next_edge] == -1)
+                            {
+                                edge_queue.push_back(next_edge);
+                                group_ids[next_edge] = current_group_index;
+                            }
+                        }
+                        // step to the next element in the queue
+                        ++queue_index;
+                    }
+                    // reset in case we have to find another island
+                    total_grouped_size += edge_queue.size();
+                    groups.push_back(current_group);
+                    edge_queue.clear();
+                    current_edge = 0;
+                    current_group = 0;
+                    ++current_group_index;
+                }
 
+                // next, iterate over the islands, checking each for opposing edges.
+                // any islands which do not contain opposing edges can be merged,
+                // other islands need to be rebuilt as two groups, distance based,
+                // starting from the opposing edges detected.
 
+                // actually we don't need traversal! use bitmasks to separate the island
+                // into halves
 
 
                 // finally, create vertices for any remaining (unmerged) edges
