@@ -65,3 +65,15 @@ this gives us a graph with some links pruned, where the only links remaining are
 
 now, pick some starting points - how???
 
+all starting points, incrementally merge blocks together, unless the result would be wrong
+
+
+
+start at the edge with the fewest (but non-zero) unmarked, ungrouped, mergeable neighbours. set its group to zero, set it as marked, and set its minimum traversal distance to zero. traverse to its neighbours repeatedly, setting their group to zero, marking them, and setting their minimum traversal distance to one greater than the previous distance (ie zero). if they are already grouped/marked AND their minimum traversal distance is less than or equal to one, then skip them. repeat this until our current traversal distance reaches the maximum limit.
+once we have no more edges we can mark, re-count how many unmarked, ungrouped, mergeable neighbours each edge has, and repeat the above (incrementing the group index each time) until all edges have been marked. an edge can only be added to a group if it 1. has not been marked, or it has been marked and the current traversal distance is less than its minimum traversal distance; and 2. the current traversal distance is less than or equal to the maximum (which i think should be 4).
+
+i think this should work! alternatively we could pick starting points which are unmarked, ungrouped, and have an opposing edge to begin (and when these are all satisfied, pick others? idk)
+
+
+first separate stuff into islands (connected regions) by traversing and marking edges as part of numbered islands, until all edges are marked.
+then check each island - if it has opposing edges (using bitmask) then separate it by creating starting points at either opposing edge and traversing incrementally from them, each edge is grouped according to minimum traversal depth from a starting point (see above basically). then, or otherwise, the island/group can be merged together.
