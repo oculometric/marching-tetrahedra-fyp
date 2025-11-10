@@ -110,6 +110,7 @@ private:
     void populateIndexOffsets();
     void samplingPass();
     void samplingLayer(const int start, const int layers);
+    Vector3 clampToBounds(Vector3 v);
     VertexRef addVertex(const float* neighbour_values, const EdgeAddr p, const float thresh_diff, const float value, const Vector3& position, std::vector<Vector3>& verts);
     VertexRef addMergedVertex(const float* neighbour_values, const float thresh_diff, const float value, const Vector3& position, EdgeFlags usable_edges, std::vector<Vector3>& verts, EdgeReferences& edges);
     void addVerticesIndividually(const float* neighbour_values, const float thresh_diff, const float value, const Vector3& position, EdgeFlags usable_edges, std::vector<Vector3>& verts, EdgeReferences& edges);

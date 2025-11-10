@@ -293,6 +293,11 @@ void MTVT::Builder::samplingLayer(const int start, const int layers)
     }
 }
 
+inline Vector3 MTVT::Builder::clampToBounds(Vector3 v)
+{
+    return max(min(v, max_extent), min_extent);
+}
+
 // each entry defines the set of either 4 or 6 edges which are closest 
 // to the edge used to index the array
 static constexpr EdgeAddr edge_neighbour_addresses[14][6] =
@@ -343,7 +348,7 @@ inline VertexRef Builder::addVertex(const float* neighbour_values, const EdgeAdd
     float value_at_neighbour = neighbour_values[p];
     Vector3 vertex_position = VERTEX_POSITION(vector_offsets[p], thresh_diff, value_at_neighbour, value, position);
 
-    verts.push_back(vertex_position);
+    verts.push_back(clampToBounds(vertex_position));
     return static_cast<VertexRef>(vertices.size() - 1);
 }
 
@@ -361,7 +366,7 @@ inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const f
         edges.references[p] = ref;
         vertex += VERTEX_POSITION(vector_offsets[p], thresh_diff, neighbour_values[p], value, position);
     }
-    vertices.push_back(vertex / static_cast<float>(merged_count));
+    vertices.push_back(clampToBounds(vertex / static_cast<float>(merged_count)));
 
     return ref;
 }

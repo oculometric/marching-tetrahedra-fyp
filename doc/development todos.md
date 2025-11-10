@@ -7,7 +7,8 @@ kanban-plugin: board
 ## todo
 
 - [ ] test vertex/index reservation for speedup
-- [ ] implement sample-cube edge handling
+- [ ] improve merging algo - checks for degeration (concave merging) and edge-of-sample-cube merging
+- [ ] clean up project (organise files and structure)
 
 
 ## backlog
@@ -17,9 +18,7 @@ kanban-plugin: board
 - [ ] implement normal generation
 - [ ] implement simple cubic lattice structure
 - [ ] parallelise vertex pass
-- [ ] clean up project (organise files and structure)
 - [ ] wrap with graphical interface to view models live
-- [ ] fix bad aspect ratios and areas
 
 
 ## done
@@ -37,6 +36,8 @@ kanban-plugin: board
 - [x] generate csv data file
 - [x] fix unexpected degenerate triangles
 - [x] fix incorrect merging of opposing edges (redesign merging algorithm to use island-growing system)
+- [x] fix bad aspect ratios and areas
+- [x] implement sample-cube edge handling
 
 
 
