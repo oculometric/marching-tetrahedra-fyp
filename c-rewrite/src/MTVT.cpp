@@ -358,9 +358,8 @@ inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const f
         if (!(usable_edges & mask))
             continue;
         ++merged_count;
-        float value_at_neighbour = neighbour_values[p];
         edges.references[p] = ref;
-        vertex += VERTEX_POSITION(vector_offsets[p], thresh_diff, value_at_neighbour, value, position);
+        vertex += VERTEX_POSITION(vector_offsets[p], thresh_diff, neighbour_values[p], value, position);
     }
     vertices.push_back(vertex / static_cast<float>(merged_count));
 
@@ -646,8 +645,7 @@ void Builder::vertexPass()
                 // and we just do them all individually
                 if (num_flagged_edges >= 12)
                 {
-                    for (EdgeAddr p = 0; p < 14u; ++p)
-                        edges.references[p] = addVertex(neighbour_values, p, thresh_diff, value, position, vertices);
+                    addVerticesIndividually(neighbour_values, thresh_diff, value, position, usable_edges, vertices, edges);
                     sample_edge_indices[index] = edges;
                     ++index;
                     continue;
@@ -729,7 +727,7 @@ void Builder::vertexPass()
                 // and repeat traversal.
                 while (total_grouped_size < num_flagged_edges)
                 {
-                    while (group_ids[current_edge] != -1 && !(usable_edges & (1 << current_edge)))
+                    while (group_ids[current_edge] != -1 || !(usable_edges & (1 << current_edge)))
                         ++current_edge;
                     // add this edge to the current group
                     edge_queue.push_back(current_edge);
@@ -768,6 +766,7 @@ void Builder::vertexPass()
                 // any islands which do not contain opposing edges can be merged,
                 // other islands need to be rebuilt as two groups (using bitmasks 
                 // to separate the island into halves)
+                // FIXME: change the opposing edge checks to be MORE THAN 180 degrees, not 180. i.e., the maximum traversal distance in the group
                 for (EdgeFlags group_mask : groups)
                 {
                     int mask_index;
@@ -783,15 +782,19 @@ void Builder::vertexPass()
                     if (mask_index >= 7)
                     {
                         // all good! merge them!
-                        addMergedVertex(neighbour_values, thresh_diff, value, position, usable_edges, vertices, edges);
+                        addMergedVertex(neighbour_values, thresh_diff, value, position, group_mask, vertices, edges);
                     }
                     else
                     {
-                        // split the group (TODO)
-                        addVerticesIndividually(neighbour_values, thresh_diff, value, position, usable_edges, vertices, edges);
+                        // split the group
+                        EdgeFlags half_mask = opposing_edge_masks[mask_index][1];
+                        EdgeFlags group_a = group_mask & half_mask;
+                        EdgeFlags group_b = group_mask & ~half_mask;
+                        addMergedVertex(neighbour_values, thresh_diff, value, position, group_a, vertices, edges);
+                        addMergedVertex(neighbour_values, thresh_diff, value, position, group_b, vertices, edges);
                     }
                 }
-                
+
                 // write back the sample edge indices and continue to the next sample point
                 sample_edge_indices[index] = edges;
                 ++index;

@@ -6,7 +6,6 @@ kanban-plugin: board
 
 ## todo
 
-- [ ] fix incorrect merging of opposing edges (redesign merging algorithm to use island-growing system)
 - [ ] test vertex/index reservation for speedup
 
 
@@ -37,6 +36,7 @@ kanban-plugin: board
 - [x] improve benchmark to include triangles and triangle stats (area, aspect ratio incl mean and sd)
 - [x] generate csv data file
 - [x] fix unexpected degenerate triangles
+- [x] fix incorrect merging of opposing edges (redesign merging algorithm to use island-growing system)
 
 
 
