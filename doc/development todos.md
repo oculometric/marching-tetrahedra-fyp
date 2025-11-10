@@ -7,6 +7,7 @@ kanban-plugin: board
 ## todo
 
 - [ ] test vertex/index reservation for speedup
+- [ ] implement sample-cube edge handling
 
 
 ## backlog
@@ -14,7 +15,6 @@ kanban-plugin: board
 - [ ] fix bunny benchmark
 - [ ] implement alternative merging algorithm
 - [ ] implement normal generation
-- [ ] implement sample-cube edge handling
 - [ ] implement simple cubic lattice structure
 - [ ] parallelise vertex pass
 - [ ] clean up project (organise files and structure)

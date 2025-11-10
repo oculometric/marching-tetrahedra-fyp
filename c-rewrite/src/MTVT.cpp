@@ -779,20 +779,20 @@ void Builder::vertexPass()
                             break;
                         }
                     }
-                    if (mask_index >= 7)
-                    {
+                    //if (mask_index >= 7)
+                    //{
                         // all good! merge them!
                         addMergedVertex(neighbour_values, thresh_diff, value, position, group_mask, vertices, edges);
-                    }
-                    else
-                    {
-                        // split the group
-                        EdgeFlags half_mask = opposing_edge_masks[mask_index][1];
-                        EdgeFlags group_a = group_mask & half_mask;
-                        EdgeFlags group_b = group_mask & ~half_mask;
-                        addMergedVertex(neighbour_values, thresh_diff, value, position, group_a, vertices, edges);
-                        addMergedVertex(neighbour_values, thresh_diff, value, position, group_b, vertices, edges);
-                    }
+                    //}
+                    //else
+                    //{
+                    //    // split the group
+                    //    EdgeFlags half_mask = opposing_edge_masks[mask_index][1];
+                    //    EdgeFlags group_a = group_mask & half_mask;
+                    //    EdgeFlags group_b = group_mask & ~half_mask;
+                    //    addMergedVertex(neighbour_values, thresh_diff, value, position, group_a, vertices, edges);
+                    //    addMergedVertex(neighbour_values, thresh_diff, value, position, group_b, vertices, edges);
+                    //}
                 }
 
                 // write back the sample edge indices and continue to the next sample point
