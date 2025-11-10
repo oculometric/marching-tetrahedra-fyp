@@ -81,23 +81,9 @@
               "icon": "lucide-trello",
               "title": "task board"
             }
-          },
-          {
-            "id": "f8274699f4f6a8f7",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "doc/research notes/miscellaneous notes.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "miscellaneous notes"
-            }
           }
         ],
-        "currentTab": 1
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -154,8 +140,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "f9232ef4b6037c5b",
@@ -244,30 +229,31 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "0467a2410ef122c9",
+  "active": "bf840b46f3fa0349",
   "lastOpenFiles": [
-    "c-rewrite/x64/Release/c-rewrite.tlog/link.read.29.tlog",
-    "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.write.1.tlog",
-    "c-rewrite/x64/Release/c-rewrite.tlog/link-cvtres.read.1.tlog",
-    "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.write.1.tlog",
-    "c-rewrite/x64/Release/c-rewrite.tlog/link-rc.read.1.tlog",
-    "c-rewrite/x64/Release/main.obj",
-    "c-rewrite/x64/Release/c-rewrite.tlog/unsuccessfulbuild",
-    "c-rewrite/fbm4.obj",
-    "c-rewrite/fbm3.obj",
-    "c-rewrite/fbm2.obj",
-    "c-rewrite/fbm1.obj",
-    "doc/research notes/miscellaneous notes.md",
-    "doc/task board.md",
-    "doc/misc shit.md",
-    "doc/development todos.md",
+    "c-rewrite.vcxproj.filters",
+    "c-rewrite.vcxproj",
+    "src/Vector3.h",
+    "src/obj_loader.h",
+    "src/MTVT.h",
+    "src/obj_loader.cpp",
+    "src/MTVT.cpp",
+    "src/mesh_stats.h",
+    "src/mesh_stats.cpp",
+    "src/mesh_closest.h",
+    "src/mesh_closest.cpp",
     "doc/research kanban.md",
-    "mt-5 abiguity.png",
-    "irregular tetrahedral refinement.png",
-    "regular tetrahedral refinement.png",
+    "doc/development todos.md",
+    "doc/img/irregular tetrahedral refinement.png",
+    "doc/task board.md",
+    "doc/ethics/Pasted image 20251009125842.png",
+    "doc/img/mutual tesselation.png",
+    "doc/img/mt-5 abiguity.png",
+    "doc/research notes/miscellaneous notes.md",
+    "doc/misc shit.md",
+    "doc/img/regular tetrahedral refinement.png",
     "doc/lit review template.md",
     "doc/research notes/Regularised marching tetrahedra (1999).md",
-    "mutual tesselation.png",
     "doc/lit review template.md",
     "doc/merging reductions.md",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/spacer.png",
@@ -275,7 +261,6 @@
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/react_like.png",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.ee5f7ac07bcc2a99730aa9cb8cd57dcd.png",
     "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.b18a76c2192e301724da08e4dfe365f2.png",
-    "doc/Costen, Cassette - c025180n - Games Technology and Programming Development Thread - Digital Academy Forum_files/image.thumb.png.9cb1db92d771c6ba7a76a88670dcc6ad.png",
     "doc/research notes.md",
     "Untitled.canvas",
     "2025-10-29.md",

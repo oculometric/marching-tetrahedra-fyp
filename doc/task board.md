@@ -7,7 +7,7 @@ kanban-plugin: board
 ## current
 
 - [ ] draft literature review #research [180 -> 60]
-- [ ] implement vertex clustering [600 -> 300...] #development
+- [ ] implement vertex clustering [600 -> 420...] #development
 - [ ] vertex clustering research [1440] #literature
 
 
