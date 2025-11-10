@@ -4,6 +4,7 @@
 #include <fstream>
 #include <format>
 #include <thread>
+#include <intrin.h>
 
 #define VERTEX_NULL (VertexRef)-1
 #define INDEX_NULL (Index)-1
@@ -312,6 +313,7 @@ static constexpr EdgeAddr edge_neighbour_addresses[14][6] =
     { NX,     NY,     NZ,     PXNYNZ, NXPYNZ, NXNYPZ }, // NXNYNZ
 };
 
+// essentially a bitmask version of the table above!
 static constexpr EdgeFlags edge_neighbour_masks[14] =
 {  // diag......perp..
     0b0001010101000000,     // PX
@@ -330,28 +332,6 @@ static constexpr EdgeFlags edge_neighbour_masks[14] =
    // diag......perp..
 };
 
-static constexpr EdgeFlags edge_exclusion_masks[14] =
-{
-   // diag......perp..
-    0b0010101010000010,     // PX
-    0b0001010101000001,     // NX
-    0b0011001100001000,     // PY
-    0b0000110011000100,     // NY
-    0b0011110000100000,     // PZ
-    0b0000001111010000,     // NZ
-    // TODO: incomplete
-   // diag......perp..
-};
-
-struct EdgePair
-{
-    EdgeAddr a;
-    EdgeAddr b;
-};
-
-// TODO: need a table of candidate edge pairs (links)
-//   and a table of which links use which edges
-
 #define VERTEX_POSITION(vec, td, van, val, pos) ((vec * (td / (van - val))) + pos)
 
 // this macro simply turns an edge address into the edge address pointing in the 
@@ -367,45 +347,22 @@ inline VertexRef Builder::addVertex(const float* neighbour_values, const EdgeAdd
     return static_cast<VertexRef>(vertices.size() - 1);
 }
 
-inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const EdgeAddr p, const float thresh_diff, const float value, const Vector3& position, bool* usable_neighbours, vector<Vector3>& verts, EdgeReferences& edge_refs)
+inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const float thresh_diff, const float value, const Vector3& position, EdgeFlags usable_edges, vector<Vector3>& verts, EdgeReferences& edges)
 {
-    // check which neighbours are actually usable and populate active_edges, 
-    // marking the last item with an EDGE_NULL
-    // FIXME: prevent us from merging stuff with opposing edges (so we can't merge PX with NX)
-    auto pattern = edge_neighbour_addresses[p];
-    EdgeAddr active_edges[6];
-    int j = 0;
-    for (int i = 0; i < 6; ++i)
-    {
-        if (pattern[i] == EDGE_NULL)
-        {
-            active_edges[j] = EDGE_NULL;
-            break;
-        }
-        if (usable_neighbours[pattern[i]])
-        {
-            active_edges[j] = pattern[i];
-            ++j;
-            continue;
-        }
-        active_edges[j] = EDGE_NULL;
-    }
-    
     Vector3 vertex = { 0, 0, 0 };
     VertexRef ref = static_cast<VertexRef>(vertices.size());
-    int i;
-    for (i = 0; i < j; ++i)
+    EdgeFlags mask = 1;
+    int merged_count = 0;
+    for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
     {
-        EdgeAddr q = active_edges[i];
-        float value_at_neighbour = neighbour_values[q];
-        vertex += VERTEX_POSITION(vector_offsets[q], thresh_diff, value_at_neighbour, value, position);
-
-        usable_neighbours[q] = false;
-        edge_refs.references[q] = ref;
+        if (!(usable_edges & mask))
+            continue;
+        ++merged_count;
+        float value_at_neighbour = neighbour_values[p];
+        edges.references[p] = ref;
+        vertex += VERTEX_POSITION(vector_offsets[p], thresh_diff, value_at_neighbour, value, position);
     }
-    edge_refs.references[p] = ref;
-    usable_neighbours[p] = false;
-    verts.push_back(vertex / static_cast<float>(i));
+    vertices.push_back(vertex / static_cast<float>(merged_count));
 
     return ref;
 }
@@ -428,11 +385,28 @@ static inline uint8_t fastBitCount(EdgeFlags val)
     return counts[val & 0xf] + counts[(val >> 4) & 0xf] + counts[(val >> 8) & 0xf] + counts[(val >> 12) & 0xf];
 }
 
-#include <intrin.h>
-
 static inline EdgeAddr ilog2(const unsigned x) {
     return ((8 * sizeof(unsigned)) - (__lzcnt((unsigned)(x))) - 1);
 }
+
+// this table contains pairs of edge masks, where the first item is used
+// to check for the presence of opposing edges in an edge-flags value,
+// and the second can be used to mask out one side of those flags (the
+// bitwise inverse of the second value can be used to mask the opposite side)
+static constexpr EdgeFlags opposing_edge_masks[7][2] =
+{
+    { 0b0000000000000011, 0b0001010101010101 }, // PX - NX
+    { 0b0000000000001100, 0b0000110011010101 }, // PY - NY
+    { 0b0000000000110000, 0b0000001111010101 }, // PZ - NZ
+    { 0b0010000001000000, 0b0000010111010101 }, // PXPYPZ - NXNYNZ
+    { 0b0001000010000000, 0b0000101011010110 }, // NXPYPZ - PXNYNZ
+    { 0b0000100100000000, 0b0001001101011001 }, // PXNYPZ - NXPYNZ
+    { 0b0000011000000000, 0b0001110001100101 }  // PXPYNZ - NXNYPZ
+    //            npnpnp      ddccbbaazzyyxx
+    //    npnpnpnp            npnpnpnp
+    //    nnppnnpp            nnppnnpp
+    //    nnnnpppp            nnnnpppp
+};
 
 void Builder::vertexPass()
 {
@@ -729,18 +703,7 @@ void Builder::vertexPass()
                 // then merge them all together and finish
                 if (highest_mergeable_count == num_flagged_edges - 1)
                 {
-                    Vector3 vertex = { 0, 0, 0 };
-                    VertexRef ref = static_cast<VertexRef>(vertices.size());
-                    EdgeFlags mask = 1;
-                    for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
-                    {
-                        if (!(usable_edges & mask))
-                            continue;
-                        float value_at_neighbour = neighbour_values[p];
-                        edges.references[p] = ref;
-                        vertex += VERTEX_POSITION(vector_offsets[p], thresh_diff, value_at_neighbour, value, position);
-                    }
-                    vertices.push_back(vertex / static_cast<float>(num_flagged_edges));
+                    addMergedVertex(neighbour_values, thresh_diff, value, position, usable_edges, vertices, edges);
                     sample_edge_indices[index] = edges;
                     ++index;
                     continue;
@@ -803,16 +766,32 @@ void Builder::vertexPass()
 
                 // next, iterate over the islands, checking each for opposing edges.
                 // any islands which do not contain opposing edges can be merged,
-                // other islands need to be rebuilt as two groups, distance based,
-                // starting from the opposing edges detected.
-
-                // actually we don't need traversal! use bitmasks to separate the island
-                // into halves
-
-
-                // finally, create vertices for any remaining (unmerged) edges
-                addVerticesIndividually(neighbour_values, thresh_diff, value, position, usable_edges, vertices, edges);
-
+                // other islands need to be rebuilt as two groups (using bitmasks 
+                // to separate the island into halves)
+                for (EdgeFlags group_mask : groups)
+                {
+                    int mask_index;
+                    for (mask_index = 0; mask_index < 7; ++mask_index)
+                    {
+                        EdgeFlags mask = opposing_edge_masks[mask_index][0];
+                        if ((group_mask & mask) == mask)
+                        {
+                            // we found an opposing edge! kill it!
+                            break;
+                        }
+                    }
+                    if (mask_index >= 7)
+                    {
+                        // all good! merge them!
+                        addMergedVertex(neighbour_values, thresh_diff, value, position, usable_edges, vertices, edges);
+                    }
+                    else
+                    {
+                        // split the group (TODO)
+                        addVerticesIndividually(neighbour_values, thresh_diff, value, position, usable_edges, vertices, edges);
+                    }
+                }
+                
                 // write back the sample edge indices and continue to the next sample point
                 sample_edge_indices[index] = edges;
                 ++index;
