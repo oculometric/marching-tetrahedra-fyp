@@ -1,6 +1,5 @@
 /.vs
 /obj
 /bin
-/c-rewrite/x64
 /x64
-/c-rewrite/bin
+out/*.obj
