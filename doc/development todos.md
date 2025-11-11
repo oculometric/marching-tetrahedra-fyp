@@ -6,7 +6,6 @@ kanban-plugin: board
 
 ## todo
 
-- [ ] test vertex/index reservation for speedup
 - [ ] implement normal generation
 - [ ] fix bunny benchmark
 
@@ -38,6 +37,7 @@ kanban-plugin: board
 - [x] fix bad aspect ratios and areas
 - [x] implement sample-cube edge handling
 - [ ] clean up project (organise files and structure)
+- [x] test vertex/index reservation for speedup
 
 
 

@@ -79,7 +79,7 @@ Mesh Builder::generate(DebugStats& stats)
     invalid_triangles = 0;
     tetrahedra_evaluated = 0;
     prepareBuffers();
-    vertices.clear(); // TODO: test size reservation for speed
+    vertices.clear();
     indices.clear();
     float allocation = ((chrono::duration<float>)(chrono::high_resolution_clock::now() - allocation_start)).count();
 
@@ -108,9 +108,9 @@ Mesh Builder::generate(DebugStats& stats)
     stats.vertex_time              += vertex;
     stats.geometry_time            += geometry;
     stats.sample_points_allocated   = grid_data_length;
-    stats.cubes_x = cubes_x;
-    stats.cubes_y = cubes_y;
-    stats.cubes_z = cubes_z;
+    stats.cubes_x                   = cubes_x;
+    stats.cubes_y                   = cubes_y;
+    stats.cubes_z                   = cubes_z;
     stats.min_sample_points         = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 2, 3, 1, 1);
     stats.mem_sample_points         = sizeof(float) * grid_data_length;
 #if defined DEBUG_GRID

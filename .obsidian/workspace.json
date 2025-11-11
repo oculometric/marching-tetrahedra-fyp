@@ -83,7 +83,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -229,27 +229,28 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "a4940339f26bada4",
+  "active": "0467a2410ef122c9",
   "lastOpenFiles": [
-    "doc/development todos.md",
+    "out/benchmark_11_11_2025 13.19.06.6416243.csv",
+    "out/benchmark_11_11_2025 13.18.55.3803199.csv",
+    "out/benchmark_11_11_2025 13.18.44.6764861.csv",
+    "out/benchmark_11_11_2025 13.18.17.6704488.csv",
+    "x64/Release/mtvt.tlog/link.read.29.tlog",
+    "x64/Release/mtvt.tlog/link-cvtres.write.1.tlog",
+    "x64/Release/mtvt.tlog/link-cvtres.read.1.tlog",
+    "x64/Release/mtvt.tlog/link-rc.write.1.tlog",
+    "x64/Release/mtvt.tlog/link-rc.read.1.tlog",
+    "x64/Release/MTVT.obj",
+    "x64/Release/mtvt.tlog/unsuccessfulbuild",
     "doc/task board.md",
-    "doc/papers/regularised marching tetrahedra 1999.pdf",
+    "doc/research kanban.md",
+    "doc/development todos.md",
     "doc/research notes/A new tetrahedral tessellation scheme for isosurface generation (1998).md",
     "doc/research notes/amc crack problem.png",
     "doc/research notes/Marching Cubes (1987).md",
     "doc/research notes/Regularised marching tetrahedra (1999).md",
     "doc/research notes/miscellaneous notes.md",
-    "doc/research kanban.md",
     "doc/questionnaire template.md",
-    "out/benchmark_11_11_2025 12.29.48.7702463.csv",
-    "out/bump.obj",
-    "out/fbm.obj",
-    "out/sphere.obj",
-    "x64/Release/mtvt.tlog/link.read.41.tlog",
-    "x64/Release/mtvt.tlog/link-cvtres.write.1.tlog",
-    "x64/Release/mtvt.tlog/link-cvtres.read.1.tlog",
-    "x64/Release/mtvt.tlog/link-rc.write.1.tlog",
-    "x64/Release/mtvt.tlog/link-rc.read.1.tlog",
     "doc/img/irregular tetrahedral refinement.png",
     "doc/ethics/Pasted image 20251009125842.png",
     "doc/img/mutual tesselation.png",

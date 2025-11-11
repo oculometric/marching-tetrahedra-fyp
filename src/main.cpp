@@ -184,6 +184,7 @@ int main()
                       "discarded tri fraction;verts per SP; verts per edge;verts per tetrahedron;tris per SP;tris per edge;tris per tetrahedron;"
                       "tri area mean;tri area max;tri area min;tri area SD;tri AR mean;tri AR max;tri AR min;tri AR SD\n";
 
+    runBenchmark("sphere", 100, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f, Builder::BODY_CENTERED_DIAMOND, Builder::NONE, 8);
     //csv_file += runBenchmark("sphere", 10, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f, Builder::BODY_CENTERED_DIAMOND, Builder::NONE, 8);
     //csv_file += runBenchmark("sphere", 10, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
     //csv_file += runBenchmark("fbm", 10, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::NONE, 8);
@@ -196,9 +197,9 @@ int main()
     //runBenchmark("fbm3", 10, { 0, -1, -1 }, { 0.5f, 1, 1 }, 0.02f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
     //runBenchmark("fbm4", 10, { 0.5f, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
     //
-    bunny_mesh.load("res/stanford_bunny/bunny_touchup.obj");
+    //bunny_mesh.load("res/stanford_bunny/bunny_touchup.obj");
 
-    runBenchmark("bunny", 1, { -0.1f, -0.06f, -0.01f }, { 0.1f, 0.08f, 0.16f }, 0.004f, [](Vector3 v) { return bunny_mesh.closestPointSDF(v); }, 0.0f);
+    //runBenchmark("bunny", 1, { -0.1f, -0.06f, -0.01f }, { 0.1f, 0.08f, 0.16f }, 0.004f, [](Vector3 v) { return bunny_mesh.closestPointSDF(v); }, 0.0f);
     
     auto current_time = chrono::current_zone()->to_local(chrono::system_clock::now());
     string filename = format("out/benchmark_{0:%d_%m_%Y %H.%M.%S}.csv", current_time);
