@@ -231,6 +231,7 @@
   },
   "active": "0467a2410ef122c9",
   "lastOpenFiles": [
+    "res/tesselations.blend@",
     "out/benchmark_11_11_2025 13.19.06.6416243.csv",
     "out/benchmark_11_11_2025 13.18.55.3803199.csv",
     "out/benchmark_11_11_2025 13.18.44.6764861.csv",
@@ -241,7 +242,6 @@
     "x64/Release/mtvt.tlog/link-rc.write.1.tlog",
     "x64/Release/mtvt.tlog/link-rc.read.1.tlog",
     "x64/Release/MTVT.obj",
-    "x64/Release/mtvt.tlog/unsuccessfulbuild",
     "doc/task board.md",
     "doc/research kanban.md",
     "doc/development todos.md",
