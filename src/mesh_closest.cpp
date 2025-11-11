@@ -53,16 +53,16 @@ void MappedMesh::closestPointOnTri(size_t triangle_ind, Vector3 test_point, floa
     int num_failed = 0;
     for (int i = 0; i < 3; ++i)
     {
-        const Vector3 va = vs[i];
-        const Vector3 vb = vs[(i + 1) % 3];
-        const bool is_outside = (((va - proj_point) % (vb - proj_point)) ^ norm) < 0.0f;
+        Vector3 va = vs[i];
+        Vector3 vb = vs[(i + 1) % 3];
+        bool is_outside = (((va - proj_point) % (vb - proj_point)) ^ norm) < 0.0f;
         if (is_outside)
         {
             ++num_failed;
-            const Vector3 vl = vb - va;
-            const float r = ::min(::max((vl ^ (proj_point - va)) / mag(vl), 0.0f), 1.0f);
-            const Vector3 clamped_proj_point = (vb * r) + (va * (1.0f - r));
-            const float clamped_sq_dist = sq_mag(clamped_proj_point - test_point);
+            Vector3 vl = vb - va;
+            float r = ::min(::max((vl ^ (proj_point - va)) / mag(vl), 0.0f), 1.0f);
+            Vector3 clamped_proj_point = (vb * r) + (va * (1.0f - r));
+            float clamped_sq_dist = sq_mag(clamped_proj_point - test_point);
             if (clamped_sq_dist < best_sq_dist)
             {
                 best_sq_dist = clamped_sq_dist;
