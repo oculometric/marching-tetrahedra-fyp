@@ -6,6 +6,7 @@
 #include <chrono>
 
 #include "MTVT.h"
+#include "benchmark.h"
 
 class GraphicsEnv
 {
@@ -28,10 +29,13 @@ private:
 
 	std::chrono::steady_clock::time_point last_frame_time;
 
+	MTVT::SummaryStats summary_stats;
+
 public:
 	bool create(int width, int height);
 
 	void setMesh(MTVT::Mesh mesh);
+	void setSummary(MTVT::SummaryStats summary);
 	bool draw();
 
 	void destroy();

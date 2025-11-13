@@ -10,18 +10,6 @@ namespace MTVT
 
 //#define DEBUG_GRID
 
-typedef uint32_t VertexRef;
-typedef uint16_t EdgeFlags;
-typedef size_t Index;
-typedef uint8_t EdgeAddr;
-
-struct Mesh
-{
-    std::vector<Vector3> vertices;
-    std::vector<Vector3> normals;
-    std::vector<VertexRef> indices;
-};
-
 struct DebugStats
 {
     double allocation_time = 0;
@@ -43,6 +31,18 @@ struct DebugStats
     size_t cubes_z = 0;
     size_t degenerate_triangles = 0;
     size_t invalid_triangles = 0;
+};
+
+typedef uint32_t VertexRef;
+typedef uint16_t EdgeFlags;
+typedef size_t Index;
+typedef uint8_t EdgeAddr;
+
+struct Mesh
+{
+    std::vector<Vector3> vertices;
+    std::vector<Vector3> normals;
+    std::vector<VertexRef> indices;
 };
 
 class Builder

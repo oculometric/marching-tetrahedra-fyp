@@ -21,7 +21,7 @@
     <ClInclude Include="src\mesh_closest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\mesh_stats.h">
+    <ClInclude Include="src\benchmark.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\MTVT.h">
@@ -47,7 +47,7 @@
     <ClCompile Include="src\mesh_closest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\mesh_stats.cpp">
+    <ClCompile Include="src\benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\MTVT.cpp">

@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <chrono>
+#include <format>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -199,6 +200,11 @@ void GraphicsEnv::setMesh(MTVT::Mesh mesh)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(MTVT::VertexRef) * mesh_data.indices.size(), mesh_data.indices.data(), GL_STATIC_DRAW);
 }
 
+void GraphicsEnv::setSummary(MTVT::SummaryStats summary)
+{
+    summary_stats = summary;
+}
+
 bool GraphicsEnv::draw()
 {
     if (glfwWindowShouldClose(window))
@@ -274,8 +280,55 @@ void GraphicsEnv::drawImGui()
     ImGui::NewFrame();
 
     ImGui::Begin("test window");
+    string s = format(locale("en_US.UTF-8"), "    sample points:  {0:>12L} ({1:L} allocated)", 1, 2);
+    ImGui::Text(s.c_str());
     ImGui::End();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
+
+// frametime
+
+// mesh stats
+// vertices (size)
+// triangles (indices, size)
+
+// generation stats
+// x, y, z resolution
+// lattice mode
+// clustering mode
+// sample points (theoretical, % over, size)
+// edges (theoretical, % over, size)
+// tetrahedra (total, % computed)
+
+// timing stats
+// total generation time
+// allocation (% total)
+// sampling (% total)
+// vertex (% total)
+// geometry (% total)
+
+// geometry stats
+// degenerate triangles (% total)
+// invalid triangles
+// v / sp
+// v / e
+// v / tet
+// t / sp
+// t / e
+// t / tet
+// t area mean
+//        max
+//        min
+//        sd
+// t aspect mean
+//          max
+//          min
+//          sd
+
+// generation control
+
+// camera controls
+
+// batch/benchmark controls
