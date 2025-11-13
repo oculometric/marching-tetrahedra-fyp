@@ -3,3 +3,4 @@
 /bin
 /x64
 out/*.obj
+imgui.ini

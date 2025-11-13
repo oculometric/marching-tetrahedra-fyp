@@ -35,4 +35,8 @@ public:
 	bool draw();
 
 	void destroy();
+
+private:
+	void configureImGui();
+	void drawImGui();
 };

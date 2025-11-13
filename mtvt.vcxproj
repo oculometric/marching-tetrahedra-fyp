@@ -72,13 +72,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)lib\glfw-3.4.bin.WIN64\include;$(ProjectDir)lib\glad\include;$(ProjectDir)lib\glm-1.0.2\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)lib\glfw-3.4.bin.WIN64\include;$(ProjectDir)lib\glad\include;$(ProjectDir)lib\glm-1.0.2\;$(ProjectDir)lib\imgui-1.92.4;$(ProjectDir)lib\imgui-1.92.4\backends;$(IncludePath)</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)lib\glfw-3.4.bin.WIN64\include;$(ProjectDir)lib\glad\include;$(ProjectDir)lib\glm-1.0.2\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)lib\glfw-3.4.bin.WIN64\include;$(ProjectDir)lib\glad\include;$(ProjectDir)lib\glm-1.0.2\;$(ProjectDir)lib\imgui-1.92.4;$(ProjectDir)lib\imgui-1.92.4\backends;$(IncludePath)</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
@@ -140,8 +140,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="lib\glad\include\glad\glad.h" />
-    <ClInclude Include="lib\glad\include\KHR\khrplatform.h" />
     <ClInclude Include="src\fbm.h" />
     <ClInclude Include="src\graphics.h" />
     <ClInclude Include="src\mesh_closest.h" />
@@ -152,6 +150,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\glad\src\glad.c" />
+    <ClCompile Include="lib\imgui-1.92.4\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="lib\imgui-1.92.4\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="lib\imgui-1.92.4\imgui.cpp" />
+    <ClCompile Include="lib\imgui-1.92.4\imgui_draw.cpp" />
+    <ClCompile Include="lib\imgui-1.92.4\imgui_tables.cpp" />
+    <ClCompile Include="lib\imgui-1.92.4\imgui_widgets.cpp" />
     <ClCompile Include="src\fbm.cpp" />
     <ClCompile Include="src\graphics.cpp" />
     <ClCompile Include="src\main.cpp" />

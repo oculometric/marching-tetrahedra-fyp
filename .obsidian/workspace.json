@@ -83,7 +83,7 @@
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -229,7 +229,7 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "0467a2410ef122c9",
+  "active": "a4940339f26bada4",
   "lastOpenFiles": [
     "x64/Debug/mtvt.tlog/link.6792.write.1.tlog",
     "x64/Debug/mtvt.tlog/link.6792.read.1.tlog",

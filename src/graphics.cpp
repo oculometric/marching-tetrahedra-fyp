@@ -1,9 +1,13 @@
 #include "graphics.h"
 
 #include <iostream>
+#include <chrono>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <chrono>
+
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 using namespace std;
 
@@ -113,6 +117,7 @@ bool GraphicsEnv::create(int width, int height)
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
     glfwSetCursorPosCallback(window, mouseMovedCallback);
     glViewport(0, 0, width, height);
+    configureImGui();
 
     // create vertex and index buffers
     glGenBuffers(1, &vertex_buffer);
@@ -198,6 +203,7 @@ bool GraphicsEnv::draw()
 {
     if (glfwWindowShouldClose(window))
         return false;
+    glfwPollEvents();
 
     auto now = chrono::steady_clock::now();
     chrono::duration<float> time_since_last_frame = now - last_frame_time;
@@ -231,16 +237,45 @@ bool GraphicsEnv::draw()
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDisable(GL_CULL_FACE);
     glDrawElements(GL_TRIANGLES, mesh_data.indices.size(), GL_UNSIGNED_INT, 0);
+
+    drawImGui();
     // TODO: draw imgui
     // TODO: act based on imgui
 
     glfwSwapBuffers(window);
-    glfwPollEvents();
     return true;
 }
 
 void GraphicsEnv::destroy()
 {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
     glfwDestroyWindow(window);
     glfwTerminate();
+}
+
+void GraphicsEnv::configureImGui()
+{
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
+}
+
+void GraphicsEnv::drawImGui()
+{
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::Begin("test window");
+    ImGui::End();
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
