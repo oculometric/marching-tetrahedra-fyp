@@ -5,6 +5,7 @@
 #include <format>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <locale>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -248,6 +249,7 @@ bool GraphicsEnv::draw()
     // TODO: draw imgui
     // TODO: act based on imgui
 
+    glfwSwapInterval(1);
     glfwSwapBuffers(window);
     return true;
 }
@@ -279,56 +281,109 @@ void GraphicsEnv::drawImGui()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::Begin("test window");
-    string s = format(locale("en_US.UTF-8"), "    sample points:  {0:>12L} ({1:L} allocated)", 1, 2);
-    ImGui::Text(s.c_str());
-    ImGui::End();
+    {
+        ImGui::Begin("##somename");
+        ImGui::Text("%f fps", ImGui::GetIO().Framerate);
+        ImGui::Text("%f ms", ImGui::GetIO().DeltaTime * 1000.0f);
+        ImGui::End();
+    }
+    {
+        ImGui::Begin("mesh info", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        string vertices_label = format(locale("en_US.UTF-8"),  "vertices  {0:>12L} ({1})", summary_stats.vertices, MTVT::getMemorySize(summary_stats.vertices_bytes));
+        ImGui::Text(vertices_label.c_str());
+        string triangles_label = format(locale("en_US.UTF-8"), "triangles {0:>12L} ({1})", summary_stats.triangles, MTVT::getMemorySize(summary_stats.indices_bytes));
+        ImGui::Text(triangles_label.c_str());
+        ImGui::End();
+    }
+    {
+        ImGui::Begin("generation stats", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::LabelText("resolution", "%i x %i x %i", summary_stats.cubes_x, summary_stats.cubes_y, summary_stats.cubes_z);
+        ImGui::LabelText("lattice type", summary_stats.lattice_type.c_str());
+        ImGui::LabelText("clustering mode", summary_stats.clustering_mode.c_str());
+        ImGui::Separator();
+        ImGui::LabelText("sample points", format(locale("en_US.UTF-8"), "{0:L} ({1:L} ideal, {2})", summary_stats.sample_points_allocated, summary_stats.sample_points_theoretical, MTVT::getMemorySize(summary_stats.sample_points_bytes)).c_str());
+        ImGui::LabelText("edges", format(locale("en_US.UTF-8"), "{0:L} ({1:L} ideal, {2})", summary_stats.edges_allocated, summary_stats.edges_theoretical, MTVT::getMemorySize(summary_stats.edges_bytes)).c_str());
+        ImGui::LabelText("tetrahedra", format(locale("en_US.UTF-8"), "{0:L} ({1:L} total, {2:.2f}%%)", summary_stats.tetrahedra_computed, summary_stats.tetrahedra_total, summary_stats.tetrahedra_computed_percent).c_str());
+        ImGui::End();
+    }
+    {
+        ImGui::Begin("timing stats", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::LabelText("total", "%.8fs", summary_stats.time_total);
+        ImGui::Separator();
+        ImGui::LabelText("allocation", "%.8fs (%.2f%%)", summary_stats.time_allocation, summary_stats.percent_allocation);
+        ImGui::LabelText("sampling", "%.8fs (%.2f%%)", summary_stats.time_sampling, summary_stats.percent_sampling);
+        ImGui::LabelText("vertex", "%.8fs (%.2f%%)", summary_stats.time_vertex, summary_stats.percent_vertex);
+        ImGui::LabelText("geometry", "%.8fs (%.2f%%)", summary_stats.time_geometry, summary_stats.percent_geometry);
+        ImGui::End();
+    }
+    {
+        ImGui::Begin("geometry stats", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::LabelText("degenerate tris", "%d (%.3f%% of total)", summary_stats.degenerate_triangles, summary_stats.degenerate_percent);
+        ImGui::Separator();
+        ImGui::LabelText("verts / sp", "%.8f", summary_stats.verts_per_sp);
+        ImGui::LabelText("verts / edge", "%.8f", summary_stats.verts_per_edge);
+        ImGui::LabelText("verts / tet", "%.8f", summary_stats.verts_per_tet);
+        ImGui::LabelText("tris / sp", "%.8f", summary_stats.tris_per_sp);
+        ImGui::LabelText("tris / edge", "%.8f", summary_stats.tris_per_edge);
+        ImGui::LabelText("tris / tet", "%.8f", summary_stats.tris_per_tet);
+        ImGui::Separator();
+        ImGui::Text("triangle area");
+        ImGui::BeginTable("triangle area", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg);
+        {
+            ImGui::TableSetupColumn("mean");
+            ImGui::TableSetupColumn("max");
+            ImGui::TableSetupColumn("min");
+            ImGui::TableSetupColumn("std. dev.");
+            ImGui::TableHeadersRow();
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::Text("%4f", summary_stats.triangle_stats.area_mean);
+            ImGui::TableNextColumn();
+            ImGui::Text("%4f", summary_stats.triangle_stats.area_max);
+            ImGui::TableNextColumn();
+            ImGui::Text("%4f", summary_stats.triangle_stats.area_min);
+            ImGui::TableNextColumn();
+            ImGui::Text("%4f", summary_stats.triangle_stats.area_sd);
+        }
+        ImGui::EndTable();
+        ImGui::Spacing();
+        ImGui::Text("triangle aspect ratio");
+        ImGui::BeginTable("triangle aspect", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg);
+        {
+            ImGui::TableSetupColumn("mean");
+            ImGui::TableSetupColumn("max");
+            ImGui::TableSetupColumn("min");
+            ImGui::TableSetupColumn("std. dev.");
+            ImGui::TableHeadersRow();
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::Text("%4f", summary_stats.triangle_stats.aspect_mean);
+            ImGui::TableNextColumn();
+            ImGui::Text("%4f", summary_stats.triangle_stats.aspect_max);
+            ImGui::TableNextColumn();
+            ImGui::Text("%4f", summary_stats.triangle_stats.aspect_min);
+            ImGui::TableNextColumn();
+            ImGui::Text("%4f", summary_stats.triangle_stats.aspect_sd);
+        }
+        ImGui::EndTable();
+        ImGui::End();
+    }
+    {
+        ImGui::Begin("generation controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        // TODO: control the generator, and run it
+        ImGui::End();
+    }
+    {
+        ImGui::Begin("view controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        // TODO: control the camera, vsync, fov, view modes (backfaces, wireframe, etc), also move framerate here
+        ImGui::End();
+    }
+    {
+        ImGui::Begin("script controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        // TODO: batch and benchmarking config, including gif generator, csv export, etc
+        ImGui::End();
+    }
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
-
-// frametime
-
-// mesh stats
-// vertices (size)
-// triangles (indices, size)
-
-// generation stats
-// x, y, z resolution
-// lattice mode
-// clustering mode
-// sample points (theoretical, % over, size)
-// edges (theoretical, % over, size)
-// tetrahedra (total, % computed)
-
-// timing stats
-// total generation time
-// allocation (% total)
-// sampling (% total)
-// vertex (% total)
-// geometry (% total)
-
-// geometry stats
-// degenerate triangles (% total)
-// invalid triangles
-// v / sp
-// v / e
-// v / tet
-// t / sp
-// t / e
-// t / tet
-// t area mean
-//        max
-//        min
-//        sd
-// t aspect mean
-//          max
-//          min
-//          sd
-
-// generation control
-
-// camera controls
-
-// batch/benchmark controls
