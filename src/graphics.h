@@ -56,7 +56,7 @@ private:
 
 	MTVT::SummaryStats summary_stats;
 
-	bool update_live = false;
+	bool update_live = true;
 	MTVT::Vector3 param_min = { -1, -1, -1 };
 	MTVT::Vector3 param_max = { 1, 1, 1 };
 	MTVT::Vector3 param_off = { 0, 0, 0 };

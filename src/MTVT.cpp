@@ -353,13 +353,13 @@ inline VertexRef Builder::addVertex(const float* neighbour_values, const EdgeAdd
     Vector3 vertex_position = VERTEX_POSITION(vector_offsets[p], thresh_diff, value_at_neighbour, value, position);
 
     verts.push_back(clampToBounds(vertex_position));
-    return static_cast<VertexRef>(vertices.size() - 1);
+    return static_cast<VertexRef>(verts.size() - 1);
 }
 
 inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const float thresh_diff, const float value, const Vector3& position, EdgeFlags usable_edges, vector<Vector3>& verts, EdgeReferences& edges)
 {
     Vector3 vertex = { 0, 0, 0 };
-    VertexRef ref = static_cast<VertexRef>(vertices.size());
+    VertexRef ref = static_cast<VertexRef>(verts.size());
     EdgeFlags mask = 1;
     int merged_count = 0;
     for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
@@ -370,7 +370,7 @@ inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const f
         edges.references[p] = ref;
         vertex += VERTEX_POSITION(vector_offsets[p], thresh_diff, neighbour_values[p], value, position);
     }
-    vertices.push_back(clampToBounds(vertex / static_cast<float>(merged_count)));
+    verts.push_back(clampToBounds(vertex / static_cast<float>(merged_count)));
 
     return ref;
 }
@@ -382,7 +382,7 @@ inline void Builder::addVerticesIndividually(const float* neighbour_values, cons
     {
         if (!(usable_edges & mask))
             continue;
-        edges.references[p] = addVertex(neighbour_values, p, thresh_diff, value, position, vertices);
+        edges.references[p] = addVertex(neighbour_values, p, thresh_diff, value, position, verts);
     }
 }
 
@@ -394,7 +394,7 @@ static inline uint8_t fastBitCount(EdgeFlags val)
 }
 
 static inline EdgeAddr ilog2(const unsigned x) {
-    return ((8 * sizeof(unsigned)) - (__lzcnt((unsigned)(x))) - 1);
+    return static_cast<EdgeAddr>(((8 * sizeof(unsigned)) - (__lzcnt((unsigned)(x))) - 1));
 }
 
 // this table contains pairs of edge masks, where the first item is used
@@ -726,7 +726,7 @@ void Builder::vertexPass()
                 // separate the remaining data into islands (continuously connected regions)
                 int group_ids[14] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
                 int current_group_index = 0;
-                int total_grouped_size = 0;
+                size_t total_grouped_size = 0;
                 EdgeAddr current_edge = 0;
                 vector<EdgeAddr> edge_queue; edge_queue.reserve(14);
                 vector<EdgeFlags> groups; edge_queue.reserve(8);
@@ -781,7 +781,7 @@ void Builder::vertexPass()
                     int mask_index;
                     for (mask_index = 0; mask_index < 7; ++mask_index)
                     {
-                        EdgeFlags mask = opposing_edge_masks[mask_index][0];
+                        mask = opposing_edge_masks[mask_index][0];
                         if ((group_mask & mask) == mask)
                         {
                             // we found an opposing edge! kill it!
@@ -909,7 +909,7 @@ static constexpr EdgeAddr tetrahedra_edge_address_templates[24][6] =
 // from the sample point at the other end of the edge, and this is checked at each step.
 // these sequences combine the per-edge vertex references into triangles.
 // the last values may be -1 (aka 255) if there is only one triangle
-static constexpr uint8_t tetrahedral_edge_address_patterns[16][4] =
+static constexpr int8_t tetrahedral_edge_address_patterns[16][4] =
 {
     { -1, -1, -1, -1 }, // no bits set
     {  0,  1,  2, -1 }, // 0b0001
@@ -996,9 +996,9 @@ void Builder::geometryPass()
                     // TODO: should we cache this before the per-tetrahedron loop?
                     const bool sample_neighbours_crossing_flags[3] =
                     {
-                        central_sample_crossing_flags & (1 << (tetrahedra_sample_index_templates[t])[0]),
-                        central_sample_crossing_flags & (1 << (tetrahedra_sample_index_templates[t])[1]),
-                        central_sample_crossing_flags & (1 << (tetrahedra_sample_index_templates[t])[2])
+                        static_cast<bool>(central_sample_crossing_flags & (1 << (tetrahedra_sample_index_templates[t])[0])),
+                        static_cast<bool>(central_sample_crossing_flags & (1 << (tetrahedra_sample_index_templates[t])[1])),
+                        static_cast<bool>(central_sample_crossing_flags & (1 << (tetrahedra_sample_index_templates[t])[2]))
                     };
 
                     // check which SPs are inside/outside and use that to build a pattern
@@ -1036,7 +1036,7 @@ void Builder::geometryPass()
                     auto pattern = tetrahedral_edge_address_patterns[pattern_ident];
                     // build one or two triangles
                     VertexRef triangle_indices[4] = { VERTEX_NULL, VERTEX_NULL, VERTEX_NULL, VERTEX_NULL };
-                    const bool two_triangles = pattern[3] != (uint8_t)-1;
+                    const bool two_triangles = pattern[3] != -1;
                     const int imax = (two_triangles ? 4 : 3);
                     for (int i = 0; i < imax; ++i)
                     {

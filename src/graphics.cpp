@@ -59,8 +59,8 @@ static void mouseMovedCallback(GLFWwindow* window, double xpos, double ypos)
 
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
     {
-        graphics_env->camera_euler.z += (old_xpos - xpos) * 0.12f;
-        graphics_env->camera_euler.x += (old_ypos - ypos) * 0.12f;
+        graphics_env->camera_euler.z += (float)(old_xpos - xpos) * 0.12f;
+        graphics_env->camera_euler.x += (float)(old_ypos - ypos) * 0.12f;
     }
     old_xpos = xpos;
     old_ypos = ypos;
@@ -178,7 +178,7 @@ bool GraphicsEnv::create(int width, int height)
     if (!status)
     {
         string error; error.resize(512);
-        glGetShaderInfoLog(vertex_shader, error.size(), nullptr, error.data());
+        glGetShaderInfoLog(vertex_shader, static_cast<int>(error.size()), nullptr, error.data());
         cout << "vertex shader error: " << error << endl;
         return false;
     }
@@ -190,7 +190,7 @@ bool GraphicsEnv::create(int width, int height)
     if (!status)
     {
         string error; error.resize(512);
-        glGetShaderInfoLog(fragment_shader, error.size(), nullptr, error.data());
+        glGetShaderInfoLog(fragment_shader, static_cast<int>(error.size()), nullptr, error.data());
         cout << "fragment shader error: " << error << endl;
         return false;
     }
@@ -203,7 +203,7 @@ bool GraphicsEnv::create(int width, int height)
     if (!status)
     {
         string error; error.resize(512);
-        glGetProgramInfoLog(shader_program, error.size(), NULL, error.data());
+        glGetProgramInfoLog(shader_program, static_cast<int>(error.size()), NULL, error.data());
         cout << "shader program error: " << error << endl;
         return false;
     }
@@ -384,9 +384,9 @@ void GraphicsEnv::drawMesh(glm::mat4 transform)
         glUniform1i(shvar_backface_highlight, (backface_mode <= 2) ? 0 : (backface_mode - 2));
         glUniform1i(shvar_smooth_shading, smooth_shading);
         if (smooth_shading)
-            glDrawElements(GL_TRIANGLES, mesh_data.indices.size(), GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, static_cast<int>(mesh_data.indices.size()), GL_UNSIGNED_INT, 0);
         else
-            glDrawArrays(GL_TRIANGLES, 0, flat_shaded_data.size());
+            glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(flat_shaded_data.size()));
     }
     if (wireframe_mode)
     {
@@ -396,9 +396,9 @@ void GraphicsEnv::drawMesh(glm::mat4 transform)
         glUniform1i(shvar_backface_highlight, 0);
         glUniform1i(shvar_smooth_shading, 1);
         if (smooth_shading)
-            glDrawElements(GL_TRIANGLES, mesh_data.indices.size(), GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, static_cast<int>(mesh_data.indices.size()), GL_UNSIGNED_INT, 0);
         else
-            glDrawArrays(GL_TRIANGLES, 0, flat_shaded_data.size());
+            glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(flat_shaded_data.size()));
     }
 }
 
@@ -508,12 +508,12 @@ void GraphicsEnv::drawImGui()
     
     if (ImGui::Begin("generation controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        bool clicked = false;
+        static bool clicked = true;
         clicked |= ImGui::Checkbox("update live", &update_live);
         clicked |= ImGui::SliderFloat3("min", (float*)(&param_min), -5, 5);
         clicked |= ImGui::SliderFloat3("max", (float*)(&param_max), -5, 5);
         clicked |= ImGui::SliderFloat3("offset", (float*)(&param_off), -5, 5);
-        clicked |= ImGui::SliderFloat("resolution", &param_resolution, 0.002, 2);
+        clicked |= ImGui::SliderFloat("resolution", &param_resolution, 0.002f, 2);
         const char* options[5] = { "sphere", "bump", "fbm", "cube", "bunny" };
         clicked |= ImGui::Combo("function", &param_function, options, 5);
         clicked |= ImGui::SliderFloat("threshold", &param_threshold, -2, 2);
@@ -549,6 +549,7 @@ void GraphicsEnv::drawImGui()
         }
         if (update_live)
             ImGui::EndDisabled();
+        clicked = false;
     }
     ImGui::End();
     if (ImGui::Begin("view controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
