@@ -39,6 +39,9 @@
     <ClInclude Include="src\demo_functions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\backface_image_raw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\fbm.cpp">

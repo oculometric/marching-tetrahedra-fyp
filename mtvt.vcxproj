@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\backface_image_raw.h" />
     <ClInclude Include="src\demo_functions.h" />
     <ClInclude Include="src\fbm.h" />
     <ClInclude Include="src\graphics.h" />

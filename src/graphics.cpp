@@ -13,6 +13,7 @@
 #include "imgui_impl_opengl3.h"
 
 #include "demo_functions.h"
+#include "backface_image_raw.h"
 
 using namespace std;
 
@@ -246,10 +247,10 @@ bool GraphicsEnv::create(int width, int height)
 
     // load image
     int img_width, img_height, channels;
-    unsigned char* data = stbi_load("res/frontface_backface.png", &img_width, &img_height, &channels, 3);
+    float* data = stbi_loadf_from_memory(backface_image_data, backface_image_data_size, &img_width, &img_height, &channels, 3);
     if (!data)
     {
-        cout << "unable to load backface image!! make sure its located at 'res/frontface_backface.png'" << endl;
+        cout << "unable to load backface image!!" << endl;
         exit(-1);
     }
     glGenTextures(1, &backface_image);
@@ -259,7 +260,7 @@ bool GraphicsEnv::create(int width, int height)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img_width, img_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img_width, img_height, 0, GL_RGB, GL_FLOAT, data);
     stbi_image_free(data);
 
     graphics_env = this;
@@ -407,6 +408,7 @@ void GraphicsEnv::configureImGui()
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -418,6 +420,8 @@ void GraphicsEnv::drawImGui()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+    auto io = ImGui::GetIO();
+    static bool is_first_run = true;
 
     if (ImGui::Begin("stats & info", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
@@ -503,9 +507,13 @@ void GraphicsEnv::drawImGui()
             }
             ImGui::EndTable();
         }
+
+        if (!is_first_run)
+            ImGui::SetWindowPos(ImVec2(io.DisplaySize.x - (ImGui::GetWindowWidth() + 10), 10), ImGuiCond_FirstUseEver);
     }
     ImGui::End();
     
+    float generation_window_height = 0;
     if (ImGui::Begin("generation controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
         static bool clicked = true;
@@ -550,12 +558,16 @@ void GraphicsEnv::drawImGui()
         if (update_live)
             ImGui::EndDisabled();
         clicked = false;
+
+        if (!is_first_run)
+            ImGui::SetWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+        generation_window_height = ImGui::GetWindowHeight();
     }
     ImGui::End();
     if (ImGui::Begin("view controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        ImGui::Text("%f fps", ImGui::GetIO().Framerate);
-        ImGui::Text("%f ms", ImGui::GetIO().DeltaTime * 1000.0f);
+        ImGui::Text("%f fps", io.Framerate);
+        ImGui::Text("%f ms", io.DeltaTime * 1000.0f);
         ImGui::Checkbox("vsync enabled", &vsync_enabled);
         ImGui::Separator();
         ImGui::LabelText("position", "(%.2f, %.2f, %.2f)", camera_position.x, camera_position.y, camera_position.z);
@@ -639,14 +651,18 @@ void GraphicsEnv::drawImGui()
         ImGui::TableNextColumn();
         ImGui::RadioButton("highlight frontfaces", &backface_mode, 4);
         ImGui::EndTable();
+
+        if (!is_first_run)
+            ImGui::SetWindowPos(ImVec2(10, generation_window_height + 20), ImGuiCond_FirstUseEver);
     }
     ImGui::End();
-    if (ImGui::Begin("script controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-        // TODO: batch and benchmarking config, including gif generator, csv export, etc
-    }
-    ImGui::End();
+    //if (ImGui::Begin("script controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    //{
+    //    // TODO: batch and benchmarking config, including gif generator, csv export, etc
+    //}
+    //ImGui::End();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    is_first_run = false;
 }
