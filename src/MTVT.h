@@ -16,6 +16,7 @@ struct DebugStats
     double sampling_time = 0;
     double vertex_time = 0;
     double geometry_time = 0;
+    double normal_time = 0;
     size_t sample_points_allocated = 0;
     size_t min_sample_points = 0;
     size_t mem_sample_points = 0;
@@ -92,6 +93,7 @@ private:
     EdgeFlags* sample_crossing_flags = nullptr;
     EdgeReferences* sample_edge_indices = nullptr;
     std::vector<Vector3> vertices;
+    std::vector<Vector3> normals;
     std::vector<VertexRef> indices;
     size_t degenerate_triangles;
     size_t invalid_triangles;
@@ -116,6 +118,7 @@ private:
     void addVerticesIndividually(const float* neighbour_values, const float thresh_diff, const float value, const Vector3& position, EdgeFlags usable_edges, std::vector<Vector3>& verts, EdgeReferences& edges);
     void vertexPass();
     void geometryPass();
+    void computeVertexNormals();
 };
 
 }

@@ -47,6 +47,7 @@ struct SummaryStats
     double time_sampling, percent_sampling;
     double time_vertex, percent_vertex;
     double time_geometry, percent_geometry;
+    double time_normals, percent_normals;
 
     // geometry stats
     size_t degenerate_triangles;
@@ -59,7 +60,7 @@ struct SummaryStats
 
 TriangleStats computeTriangleQualityStats(const Mesh& mesh);
 std::pair<SummaryStats, Mesh> runBenchmark(std::string name, int iterations, Vector3 min, Vector3 max, float cube_size, float (*sampler)(Vector3), float threshold, Builder::LatticeType lattice_type, Builder::ClusteringMode clustering_mode, unsigned short threads);
-std::string generateCSVLine(const SummaryStats& stats);
+std::string generateCSVLine(const SummaryStats& stats, bool title_line = false);
 void printBenchmarkSummary(const SummaryStats& stats);
 std::string getMemorySize(size_t bytes);
 void dumpMeshToOBJ(const Mesh& mesh, std::string name);

@@ -69,15 +69,20 @@ static const char* vertex_shader_source = R"(
 #version 330 core
 
 layout (location = 0) in vec3 vertex_position;
+layout (location = 1) in vec3 vertex_normal;
 
 uniform mat4 world_to_clip;
 
 varying vec3 position;
+varying vec3 world_normal;
+varying vec3 screen_normal;
 
 void main()
 {
     position = vertex_position;
+    world_normal = vertex_normal;
     gl_Position = world_to_clip * vec4(vertex_position, 1.0f);
+    screen_normal = normalize(world_to_clip * vec4(vertex_normal, 0.0f)).xyz;
 }
 )";
 
@@ -91,11 +96,13 @@ uniform int backface_highlight;
 uniform int smooth_shading;
 
 varying vec3 position;
+varying vec3 world_normal;
+varying vec3 screen_normal;
 
 void main()
 {
 // TODO: implement the shading modes, backfacing highlights, and smooth shading toggle
-    FragColor = vec4(position, 1.0f);
+    FragColor = vec4(world_normal, 1.0f);
 }
 )";
 
@@ -181,8 +188,10 @@ bool GraphicsEnv::create(int width, int height)
     glBindVertexArray(vertex_array_object);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MTVT::Vector3), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(0));
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), (void*)(offsetof(Vertex, normal)));
+    glEnableVertexAttribArray(1);
 
     // specify clear values
     glClearColor(0.004f, 0.509f, 0.506f, 1.0f);
@@ -202,8 +211,15 @@ bool GraphicsEnv::create(int width, int height)
 void GraphicsEnv::setMesh(MTVT::Mesh mesh)
 {
     mesh_data = mesh;
+
+    // reformat mesh data
+    rearranged_vertex_data.clear();
+    rearranged_vertex_data.resize(mesh_data.vertices.size());
+    for (size_t i = 0; i < mesh_data.vertices.size(); ++i)
+        rearranged_vertex_data[i] = { mesh_data.vertices[i], mesh_data.normals[i] };
+
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(MTVT::Vector3) * mesh_data.vertices.size(), mesh_data.vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * rearranged_vertex_data.size(), rearranged_vertex_data.data(), GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(MTVT::VertexRef) * mesh_data.indices.size(), mesh_data.indices.data(), GL_STATIC_DRAW);
 }
@@ -318,6 +334,7 @@ void GraphicsEnv::drawImGui()
         ImGui::LabelText("sampling", "%.8fs (%.2f%%)", summary_stats.time_sampling, summary_stats.percent_sampling);
         ImGui::LabelText("vertex", "%.8fs (%.2f%%)", summary_stats.time_vertex, summary_stats.percent_vertex);
         ImGui::LabelText("geometry", "%.8fs (%.2f%%)", summary_stats.time_geometry, summary_stats.percent_geometry);
+        ImGui::LabelText("normals", "%.8fs (%.2f%%)", summary_stats.time_normals, summary_stats.percent_normals);
     }
     ImGui::End();
     if (ImGui::Begin("geometry stats", nullptr, ImGuiWindowFlags_AlwaysAutoResize))

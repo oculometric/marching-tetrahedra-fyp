@@ -103,10 +103,15 @@ Mesh Builder::generate(DebugStats& stats)
     geometryPass();
     float geometry = ((chrono::duration<float>)(chrono::high_resolution_clock::now() - geometry_start)).count();
 
+    auto normaling_start = chrono::high_resolution_clock::now();
+    computeVertexNormals();
+    float normaling = ((chrono::duration<float>)(chrono::high_resolution_clock::now() - normaling_start)).count();
+
     stats.allocation_time          += allocation;
     stats.sampling_time            += sampling;
     stats.vertex_time              += vertex;
     stats.geometry_time            += geometry;
+    stats.normal_time              += normaling;
     stats.sample_points_allocated   = grid_data_length;
     stats.cubes_x                   = cubes_x;
     stats.cubes_y                   = cubes_y;
@@ -140,8 +145,7 @@ Mesh Builder::generate(DebugStats& stats)
 #endif
 
     destroyBuffers();
-    // TODO: implement normal generation
-    return Mesh{ vertices, {}, indices };
+    return Mesh{ vertices, normals, indices };
 }
 
 void Builder::prepareBuffers()
@@ -1102,8 +1106,42 @@ void Builder::geometryPass()
     }
 }
 
+void Builder::computeVertexNormals()
+{
+    if (indices.empty())
+        return;
+
+    normals.resize(vertices.size());
+
+    for (size_t i = 0; i < indices.size() - 2; i += 3)
+    {
+        const VertexRef i0 = indices[i];
+        const VertexRef i1 = indices[i + 1];
+        const VertexRef i2 = indices[i + 2];
+
+        const Vector3 v0 = vertices[i0];
+        const Vector3 v1 = vertices[i1];
+        const Vector3 v2 = vertices[i2];
+
+        Vector3 e01 = v1 - v0;
+        Vector3 e02 = v2 - v0;
+        Vector3 e12 = v2 - v1;
+        Vector3 normal = e01 % e02;
+
+        // this weighting system produces really fucked normals when the triangles are tiny.
+        // and it also costs a really large amount of compute time
+        /*float w0 = angle(e01, e02);
+        float w1 = angle(e12, -e01);
+        float w2 = angle(-e02, -e12);*/
+
+        normals[i0] += normal;// *w0;
+        normals[i1] += normal;// *w1;
+        normals[i2] += normal;// *w2;
+    }
+
+    for (Vector3& normal : normals)
+        normal = norm(normal);
+}
+
 // TODO: different lattice structures
 // TODO: different merging techniques
-
-// TODO: check if this edge is an outer-edge and if so, snap the position to be on the cube-face
-// -> this would need some kind of trimming, not just moving. i.e. we might need to generate extra tris. probably do this in the geometry pass instead?

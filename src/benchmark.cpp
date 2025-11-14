@@ -109,7 +109,7 @@ pair<SummaryStats, Mesh> MTVT::runBenchmark(std::string name, int iterations, Ve
     summary.threads = threads;
 
     summary.vertices = stats.vertices;
-    summary.vertices_bytes = sizeof(Vector3) * mesh.vertices.size();
+    summary.vertices_bytes = sizeof(Vector3) * mesh.vertices.size() * 2;
     summary.triangles = stats.indices / 3;
     summary.indices = stats.indices;
     summary.indices_bytes = sizeof(VertexRef) * mesh.indices.size();
@@ -142,6 +142,8 @@ pair<SummaryStats, Mesh> MTVT::runBenchmark(std::string name, int iterations, Ve
     summary.percent_vertex = (stats.vertex_time / total_time) * 100.0f;
     summary.time_geometry = stats.geometry_time / iterations;
     summary.percent_geometry = (stats.geometry_time / total_time) * 100.0f;
+    summary.time_normals = stats.normal_time / iterations;
+    summary.percent_normals = (stats.normal_time / total_time) * 100.0f;
 
     summary.degenerate_triangles = stats.degenerate_triangles;
     summary.degenerate_percent = ((float)stats.degenerate_triangles / ((float)summary.triangles + (float)stats.degenerate_triangles)) * 100.0f;
@@ -157,23 +159,27 @@ pair<SummaryStats, Mesh> MTVT::runBenchmark(std::string name, int iterations, Ve
     return { summary, mesh };
 }
 
-string MTVT::generateCSVLine(const SummaryStats& stats)
+string MTVT::generateCSVLine(const SummaryStats& stats, bool title_line)
 {
-    // column format: test name, test resolution x, y, z, test iterations, lattice type, merge mode, threads,
-    // sample points, edges, tetrahedra, vertices, triangles, indices, degenerates, 
-    // theo SPs, theo edges, theo tetrahedra,
-    // total time, allocation time, sampling time, vertex time, geometry time,
-    // allocation %, sampling %, vertex %, geometry %,
-    // sp alloc size, e alloc size, vertex buf size, index buf size,
-    // sp alloc efficiency, e alloc efficiency, t eval efficiency,
-    // degenerate fract, verts per sp, verts per e, verts per tet, tris per sp, tris per e, tris per tet,
-    // tri area mean, max, min, sd, tri aspect mean, max, min, sd
+    if (title_line)
+    {
+        string csv_file = "benchmark;resolution x;resolution y;resolution z;iterations;lattice type;merge mode;threads;"
+            "sample points allocated;edges allocated;tetrahedra evaluated;vertices produced;triangles produced;indices produced;triangles discarded;"
+            "theoretical sample points;theoretical edges;total tetrahedra;"
+            "total time;allocation time;sampling time;vertex time;geometry time;normal time;"
+            "allocation time %;sampling time %;vertex time %;geometry time %;normal time %;"
+            "sample point bytes;edge bytes;vertex buffer bytes;index buffer bytes;"
+            "sample point alloc relative;edge alloc relative;tetrahedra eval relative;"
+            "discarded tri fraction;verts per SP; verts per edge;verts per tetrahedron;tris per SP;tris per edge;tris per tetrahedron;"
+            "tri area mean;tri area max;tri area min;tri area SD;tri AR mean;tri AR max;tri AR min;tri AR SD\n";
+        return csv_file;
+    }
     string csv_line =
         format("{0};{1};{2};{3};{4};{5};{6};{7};", stats.name, stats.cubes_x, stats.cubes_y, stats.cubes_z, stats.iterations, stats.lattice_type, stats.clustering_mode, stats.threads)
         + format("{0};{1};{2};{3};{4};{5};{6};", stats.sample_points_allocated, stats.edges_allocated, stats.tetrahedra_computed, stats.vertices, stats.triangles, stats.indices, stats.degenerate_triangles)
         + format("{0};{1};{2};", stats.sample_points_theoretical, stats.edges_theoretical, stats.tetrahedra_total)
-        + format("{0:.>6f};{1:.>6f};{2:.>6f};{3:.>6f};{4:.>6f};", stats.time_total, stats.time_allocation, stats.time_sampling, stats.time_vertex, stats.time_geometry)
-        + format("{0:5f}%;{1:5f}%;{2:5f}%;{3:5f}%;", stats.percent_allocation, stats.percent_sampling, stats.percent_vertex, stats.percent_geometry)
+        + format("{0:.>6f};{1:.>6f};{2:.>6f};{3:.>6f};{4:.>6f};{5:.>6f};", stats.time_total, stats.time_allocation, stats.time_sampling, stats.time_vertex, stats.time_geometry, stats.time_normals)
+        + format("{0:5f}%;{1:5f}%;{2:5f}%;{3:5f}%;{4:5f};", stats.percent_allocation, stats.percent_sampling, stats.percent_vertex, stats.percent_geometry, stats.percent_normals)
         + format("{0};{1};{2};{3};", stats.sample_points_bytes, stats.edges_bytes, stats.vertices_bytes, stats.indices_bytes)
         + format("{0:>6f}%;{1:>6f}%;{2:>6f}%;", stats.sample_points_allocated_percent, stats.edges_allocated_percent, stats.tetrahedra_computed_percent)
         + format("{0:>6f}%;{1:>8f};{2:>8f};{3:>8f};{4:>8f};{5:>8f};{6:>8f};", stats.degenerate_percent, stats.verts_per_sp, stats.verts_per_edge, stats.verts_per_tet, stats.tris_per_sp, stats.tris_per_edge, stats.tris_per_tet)
@@ -199,6 +205,7 @@ void MTVT::printBenchmarkSummary(const SummaryStats& stats)
     cout << format("    sampling:       {0:.>6f}s ({1:5f}% of total)", stats.time_sampling, stats.percent_sampling) << endl;
     cout << format("    vertex:         {0:.>6f}s ({1:5f}% of total)", stats.time_vertex, stats.percent_vertex) << endl;
     cout << format("    geometry:       {0:.>6f}s ({1:5f}% of total)", stats.time_geometry, stats.percent_geometry) << endl;
+    cout << format("    normals:        {0:.>6f}s ({1:5f}% of total)", stats.time_normals, stats.percent_normals) << endl;
     cout <<        "  efficiency (lower number better):" << endl;
     cout << format("    SP allocation:  {0:>6f}% ({1})", stats.sample_points_allocated_percent, getMemorySize(stats.sample_points_bytes)) << endl;
     cout << format("    E allocation:   {0:>6f}% ({1})", stats.edges_allocated_percent, getMemorySize(stats.edges_bytes)) << endl;

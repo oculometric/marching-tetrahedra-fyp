@@ -4,12 +4,20 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <chrono>
+#include <vector>
 
 #include "MTVT.h"
 #include "benchmark.h"
 
 class GraphicsEnv
 {
+private:
+	struct Vertex
+	{
+		MTVT::Vector3 position;
+		MTVT::Vector3 normal;
+	};
+
 public:
 	glm::vec3 camera_position = { 0, -2, 0 };
 	glm::vec3 camera_euler = { 90, 0, 0 };
@@ -28,6 +36,7 @@ private:
 	GLFWwindow* window;
 
 	MTVT::Mesh mesh_data;
+	std::vector<Vertex> rearranged_vertex_data;
 	unsigned int vertex_buffer;
 	unsigned int index_buffer;
 

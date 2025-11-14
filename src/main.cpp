@@ -36,15 +36,7 @@ int main()
 
 
 
-    string csv_file = "benchmark;resolution x;resolution y;resolution z;iterations;lattice type;merge mode;threads;"
-                      "sample points allocated;edges allocated;tetrahedra evaluated;vertices produced;triangles produced;indices produced;triangles discarded;"
-                      "theoretical sample points;theoretical edges;total tetrahedra;"
-                      "total time;allocation time;sampling time;vertex time;geometry time;"
-                      "allocation time %;sampling time %;vertex time %;geometry time %;"
-                      "sample point bytes;edge bytes;vertex buffer bytes;index buffer bytes;"
-                      "sample point alloc relative;edge alloc relative;tetrahedra eval relative;"
-                      "discarded tri fraction;verts per SP; verts per edge;verts per tetrahedron;tris per SP;tris per edge;tris per tetrahedron;"
-                      "tri area mean;tri area max;tri area min;tri area SD;tri AR mean;tri AR max;tri AR min;tri AR SD\n";
+    
 
     //csv_file += runBenchmark("sphere", 10, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f, Builder::BODY_CENTERED_DIAMOND, Builder::NONE, 8);
     //csv_file += runBenchmark("sphere", 10, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
@@ -62,13 +54,13 @@ int main()
 
     runBenchmark("bunny", 1, { -0.1f, -0.06f, -0.01f }, { 0.1f, 0.08f, 0.16f }, 0.04f, [](Vector3 v) { return bunny_mesh.closestPointSDF(v); }, 0.0F, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
     */
-    auto current_time = chrono::current_zone()->to_local(chrono::system_clock::now());
+    /*auto current_time = chrono::current_zone()->to_local(chrono::system_clock::now());
     string filename = format("out/benchmark_{0:%d_%m_%Y %H.%M.%S}.csv", current_time);
     ofstream csv(filename);
     if (!csv.is_open())
         return 1;
     csv << csv_file;
-    csv.close();
+    csv.close();*/
 
     return 0;
 }
