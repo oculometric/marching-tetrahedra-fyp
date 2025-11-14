@@ -145,7 +145,7 @@ bool GraphicsEnv::create(int width, int height)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    window = glfwCreateWindow(width, height, "fuck", nullptr, nullptr);
+    window = glfwCreateWindow(width, height, "MTVT visualiser", nullptr, nullptr);
     if (!window)
     {
         cout << "could not create window" << endl;
