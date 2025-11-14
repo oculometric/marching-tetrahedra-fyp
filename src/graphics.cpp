@@ -6,6 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <locale>
+#include <stb_image.h>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -94,15 +95,45 @@ out vec4 FragColor;
 uniform int shading_mode;
 uniform int backface_highlight;
 uniform int smooth_shading;
+uniform sampler2D backface_image;
 
 varying vec3 position;
 varying vec3 world_normal;
 varying vec3 screen_normal;
 
+const vec3 light_vec = vec3(-0.6f, 0.2f, -0.8f);
+
+float saturate(float f)
+{
+    return clamp(f, 0.0f, 1.0f);
+}
+
 void main()
 {
-// TODO: implement the shading modes, backfacing highlights, and smooth shading toggle
-    FragColor = vec4(world_normal, 1.0f);
+    bool should_highlight = (backface_highlight == 1 && !gl_FrontFacing) || (backface_highlight == 2 && gl_FrontFacing);
+
+    if (should_highlight)
+    {
+        vec2 coord = (gl_FragCoord.xy / vec2(textureSize(backface_image, 0).xy)) * vec2(1.0f, -1.0f);
+        coord.y = mod(coord.y, 0.5f);
+        if (backface_highlight == 1)
+            coord.y += 0.5f;
+        FragColor = texture(backface_image, coord);
+    }
+    else
+    {
+        switch (shading_mode)
+        {
+            case 0:
+                FragColor = vec4(0.8f, 0.8f, 0.8f, 1.0f); break;
+            case 1:
+                FragColor = vec4(vec3(saturate(dot(world_normal, -light_vec))), 1.0f); break;
+            case 2:
+                FragColor = vec4(position, 1.0f); break;
+            case 3:
+                FragColor = vec4(world_normal, 1.0f); break;
+        }
+    }
 }
 )";
 
@@ -136,6 +167,7 @@ bool GraphicsEnv::create(int width, int height)
     // create vertex and index buffers
     glGenBuffers(1, &vertex_buffer);
     glGenBuffers(1, &index_buffer);
+    glGenBuffers(1, &flat_vertex_buffer);
 
     // create shaders
     unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -193,6 +225,15 @@ bool GraphicsEnv::create(int width, int height)
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), (void*)(offsetof(Vertex, normal)));
     glEnableVertexAttribArray(1);
 
+    // a copy of the vertex data but for the flat shaded version
+    glGenVertexArrays(1, &flat_vertex_array_object);
+    glBindVertexArray(flat_vertex_array_object);
+    glBindBuffer(GL_ARRAY_BUFFER, flat_vertex_buffer);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(0));
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), (void*)(offsetof(Vertex, normal)));
+    glEnableVertexAttribArray(1);
+
     // specify clear values
     glClearColor(0.004f, 0.509f, 0.506f, 1.0f);
     glClearDepth(1.0f);
@@ -203,6 +244,24 @@ bool GraphicsEnv::create(int width, int height)
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_CULL_FACE);
 
+    // load image
+    int img_width, img_height, channels;
+    unsigned char* data = stbi_load("res/frontface_backface.png", &img_width, &img_height, &channels, 3);
+    if (!data)
+    {
+        cout << "unable to load backface image!! make sure its located at 'res/frontface_backface.png'" << endl;
+        exit(-1);
+    }
+    glGenTextures(1, &backface_image);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, backface_image);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img_width, img_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    stbi_image_free(data);
+
     graphics_env = this;
 
     return true;
@@ -210,6 +269,9 @@ bool GraphicsEnv::create(int width, int height)
 
 void GraphicsEnv::setMesh(MTVT::Mesh mesh)
 {
+    if (mesh.indices.empty())
+        return;
+
     mesh_data = mesh;
 
     // reformat mesh data
@@ -218,10 +280,30 @@ void GraphicsEnv::setMesh(MTVT::Mesh mesh)
     for (size_t i = 0; i < mesh_data.vertices.size(); ++i)
         rearranged_vertex_data[i] = { mesh_data.vertices[i], mesh_data.normals[i] };
 
+    flat_shaded_data.clear();
+    flat_shaded_data.reserve(mesh_data.indices.size());
+    for (size_t i = 0; i < mesh_data.indices.size() - 2; i += 3)
+    {
+        const MTVT::VertexRef i0 = mesh_data.indices[i];
+        const MTVT::VertexRef i1 = mesh_data.indices[i + 1];
+        const MTVT::VertexRef i2 = mesh_data.indices[i + 2];
+
+        const MTVT::Vector3 v0 = mesh_data.vertices[i0];
+        const MTVT::Vector3 v1 = mesh_data.vertices[i1];
+        const MTVT::Vector3 v2 = mesh_data.vertices[i2];
+
+        MTVT::Vector3 normal = norm((v1 - v0) % (v2 - v0));
+        flat_shaded_data.push_back({ v0, normal });
+        flat_shaded_data.push_back({ v1, normal });
+        flat_shaded_data.push_back({ v2, normal });
+    }
+
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * rearranged_vertex_data.size(), rearranged_vertex_data.data(), GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(MTVT::VertexRef) * mesh_data.indices.size(), mesh_data.indices.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, flat_vertex_buffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * flat_shaded_data.size(), flat_shaded_data.data(), GL_STATIC_DRAW);
 }
 
 void GraphicsEnv::setSummary(MTVT::SummaryStats summary)
@@ -256,24 +338,46 @@ bool GraphicsEnv::draw()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(shader_program);
-    glBindVertexArray(vertex_array_object);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, backface_image);
+    if (smooth_shading)
+        glBindVertexArray(vertex_array_object);
+    else
+        glBindVertexArray(flat_vertex_array_object);
     glUniformMatrix4fv(shvar_transform, 1, GL_FALSE, glm::value_ptr(transform));
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    if (backface_mode == 0 || backface_mode > 2)
-        glDisable(GL_CULL_FACE);
-    else
+    if (!wireframe_only)
     {
-        glEnable(GL_CULL_FACE);
-        glCullFace(backface_mode == 1 ? GL_BACK : GL_FRONT);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        if (backface_mode == 0 || backface_mode > 2)
+            glDisable(GL_CULL_FACE);
+        else
+        {
+            glEnable(GL_CULL_FACE);
+            glCullFace(backface_mode == 1 ? GL_BACK : GL_FRONT);
+        }
+        glUniform1i(shvar_shading_mode, shading_mode);
+        glUniform1i(shvar_backface_highlight, (backface_mode <= 2) ? 0 : (backface_mode - 2));
+        glUniform1i(shvar_smooth_shading, smooth_shading);
+        if (smooth_shading)
+            glDrawElements(GL_TRIANGLES, mesh_data.indices.size(), GL_UNSIGNED_INT, 0);
+        else
+            glDrawArrays(GL_TRIANGLES, 0, flat_shaded_data.size());
     }
-    glUniform1i(shvar_shading_mode, shading_mode);
-    glUniform1i(shvar_backface_highlight, (backface_mode <= 2) ? 0 : (backface_mode - 2));
-    glUniform1i(shvar_smooth_shading, smooth_shading);
-    glDrawElements(GL_TRIANGLES, mesh_data.indices.size(), GL_UNSIGNED_INT, 0);
+    if (wireframe_mode)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glDisable(GL_CULL_FACE);
+        glUniform1i(shvar_shading_mode, 0);
+        glUniform1i(shvar_backface_highlight, 0);
+        glUniform1i(shvar_smooth_shading, 1);
+        if (smooth_shading)
+            glDrawElements(GL_TRIANGLES, mesh_data.indices.size(), GL_UNSIGNED_INT, 0);
+        else
+            glDrawArrays(GL_TRIANGLES, 0, flat_shaded_data.size());
+    }
 
     drawImGui();
-    // TODO: act based on imgui
 
     glfwSwapInterval(vsync_enabled ? 1 : 0);
     glfwSwapBuffers(window);
@@ -392,12 +496,12 @@ void GraphicsEnv::drawImGui()
     if (ImGui::Begin("generation controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
         bool clicked = false;
-        ImGui::Checkbox("update live", &update_live);
+        clicked |= ImGui::Checkbox("update live", &update_live);
         clicked |= ImGui::SliderFloat3("min", (float*)(&param_min), -5, 5);
         clicked |= ImGui::SliderFloat3("max", (float*)(&param_max), -5, 5);
         clicked |= ImGui::SliderFloat("resolution", &param_resolution, 0.002, 2);
-        const char* options[4] = { "sphere", "bump", "fbm", "bunny" };
-        clicked |= ImGui::Combo("function", &param_function, options, 4);
+        const char* options[5] = { "sphere", "bump", "fbm", "cube", "bunny" };
+        clicked |= ImGui::Combo("function", &param_function, options, 5);
         clicked |= ImGui::SliderFloat("threshold", &param_threshold, -2, 2);
         ImGui::LabelText("lattice type", "");
         ImGui::BeginTable("lattice type tbl", 1, ImGuiTableFlags_BordersOuter);
@@ -424,7 +528,7 @@ void GraphicsEnv::drawImGui()
         if (ImGui::Button("generate!") || (update_live && clicked))
         {
             // run the generator!
-            static float(*funcs[4])(MTVT::Vector3) = { sphereFunc, bumpFunc, fbmFunc, sphereFunc };
+            static float(*funcs[5])(MTVT::Vector3) = { sphereFunc, bumpFunc, fbmFunc, cubeFunc, sphereFunc };
             auto result = MTVT::runBenchmark("-", 1, param_min, param_max, param_resolution, funcs[param_function], param_threshold, (MTVT::Builder::LatticeType)param_lattice, (MTVT::Builder::ClusteringMode)param_merging, 8);
             setSummary(result.first);
             setMesh(result.second);

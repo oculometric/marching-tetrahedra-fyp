@@ -37,15 +37,20 @@ private:
 
 	MTVT::Mesh mesh_data;
 	std::vector<Vertex> rearranged_vertex_data;
+	std::vector<Vertex> flat_shaded_data;
 	unsigned int vertex_buffer;
 	unsigned int index_buffer;
+	unsigned int vertex_array_object;
+	unsigned int flat_vertex_buffer;
+	unsigned int flat_vertex_array_object;
 
 	unsigned int shader_program;
 	unsigned int shvar_transform;
 	unsigned int shvar_shading_mode;
 	unsigned int shvar_backface_highlight;
 	unsigned int shvar_smooth_shading;
-	unsigned int vertex_array_object;
+
+	unsigned int backface_image;
 
 	std::chrono::steady_clock::time_point last_frame_time;
 

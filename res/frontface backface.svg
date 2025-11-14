@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="96"
+   height="32"
+   viewBox="0 0 96 32"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   sodipodi:docname="frontface backface.svg"
+   inkscape:export-filename="frontface backface.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:zoom="19.906604"
+     inkscape:cx="47.471683"
+     inkscape:cy="15.899246"
+     inkscape:window-width="2256"
+     inkscape:window-height="1410"
+     inkscape:window-x="-11"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:2"
+       id="rect2"
+       width="96"
+       height="16"
+       x="0"
+       y="0" />
+    <rect
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:2"
+       id="rect1"
+       width="96"
+       height="16"
+       x="0"
+       y="16" />
+    <text
+       xml:space="preserve"
+       style="font-weight:100;font-size:13.7167px;font-family:'Adelphe Floreal';-inkscape-font-specification:'Adelphe Floreal Thin';text-align:end;writing-mode:lr-tb;direction:ltr;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2"
+       x="89.827591"
+       y="12.713906"
+       id="text1"
+       transform="scale(0.97713249,1.0234027)"><tspan
+         sodipodi:role="line"
+         id="tspan1"
+         x="89.827591"
+         y="12.713906"
+         style="fill:#ff0000;fill-opacity:1;stroke-width:2">FRONTFACE</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-weight:100;font-size:14.8585px;font-family:'Adelphe Floreal';-inkscape-font-specification:'Adelphe Floreal Thin';text-align:end;writing-mode:lr-tb;direction:ltr;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2"
+       x="84.577736"
+       y="30.124557"
+       id="text2"
+       transform="scale(1.0385035,0.96292403)"><tspan
+         sodipodi:role="line"
+         id="tspan2"
+         x="84.577744"
+         y="30.124557"
+         style="fill:#ff0000;fill-opacity:1;stroke-width:2">BACKFACE</tspan></text>
+  </g>
+</svg>
