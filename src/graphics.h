@@ -18,7 +18,7 @@ public:
 	float camera_fov = 1.57f;
 	bool vsync_enabled = true;
 	bool is_orthographic = false;
-	int shading = 1;
+	int shading_mode = 1;
 	bool smooth_shading = true;
 	bool wireframe_mode = false;
 	bool wireframe_only = false;
@@ -41,6 +41,17 @@ private:
 	std::chrono::steady_clock::time_point last_frame_time;
 
 	MTVT::SummaryStats summary_stats;
+
+	bool update_live = false;
+	MTVT::Vector3 param_min = { -1, -1, -1 };
+	MTVT::Vector3 param_max = { 1, 1, 1 };
+	float param_resolution = 0.1f;
+	int param_function = 2;
+	float param_threshold = 0.0f;
+	int param_lattice = 0;
+	int param_merging = 1;
+
+	MTVT::Builder builder;
 
 public:
 	bool create(int width, int height);

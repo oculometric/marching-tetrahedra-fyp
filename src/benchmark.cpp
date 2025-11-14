@@ -21,6 +21,9 @@ TriangleStats MTVT::computeTriangleQualityStats(const Mesh& mesh)
     stats.aspect_min = 0;
     vector<double> aspects; aspects.reserve(mesh.indices.size() / 3);
 
+    if (mesh.indices.size() == 0)
+        return stats;
+
     for (size_t i = 0; i < mesh.indices.size() - 2; i += 3)
     {
         // compute area

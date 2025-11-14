@@ -11,6 +11,8 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
+#include "demo_functions.h"
+
 using namespace std;
 
 static GraphicsEnv* graphics_env = nullptr;
@@ -372,7 +374,46 @@ void GraphicsEnv::drawImGui()
     ImGui::End();
     if (ImGui::Begin("generation controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        // TODO: control the generator, and run it
+        bool clicked = false;
+        ImGui::Checkbox("update live", &update_live);
+        clicked |= ImGui::SliderFloat3("min", (float*)(&param_min), -5, 5);
+        clicked |= ImGui::SliderFloat3("max", (float*)(&param_max), -5, 5);
+        clicked |= ImGui::SliderFloat("resolution", &param_resolution, 0.002, 2);
+        const char* options[4] = { "sphere", "bump", "fbm", "bunny" };
+        clicked |= ImGui::Combo("function", &param_function, options, 4);
+        clicked |= ImGui::SliderFloat("threshold", &param_threshold, -2, 2);
+        ImGui::LabelText("lattice type", "");
+        ImGui::BeginTable("lattice type tbl", 1, ImGuiTableFlags_BordersOuter);
+        ImGui::TableNextColumn();
+        clicked |= ImGui::RadioButton("body centered diamond", &param_lattice, 0);
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        clicked |= ImGui::RadioButton("simple cubic", &param_lattice, 1);
+        ImGui::EndTable();
+        ImGui::Spacing();
+        ImGui::LabelText("merging mode", "");
+        ImGui::BeginTable("merging mode tbl", 1, ImGuiTableFlags_BordersOuter);
+        ImGui::TableNextColumn();
+        clicked |= ImGui::RadioButton("none", &param_merging, 0);
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        clicked |= ImGui::RadioButton("integrated", &param_merging, 1);
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        clicked |= ImGui::RadioButton("post process", &param_merging, 2);
+        ImGui::EndTable();
+        if (update_live)
+            ImGui::BeginDisabled();
+        if (ImGui::Button("generate!") || (update_live && clicked))
+        {
+            // run the generator!
+            static float(*funcs[4])(MTVT::Vector3) = { sphereFunc, bumpFunc, fbmFunc, sphereFunc };
+            auto result = MTVT::runBenchmark("-", 1, param_min, param_max, param_resolution, funcs[param_function], param_threshold, (MTVT::Builder::LatticeType)param_lattice, (MTVT::Builder::ClusteringMode)param_merging, 8);
+            setSummary(result.first);
+            setMesh(result.second);
+        }
+        if (update_live)
+            ImGui::EndDisabled();
     }
     ImGui::End();
     if (ImGui::Begin("view controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
@@ -426,7 +467,7 @@ void GraphicsEnv::drawImGui()
         }
         ImGui::EndTable();
         ImGui::Separator();
-        ImGui::Text("shading mode");
+        ImGui::LabelText("shading mode", "");
         ImGui::BeginTable("shading mode tbl", 1, ImGuiTableFlags_BordersOuter);
         ImGui::TableNextColumn();
         ImGui::RadioButton("unshaded", &shading_mode, 0);
@@ -445,7 +486,7 @@ void GraphicsEnv::drawImGui()
         ImGui::Checkbox("wireframe overlay", &wireframe_mode);
         ImGui::Checkbox("wireframe only", &wireframe_only);
         ImGui::Spacing();
-        ImGui::Text("backface mode");
+        ImGui::LabelText("backface mode", "");
         ImGui::BeginTable("backface mode tbl", 1, ImGuiTableFlags_BordersOuter);
         ImGui::TableNextColumn();
         ImGui::RadioButton("show all", &backface_mode, 0);

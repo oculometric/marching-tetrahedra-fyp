@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\demo_functions.h" />
     <ClInclude Include="src\fbm.h" />
     <ClInclude Include="src\graphics.h" />
     <ClInclude Include="src\mesh_closest.h" />
@@ -156,6 +157,7 @@
     <ClCompile Include="lib\imgui-1.92.4\imgui_draw.cpp" />
     <ClCompile Include="lib\imgui-1.92.4\imgui_tables.cpp" />
     <ClCompile Include="lib\imgui-1.92.4\imgui_widgets.cpp" />
+    <ClCompile Include="src\demo_functions.cpp" />
     <ClCompile Include="src\fbm.cpp" />
     <ClCompile Include="src\graphics.cpp" />
     <ClCompile Include="src\main.cpp" />

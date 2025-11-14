@@ -5,34 +5,19 @@
 #include <chrono>
 
 #include "MTVT.h"
-#include "fbm.h"
 #include "mesh_closest.h"
 #include "benchmark.h"
 #include "graphics.h"
+#include "demo_functions.h"
 
 using namespace std;
 using namespace MTVT;
-
-float sphereFunc(Vector3 v)
-{
-    return mag(v);
-}
-
-float fbmFunc(Vector3 v)
-{
-    return fbm(v * 2.0f, 3, 2.0f, 0.5f);
-}
 
 MappedMesh bunny_mesh;
 
 int main()
 {
     GraphicsEnv graphics;
-    Mesh temp_mesh = {
-        { { -0.5f, -0.5f, 0.0f }, { 0.5f, -0.5f, 0.0f }, { 0.0f,  0.5f, 0.0f } },
-        {},
-        {}
-    };
     graphics.create(1024, 1024);
 
     auto result = runBenchmark("realtime test", 1, { -1, -1, -1 }, { 1, 1, 1 }, 0.2f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
