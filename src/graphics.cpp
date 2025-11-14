@@ -419,88 +419,93 @@ void GraphicsEnv::drawImGui()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    if (ImGui::Begin("mesh info", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    if (ImGui::Begin("stats & info", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        string vertices_label = format(locale("en_US.UTF-8"),  "vertices  {0:>12L} ({1})", summary_stats.vertices, MTVT::getMemorySize(summary_stats.vertices_bytes));
-        ImGui::Text(vertices_label.c_str());
-        string triangles_label = format(locale("en_US.UTF-8"), "triangles {0:>12L} ({1})", summary_stats.triangles, MTVT::getMemorySize(summary_stats.indices_bytes));
-        ImGui::Text(triangles_label.c_str());
-    }
-    ImGui::End();
-    if (ImGui::Begin("generation stats", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-        ImGui::LabelText("resolution", "%i x %i x %i", summary_stats.cubes_x, summary_stats.cubes_y, summary_stats.cubes_z);
-        ImGui::LabelText("lattice type", summary_stats.lattice_type.c_str());
-        ImGui::LabelText("clustering mode", summary_stats.clustering_mode.c_str());
-        ImGui::Separator();
-        ImGui::LabelText("sample points", format(locale("en_US.UTF-8"), "{0:L} ({1:L} ideal, {2})", summary_stats.sample_points_allocated, summary_stats.sample_points_theoretical, MTVT::getMemorySize(summary_stats.sample_points_bytes)).c_str());
-        ImGui::LabelText("edges", format(locale("en_US.UTF-8"), "{0:L} ({1:L} ideal, {2})", summary_stats.edges_allocated, summary_stats.edges_theoretical, MTVT::getMemorySize(summary_stats.edges_bytes)).c_str());
-        ImGui::LabelText("tetrahedra", format(locale("en_US.UTF-8"), "{0:L} ({1:L} total, {2:.2f}%%)", summary_stats.tetrahedra_computed, summary_stats.tetrahedra_total, summary_stats.tetrahedra_computed_percent).c_str());
-    }
-    ImGui::End();
-    if (ImGui::Begin("timing stats", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-        ImGui::LabelText("total", "%.8fs", summary_stats.time_total);
-        ImGui::Separator();
-        ImGui::LabelText("allocation", "%.8fs (%.2f%%)", summary_stats.time_allocation, summary_stats.percent_allocation);
-        ImGui::LabelText("sampling", "%.8fs (%.2f%%)", summary_stats.time_sampling, summary_stats.percent_sampling);
-        ImGui::LabelText("vertex", "%.8fs (%.2f%%)", summary_stats.time_vertex, summary_stats.percent_vertex);
-        ImGui::LabelText("geometry", "%.8fs (%.2f%%)", summary_stats.time_geometry, summary_stats.percent_geometry);
-        ImGui::LabelText("normals", "%.8fs (%.2f%%)", summary_stats.time_normals, summary_stats.percent_normals);
-    }
-    ImGui::End();
-    if (ImGui::Begin("geometry stats", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-        ImGui::LabelText("degenerate tris", "%d (%.3f%% of total)", summary_stats.degenerate_triangles, summary_stats.degenerate_percent);
-        ImGui::Separator();
-        ImGui::LabelText("verts / sp", "%.8f", summary_stats.verts_per_sp);
-        ImGui::LabelText("verts / edge", "%.8f", summary_stats.verts_per_edge);
-        ImGui::LabelText("verts / tet", "%.8f", summary_stats.verts_per_tet);
-        ImGui::LabelText("tris / sp", "%.8f", summary_stats.tris_per_sp);
-        ImGui::LabelText("tris / edge", "%.8f", summary_stats.tris_per_edge);
-        ImGui::LabelText("tris / tet", "%.8f", summary_stats.tris_per_tet);
-        ImGui::Separator();
-        ImGui::Text("triangle area");
-        ImGui::BeginTable("triangle area", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg);
+        if (ImGui::CollapsingHeader("mesh info", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
         {
-            ImGui::TableSetupColumn("mean");
-            ImGui::TableSetupColumn("max");
-            ImGui::TableSetupColumn("min");
-            ImGui::TableSetupColumn("std. dev.");
-            ImGui::TableHeadersRow();
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-            ImGui::Text("%4f", summary_stats.triangle_stats.area_mean);
-            ImGui::TableNextColumn();
-            ImGui::Text("%4f", summary_stats.triangle_stats.area_max);
-            ImGui::TableNextColumn();
-            ImGui::Text("%4f", summary_stats.triangle_stats.area_min);
-            ImGui::TableNextColumn();
-            ImGui::Text("%4f", summary_stats.triangle_stats.area_sd);
+            ImGui::LabelText("vertices", format(locale("en_US.UTF-8"), "{0:L} ({1})", summary_stats.vertices, MTVT::getMemorySize(summary_stats.vertices_bytes)).c_str());
+            ImGui::LabelText("triangles", format(locale("en_US.UTF-8"), "{0:L} ({1})", summary_stats.triangles, MTVT::getMemorySize(summary_stats.indices_bytes)).c_str());
         }
-        ImGui::EndTable();
-        ImGui::Spacing();
-        ImGui::Text("triangle aspect ratio");
-        ImGui::BeginTable("triangle aspect", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg);
+
+        if (ImGui::CollapsingHeader("generation stats", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
         {
-            ImGui::TableSetupColumn("mean");
-            ImGui::TableSetupColumn("max");
-            ImGui::TableSetupColumn("min");
-            ImGui::TableSetupColumn("std. dev.");
-            ImGui::TableHeadersRow();
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-            ImGui::Text("%4f", summary_stats.triangle_stats.aspect_mean);
-            ImGui::TableNextColumn();
-            ImGui::Text("%4f", summary_stats.triangle_stats.aspect_max);
-            ImGui::TableNextColumn();
-            ImGui::Text("%4f", summary_stats.triangle_stats.aspect_min);
-            ImGui::TableNextColumn();
-            ImGui::Text("%4f", summary_stats.triangle_stats.aspect_sd);
+            ImGui::LabelText("resolution", "%i x %i x %i", summary_stats.cubes_x, summary_stats.cubes_y, summary_stats.cubes_z);
+            ImGui::LabelText("lattice type", summary_stats.lattice_type.c_str());
+            ImGui::LabelText("clustering mode", summary_stats.clustering_mode.c_str());
+            ImGui::Separator();
+            ImGui::LabelText("sample points", format(locale("en_US.UTF-8"), "{0:L} ({1})", summary_stats.sample_points_allocated, MTVT::getMemorySize(summary_stats.sample_points_bytes)).c_str());
+            ImGui::LabelText("sample points (ideal)", format(locale("en_US.UTF-8"), "{0:L} ({1:.2f}%% stored)", summary_stats.sample_points_theoretical, summary_stats.sample_points_allocated_percent).c_str());
+            ImGui::LabelText("edges", format(locale("en_US.UTF-8"), "{0:L} ({1})", summary_stats.edges_allocated, MTVT::getMemorySize(summary_stats.edges_bytes)).c_str());
+            ImGui::LabelText("edges (ideal)", format(locale("en_US.UTF-8"), "{0:L} ({1:.2f}%% stored)", summary_stats.edges_theoretical, summary_stats.edges_allocated_percent).c_str());
+            ImGui::LabelText("tetrahedra", format(locale("en_US.UTF-8"), "{0:L}", summary_stats.tetrahedra_computed).c_str());
+            ImGui::LabelText("tetrahedra (total)", format(locale("en_US.UTF-8"), "{0:L} ({1:.2f}%% computed)", summary_stats.tetrahedra_total, summary_stats.tetrahedra_computed_percent).c_str());
         }
-        ImGui::EndTable();
+
+        if (ImGui::CollapsingHeader("timing stats", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::LabelText("total", "%.8fs", summary_stats.time_total);
+            ImGui::Separator();
+            ImGui::LabelText("allocation", "%.8fs (%.2f%%)", summary_stats.time_allocation, summary_stats.percent_allocation);
+            ImGui::LabelText("sampling", "%.8fs (%.2f%%)", summary_stats.time_sampling, summary_stats.percent_sampling);
+            ImGui::LabelText("vertex", "%.8fs (%.2f%%)", summary_stats.time_vertex, summary_stats.percent_vertex);
+            ImGui::LabelText("geometry", "%.8fs (%.2f%%)", summary_stats.time_geometry, summary_stats.percent_geometry);
+            ImGui::LabelText("normals", "%.8fs (%.2f%%)", summary_stats.time_normals, summary_stats.percent_normals);
+        }
+
+        if (ImGui::CollapsingHeader("geometry stats", nullptr, ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::LabelText("degenerate tris", "%d (%.3f%% of total)", summary_stats.degenerate_triangles, summary_stats.degenerate_percent);
+            ImGui::Separator();
+            ImGui::LabelText("verts / sp", "%.8f", summary_stats.verts_per_sp);
+            ImGui::LabelText("verts / edge", "%.8f", summary_stats.verts_per_edge);
+            ImGui::LabelText("verts / tet", "%.8f", summary_stats.verts_per_tet);
+            ImGui::LabelText("tris / sp", "%.8f", summary_stats.tris_per_sp);
+            ImGui::LabelText("tris / edge", "%.8f", summary_stats.tris_per_edge);
+            ImGui::LabelText("tris / tet", "%.8f", summary_stats.tris_per_tet);
+            ImGui::Separator();
+            ImGui::Text("triangle area");
+            ImGui::BeginTable("triangle area", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg);
+            {
+                ImGui::TableSetupColumn("mean");
+                ImGui::TableSetupColumn("max");
+                ImGui::TableSetupColumn("min");
+                ImGui::TableSetupColumn("std. dev.");
+                ImGui::TableHeadersRow();
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::Text("%4f", summary_stats.triangle_stats.area_mean);
+                ImGui::TableNextColumn();
+                ImGui::Text("%4f", summary_stats.triangle_stats.area_max);
+                ImGui::TableNextColumn();
+                ImGui::Text("%4f", summary_stats.triangle_stats.area_min);
+                ImGui::TableNextColumn();
+                ImGui::Text("%4f", summary_stats.triangle_stats.area_sd);
+            }
+            ImGui::EndTable();
+            ImGui::Spacing();
+            ImGui::Text("triangle aspect ratio");
+            ImGui::BeginTable("triangle aspect", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg);
+            {
+                ImGui::TableSetupColumn("mean");
+                ImGui::TableSetupColumn("max");
+                ImGui::TableSetupColumn("min");
+                ImGui::TableSetupColumn("std. dev.");
+                ImGui::TableHeadersRow();
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::Text("%4f", summary_stats.triangle_stats.aspect_mean);
+                ImGui::TableNextColumn();
+                ImGui::Text("%4f", summary_stats.triangle_stats.aspect_max);
+                ImGui::TableNextColumn();
+                ImGui::Text("%4f", summary_stats.triangle_stats.aspect_min);
+                ImGui::TableNextColumn();
+                ImGui::Text("%4f", summary_stats.triangle_stats.aspect_sd);
+            }
+            ImGui::EndTable();
+        }
     }
     ImGui::End();
+    
     if (ImGui::Begin("generation controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
         bool clicked = false;
