@@ -15,6 +15,10 @@ public:
 	glm::vec3 camera_euler = { 90, 0, 0 };
 	glm::vec3 camera_velocity;
 
+	float camera_fov = 1.57f;
+	bool vsync_enabled = true;
+	bool is_orthographic = false;
+
 private:
 	GLFWwindow* window;
 
