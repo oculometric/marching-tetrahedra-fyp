@@ -267,18 +267,18 @@ bool GraphicsEnv::create(int width, int height)
     return true;
 }
 
-void GraphicsEnv::setMesh(MTVT::Mesh mesh)
+void GraphicsEnv::setMesh(MTVT::Mesh mesh, MTVT::Vector3 offset)
 {
+    mesh_data = mesh;
+
     if (mesh.indices.empty())
         return;
-
-    mesh_data = mesh;
 
     // reformat mesh data
     rearranged_vertex_data.clear();
     rearranged_vertex_data.resize(mesh_data.vertices.size());
     for (size_t i = 0; i < mesh_data.vertices.size(); ++i)
-        rearranged_vertex_data[i] = { mesh_data.vertices[i], mesh_data.normals[i] };
+        rearranged_vertex_data[i] = { mesh_data.vertices[i] - offset, mesh_data.normals[i] };
 
     flat_shaded_data.clear();
     flat_shaded_data.reserve(mesh_data.indices.size());
@@ -293,9 +293,9 @@ void GraphicsEnv::setMesh(MTVT::Mesh mesh)
         const MTVT::Vector3 v2 = mesh_data.vertices[i2];
 
         MTVT::Vector3 normal = norm((v1 - v0) % (v2 - v0));
-        flat_shaded_data.push_back({ v0, normal });
-        flat_shaded_data.push_back({ v1, normal });
-        flat_shaded_data.push_back({ v2, normal });
+        flat_shaded_data.push_back({ v0 - offset, normal });
+        flat_shaded_data.push_back({ v1 - offset, normal });
+        flat_shaded_data.push_back({ v2 - offset, normal });
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
@@ -329,14 +329,38 @@ bool GraphicsEnv::draw()
     float delta_time = time_since_last_frame.count();
     camera_position += (glm::vec4(camera_velocity, 0.0f) * transform) * delta_time;
 
-    int width, height; glfwGetFramebufferSize(window, &width, &height);
     transform = glm::translate(transform, -camera_position);
+
+    int width, height; glfwGetFramebufferSize(window, &width, &height);
+    float aspect = (float)width / (float)height;
     if (is_orthographic)
-        transform = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f) * transform;
+        transform = glm::ortho(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f, 0.0001f, 100.0f) * transform;
     else
-        transform = glm::perspective(camera_fov, (float)width / (float)height, 0.0001f, 100.0f) * transform;
+        transform = glm::perspective(camera_fov, aspect, 0.0001f, 100.0f) * transform;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    if (!mesh_data.indices.empty())
+        drawMesh(transform);
+    drawImGui();
+
+    glfwSwapInterval(vsync_enabled ? 1 : 0);
+    glfwSwapBuffers(window);
+    return true;
+}
+
+void GraphicsEnv::destroy()
+{
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
+}
+
+void GraphicsEnv::drawMesh(glm::mat4 transform)
+{
     glUseProgram(shader_program);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, backface_image);
@@ -376,22 +400,6 @@ bool GraphicsEnv::draw()
         else
             glDrawArrays(GL_TRIANGLES, 0, flat_shaded_data.size());
     }
-
-    drawImGui();
-
-    glfwSwapInterval(vsync_enabled ? 1 : 0);
-    glfwSwapBuffers(window);
-    return true;
-}
-
-void GraphicsEnv::destroy()
-{
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-
-    glfwDestroyWindow(window);
-    glfwTerminate();
 }
 
 void GraphicsEnv::configureImGui()
@@ -499,6 +507,7 @@ void GraphicsEnv::drawImGui()
         clicked |= ImGui::Checkbox("update live", &update_live);
         clicked |= ImGui::SliderFloat3("min", (float*)(&param_min), -5, 5);
         clicked |= ImGui::SliderFloat3("max", (float*)(&param_max), -5, 5);
+        clicked |= ImGui::SliderFloat3("offset", (float*)(&param_off), -5, 5);
         clicked |= ImGui::SliderFloat("resolution", &param_resolution, 0.002, 2);
         const char* options[5] = { "sphere", "bump", "fbm", "cube", "bunny" };
         clicked |= ImGui::Combo("function", &param_function, options, 5);
@@ -529,9 +538,9 @@ void GraphicsEnv::drawImGui()
         {
             // run the generator!
             static float(*funcs[5])(MTVT::Vector3) = { sphereFunc, bumpFunc, fbmFunc, cubeFunc, sphereFunc };
-            auto result = MTVT::runBenchmark("-", 1, param_min, param_max, param_resolution, funcs[param_function], param_threshold, (MTVT::Builder::LatticeType)param_lattice, (MTVT::Builder::ClusteringMode)param_merging, 8);
+            auto result = MTVT::runBenchmark("-", 1, param_min + param_off, param_max + param_off, param_resolution, funcs[param_function], param_threshold, (MTVT::Builder::LatticeType)param_lattice, (MTVT::Builder::ClusteringMode)param_merging, 8);
             setSummary(result.first);
-            setMesh(result.second);
+            setMesh(result.second, param_off);
         }
         if (update_live)
             ImGui::EndDisabled();

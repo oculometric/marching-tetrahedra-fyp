@@ -22,7 +22,7 @@ int main()
 
     auto result = runBenchmark("realtime test", 1, { -1, -1, -1 }, { 1, 1, 1 }, 0.2f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
     graphics.setSummary(result.first);
-    graphics.setMesh(result.second);
+    graphics.setMesh(result.second, { 0, 0, 0 });
 
     while (graphics.draw())
     {

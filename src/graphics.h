@@ -59,6 +59,7 @@ private:
 	bool update_live = false;
 	MTVT::Vector3 param_min = { -1, -1, -1 };
 	MTVT::Vector3 param_max = { 1, 1, 1 };
+	MTVT::Vector3 param_off = { 0, 0, 0 };
 	float param_resolution = 0.1f;
 	int param_function = 2;
 	float param_threshold = 0.0f;
@@ -70,13 +71,14 @@ private:
 public:
 	bool create(int width, int height);
 
-	void setMesh(MTVT::Mesh mesh);
+	void setMesh(MTVT::Mesh mesh, MTVT::Vector3 offset);
 	void setSummary(MTVT::SummaryStats summary);
 	bool draw();
 
 	void destroy();
 
 private:
+	void drawMesh(glm::mat4 transform);
 	void configureImGui();
 	void drawImGui();
 };
