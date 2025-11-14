@@ -18,6 +18,11 @@ public:
 	float camera_fov = 1.57f;
 	bool vsync_enabled = true;
 	bool is_orthographic = false;
+	int shading = 1;
+	bool smooth_shading = true;
+	bool wireframe_mode = false;
+	bool wireframe_only = false;
+	int backface_mode = 0;
 
 private:
 	GLFWwindow* window;
@@ -27,8 +32,10 @@ private:
 	unsigned int index_buffer;
 
 	unsigned int shader_program;
-	unsigned int shu_transform_location;
-	unsigned int shu_is_inverted_location;
+	unsigned int shvar_transform;
+	unsigned int shvar_shading_mode;
+	unsigned int shvar_backface_highlight;
+	unsigned int shvar_smooth_shading;
 	unsigned int vertex_array_object;
 
 	std::chrono::steady_clock::time_point last_frame_time;

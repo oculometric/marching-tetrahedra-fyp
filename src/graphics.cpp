@@ -84,13 +84,16 @@ static const char* fragment_shader_source = R"(
 
 out vec4 FragColor;
 
-uniform float is_inverted;
+uniform int shading_mode;
+uniform int backface_highlight;
+uniform int smooth_shading;
 
 varying vec3 position;
 
 void main()
 {
-    FragColor = (is_inverted > 0.5f) ? vec4(1.0f, 0.0f, 0.0f, 1.0f) : vec4(position, 1.0f);
+// TODO: implement the shading modes, backfacing highlights, and smooth shading toggle
+    FragColor = vec4(position, 1.0f);
 }
 )";
 
@@ -164,8 +167,10 @@ bool GraphicsEnv::create(int width, int height)
         return false;
     }
     // create uniforms
-    shu_transform_location = glGetUniformLocation(shader_program, "world_to_clip");
-    shu_is_inverted_location = glGetUniformLocation(shader_program, "is_inverted");
+    shvar_transform = glGetUniformLocation(shader_program, "world_to_clip");
+    shvar_shading_mode = glGetUniformLocation(shader_program, "shading_mode");
+    shvar_backface_highlight = glGetUniformLocation(shader_program, "backface_highlight");
+    shvar_smooth_shading = glGetUniformLocation(shader_program, "smooth_shading");
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
 
@@ -234,22 +239,22 @@ bool GraphicsEnv::draw()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(shader_program);
     glBindVertexArray(vertex_array_object);
-    glUniformMatrix4fv(shu_transform_location, 1, GL_FALSE, glm::value_ptr(transform));
+    glUniformMatrix4fv(shvar_transform, 1, GL_FALSE, glm::value_ptr(transform));
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glUniform1f(shu_is_inverted_location, 0.0f);
-    glDrawElements(GL_TRIANGLES, mesh_data.indices.size(), GL_UNSIGNED_INT, 0);
-    glCullFace(GL_FRONT);
-    glUniform1f(shu_is_inverted_location, 1.0f);
-    glDrawElements(GL_TRIANGLES, mesh_data.indices.size(), GL_UNSIGNED_INT, 0);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDisable(GL_CULL_FACE);
+    if (backface_mode == 0 || backface_mode > 2)
+        glDisable(GL_CULL_FACE);
+    else
+    {
+        glEnable(GL_CULL_FACE);
+        glCullFace(backface_mode == 1 ? GL_BACK : GL_FRONT);
+    }
+    glUniform1i(shvar_shading_mode, shading_mode);
+    glUniform1i(shvar_backface_highlight, (backface_mode <= 2) ? 0 : (backface_mode - 2));
+    glUniform1i(shvar_smooth_shading, smooth_shading);
     glDrawElements(GL_TRIANGLES, mesh_data.indices.size(), GL_UNSIGNED_INT, 0);
 
     drawImGui();
-    // TODO: draw imgui
     // TODO: act based on imgui
 
     glfwSwapInterval(vsync_enabled ? 1 : 0);
@@ -420,7 +425,43 @@ void GraphicsEnv::drawImGui()
             camera_euler = { 180, 0, 0 };
         }
         ImGui::EndTable();
-        // TODO: control the camera, view modes (backfaces, wireframe, etc)
+        ImGui::Separator();
+        ImGui::Text("shading mode");
+        ImGui::BeginTable("shading mode tbl", 1, ImGuiTableFlags_BordersOuter);
+        ImGui::TableNextColumn();
+        ImGui::RadioButton("unshaded", &shading_mode, 0);
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::RadioButton("phong", &shading_mode, 1);
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::RadioButton("position", &shading_mode, 2);
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::RadioButton("normal", &shading_mode, 3);
+        ImGui::EndTable();
+        ImGui::Spacing();
+        ImGui::Checkbox("smooth shading", &smooth_shading);
+        ImGui::Checkbox("wireframe overlay", &wireframe_mode);
+        ImGui::Checkbox("wireframe only", &wireframe_only);
+        ImGui::Spacing();
+        ImGui::Text("backface mode");
+        ImGui::BeginTable("backface mode tbl", 1, ImGuiTableFlags_BordersOuter);
+        ImGui::TableNextColumn();
+        ImGui::RadioButton("show all", &backface_mode, 0);
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::RadioButton("cull backfaces", &backface_mode, 1);
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::RadioButton("cull frontfaces", &backface_mode, 2);
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::RadioButton("highlight backfaces", &backface_mode, 3);
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::RadioButton("highlight frontfaces", &backface_mode, 4);
+        ImGui::EndTable();
     }
     ImGui::End();
     if (ImGui::Begin("script controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
