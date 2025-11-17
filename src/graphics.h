@@ -31,6 +31,8 @@ public:
 	bool wireframe_mode = false;
 	bool wireframe_only = false;
 	int backface_mode = 0;
+	glm::vec3 shading_colour_a = { 0.949f, 0.553f, 0.027f };
+	glm::vec3 shading_colour_b = { 0.212f, 0.071f, 0.310f };
 
 private:
 	GLFWwindow* window;
@@ -49,6 +51,8 @@ private:
 	unsigned int shvar_shading_mode;
 	unsigned int shvar_backface_highlight;
 	unsigned int shvar_smooth_shading;
+	unsigned int shvar_shading_colour_a;
+	unsigned int shvar_shading_colour_b;
 
 	unsigned int backface_image;
 

@@ -6,15 +6,14 @@ kanban-plugin: board
 
 ## todo
 
-- [ ] implement normal generation
+- [ ] parallelise vertex pass
+- [ ] implement alternative merging algorithm
 - [ ] fix bunny benchmark
 
 
 ## backlog
 
-- [ ] implement alternative merging algorithm
 - [ ] implement simple cubic lattice structure
-- [ ] parallelise vertex pass
 - [ ] wrap with graphical interface to view models live
 - [ ] improve merging algo - checks for degeration (concave merging) and edge-of-sample-cube merging
 
@@ -38,6 +37,7 @@ kanban-plugin: board
 - [x] implement sample-cube edge handling
 - [ ] clean up project (organise files and structure)
 - [x] test vertex/index reservation for speedup
+- [x] implement normal generation
 
 
 

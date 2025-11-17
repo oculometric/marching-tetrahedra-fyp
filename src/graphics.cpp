@@ -97,6 +97,8 @@ uniform int shading_mode;
 uniform int backface_highlight;
 uniform int smooth_shading;
 uniform sampler2D backface_image;
+uniform vec3 shading_colour_a;
+uniform vec3 shading_colour_b;
 
 varying vec3 position;
 varying vec3 world_normal;
@@ -128,7 +130,10 @@ void main()
             case 0:
                 FragColor = vec4(0.8f, 0.8f, 0.8f, 1.0f); break;
             case 1:
-                FragColor = vec4(vec3(saturate(dot(world_normal, -light_vec))), 1.0f); break;
+                float dot_prod = dot(world_normal, -light_vec);
+                vec3 back_shading = mix(shading_colour_b, shading_colour_b * 0.1f, -dot_prod);
+                vec3 front_shading = mix(shading_colour_a, vec3(1.0f, 0.95f, 0.8f), pow(dot_prod, 3.0f));
+                FragColor = vec4(mix(back_shading, front_shading, saturate(dot_prod)), 1.0f); break;
             case 2:
                 FragColor = vec4(position, 1.0f); break;
             case 3:
@@ -213,6 +218,8 @@ bool GraphicsEnv::create(int width, int height)
     shvar_shading_mode = glGetUniformLocation(shader_program, "shading_mode");
     shvar_backface_highlight = glGetUniformLocation(shader_program, "backface_highlight");
     shvar_smooth_shading = glGetUniformLocation(shader_program, "smooth_shading");
+    shvar_shading_colour_a = glGetUniformLocation(shader_program, "shading_colour_a");
+    shvar_shading_colour_b = glGetUniformLocation(shader_program, "shading_colour_b");
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
 
@@ -370,6 +377,8 @@ void GraphicsEnv::drawMesh(glm::mat4 transform)
     else
         glBindVertexArray(flat_vertex_array_object);
     glUniformMatrix4fv(shvar_transform, 1, GL_FALSE, glm::value_ptr(transform));
+    glUniform3f(shvar_shading_colour_a, shading_colour_a.r, shading_colour_a.g, shading_colour_a.b);
+    glUniform3f(shvar_shading_colour_b, shading_colour_b.r, shading_colour_b.g, shading_colour_b.b);
 
     if (!wireframe_only)
     {
@@ -629,6 +638,9 @@ void GraphicsEnv::drawImGui()
         ImGui::TableNextColumn();
         ImGui::RadioButton("normal", &shading_mode, 3);
         ImGui::EndTable();
+        ImGui::Spacing();
+        ImGui::ColorEdit3("shading light", (float*)(&shading_colour_a), ImGuiColorEditFlags_PickerHueWheel);
+        ImGui::ColorEdit3("shading dark", (float*)(&shading_colour_b), ImGuiColorEditFlags_PickerHueWheel);
         ImGui::Spacing();
         ImGui::Checkbox("smooth shading", &smooth_shading);
         ImGui::Checkbox("wireframe overlay", &wireframe_mode);
