@@ -776,6 +776,7 @@ void Builder::vertexPass()
                 // other islands need to be rebuilt as two groups (using bitmasks 
                 // to separate the island into halves)
                 // FIXME: change the opposing edge checks to be MORE THAN 180 degrees, not 180. i.e., the maximum traversal distance in the group
+                // FIXME: find cycles!
                 for (EdgeFlags group_mask : groups)
                 {
                     int mask_index;
@@ -993,7 +994,6 @@ void Builder::geometryPass()
                         connected_indices[(tetrahedra_sample_index_templates[t])[2]]  // L = lower
                     };
 
-                    // TODO: should we cache this before the per-tetrahedron loop?
                     const bool sample_neighbours_crossing_flags[3] =
                     {
                         static_cast<bool>(central_sample_crossing_flags & (1 << (tetrahedra_sample_index_templates[t])[0])),

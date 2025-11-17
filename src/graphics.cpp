@@ -7,6 +7,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <locale>
 #include <stb_image.h>
+#define GIF_FLIP_VERT
+#include <gif.h>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -95,7 +97,6 @@ out vec4 FragColor;
 
 uniform int shading_mode;
 uniform int backface_highlight;
-uniform int smooth_shading;
 uniform sampler2D backface_image;
 uniform vec3 shading_colour_a;
 uniform vec3 shading_colour_b;
@@ -217,7 +218,6 @@ bool GraphicsEnv::create(int width, int height)
     shvar_transform = glGetUniformLocation(shader_program, "world_to_clip");
     shvar_shading_mode = glGetUniformLocation(shader_program, "shading_mode");
     shvar_backface_highlight = glGetUniformLocation(shader_program, "backface_highlight");
-    shvar_smooth_shading = glGetUniformLocation(shader_program, "smooth_shading");
     shvar_shading_colour_a = glGetUniformLocation(shader_program, "shading_colour_a");
     shvar_shading_colour_b = glGetUniformLocation(shader_program, "shading_colour_b");
     glDeleteShader(vertex_shader);
@@ -392,7 +392,6 @@ void GraphicsEnv::drawMesh(glm::mat4 transform)
         }
         glUniform1i(shvar_shading_mode, shading_mode);
         glUniform1i(shvar_backface_highlight, (backface_mode <= 2) ? 0 : (backface_mode - 2));
-        glUniform1i(shvar_smooth_shading, smooth_shading);
         if (smooth_shading)
             glDrawElements(GL_TRIANGLES, static_cast<int>(mesh_data.indices.size()), GL_UNSIGNED_INT, 0);
         else
@@ -404,7 +403,6 @@ void GraphicsEnv::drawMesh(glm::mat4 transform)
         glDisable(GL_CULL_FACE);
         glUniform1i(shvar_shading_mode, 0);
         glUniform1i(shvar_backface_highlight, 0);
-        glUniform1i(shvar_smooth_shading, 1);
         if (smooth_shading)
             glDrawElements(GL_TRIANGLES, static_cast<int>(mesh_data.indices.size()), GL_UNSIGNED_INT, 0);
         else
@@ -432,6 +430,7 @@ void GraphicsEnv::drawImGui()
     auto io = ImGui::GetIO();
     static bool is_first_run = true;
 
+    float stats_window_height = 0;
     if (ImGui::Begin("stats & info", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
         if (ImGui::CollapsingHeader("mesh info", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
@@ -519,6 +518,7 @@ void GraphicsEnv::drawImGui()
 
         if (!is_first_run)
             ImGui::SetWindowPos(ImVec2(io.DisplaySize.x - (ImGui::GetWindowWidth() + 10), 10), ImGuiCond_FirstUseEver);
+        stats_window_height = ImGui::GetWindowHeight();
     }
     ImGui::End();
     
@@ -666,15 +666,142 @@ void GraphicsEnv::drawImGui()
 
         if (!is_first_run)
             ImGui::SetWindowPos(ImVec2(10, generation_window_height + 20), ImGuiCond_FirstUseEver);
+        generation_window_height += ImGui::GetWindowHeight();
     }
     ImGui::End();
-    //if (ImGui::Begin("script controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-    //{
-    //    // TODO: batch and benchmarking config, including gif generator, csv export, etc
-    //}
-    //ImGui::End();
+    if (ImGui::Begin("script controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        // TODO: batch and benchmarking config, including gif generator, csv export, etc
+        if (ImGui::CollapsingHeader("turntable GIF creator", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+        {
+            int size[2] = { rtt_width, rtt_height };
+            gif_name.resize(128);
+            ImGui::InputText("name", gif_name.data(), gif_name.size(), ImGuiInputTextFlags_CharsNoBlank);
+            ImGui::InputFloat("distance", &gif_distance, 0.1f, 0.5f);
+            ImGui::InputFloat("up angle", &gif_up_angle, 10.0f, 30.0f);
+            ImGui::SliderInt2("resolution", size, 10, 1024);
+            rtt_width = size[0];
+            rtt_height = size[1];
+            ImGui::SliderFloat("length (sec)", &gif_length_seconds, 0.5f, 10.0f);
+            ImGui::SliderInt("frames", &gif_length_frames, 10, 300);
+            if (ImGui::Button("generate"))
+                renderGIF();
+        }
+
+        if (ImGui::CollapsingHeader("benchmarker", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+        {
+
+        }
+
+        if (!is_first_run)
+            ImGui::SetWindowPos(ImVec2(io.DisplaySize.x - (ImGui::GetWindowWidth() + 10), stats_window_height + 20), ImGuiCond_FirstUseEver);
+    }
+    ImGui::End();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     is_first_run = false;
+}
+
+void GraphicsEnv::renderGIF()
+{
+    if (mesh_data.indices.empty())
+        return;
+    initialiseRTTState();
+
+    vector<vector<uint8_t>> frames;
+
+    for (int i = 0; i < gif_length_frames; ++i)
+    {
+        float rot_angle = ((float)i / (float)gif_length_frames) * glm::two_pi<float>();
+        glm::vec3 eye = glm::vec3(cos(rot_angle) - sin(rot_angle), sin(rot_angle) + cos(rot_angle), 1.0f) * gif_distance;
+        eye *= glm::vec3(cos(glm::radians(gif_up_angle)), cos(glm::radians(gif_up_angle)), sin(glm::radians(gif_up_angle)));
+        rtt_transform = glm::lookAt(eye, glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
+        rtt_transform = glm::perspective(camera_fov, (float)rtt_width / (float)rtt_height, 0.0001f, 100.0f) * rtt_transform;
+        drawRTTScene();
+
+        frames.push_back(exportRTTResult());
+    }
+
+    GifWriter gw;
+    uint32_t delay = (gif_length_seconds / gif_length_frames) * 100.0f;
+    GifBegin(&gw, gif_name.c_str(), rtt_width, rtt_height, delay, true);
+    for (auto& frame : frames)
+        GifWriteFrame(&gw, frame.data(), rtt_width, rtt_height, delay, 8, true);
+    GifEnd(&gw);
+
+    destroyRTTState();
+}
+
+void GraphicsEnv::initialiseRTTState()
+{
+    glGenFramebuffers(1, &rtt_framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, rtt_framebuffer);
+
+    glGenTextures(1, &rtt_colour_texture);
+    glBindTexture(GL_TEXTURE_2D, rtt_colour_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, rtt_width, rtt_height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    glGenRenderbuffers(1, &rtt_depth_texture);
+    glBindRenderbuffer(GL_RENDERBUFFER, rtt_depth_texture);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, rtt_width, rtt_height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rtt_depth_texture);
+
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rtt_colour_texture, 0);
+    GLenum draw_buffers[1] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, draw_buffers);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        cout << "error initialising RTT framebuffer!" << endl;
+        exit(-1);
+    }
+}
+
+void GraphicsEnv::drawRTTScene()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindFramebuffer(GL_FRAMEBUFFER, rtt_framebuffer);
+    glViewport(0, 0, rtt_width, rtt_height);
+
+    glUseProgram(shader_program);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, backface_image);
+    glBindVertexArray(vertex_array_object);
+
+    glUniformMatrix4fv(shvar_transform, 1, GL_FALSE, glm::value_ptr(rtt_transform));
+    glUniform3f(shvar_shading_colour_a, shading_colour_a.r, shading_colour_a.g, shading_colour_a.b);
+    glUniform3f(shvar_shading_colour_b, shading_colour_b.r, shading_colour_b.g, shading_colour_b.b);
+    glUniform1i(shvar_shading_mode, 1);
+    glUniform1i(shvar_backface_highlight, (backface_mode <= 2) ? 0 : (backface_mode - 2));
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    if (backface_mode == 0 || backface_mode > 2)
+        glDisable(GL_CULL_FACE);
+    else
+    {
+        glEnable(GL_CULL_FACE);
+        glCullFace(backface_mode == 1 ? GL_BACK : GL_FRONT);
+    }
+    glDrawElements(GL_TRIANGLES, static_cast<int>(mesh_data.indices.size()), GL_UNSIGNED_INT, 0);
+}
+
+vector<uint8_t> GraphicsEnv::exportRTTResult()
+{
+    glBindTexture(GL_TEXTURE_2D, rtt_colour_texture);
+    vector<uint8_t> image; image.resize(4 * rtt_width * rtt_height);
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
+    return image;
+}
+
+void GraphicsEnv::destroyRTTState()
+{
+    glDeleteRenderbuffers(1, &rtt_depth_texture);
+    glDeleteTextures(1, &rtt_colour_texture);
+    glDeleteFramebuffers(1, &rtt_framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    int width, height; glfwGetFramebufferSize(window, &width, &height);
+    glViewport(0, 0, width, height);
 }
