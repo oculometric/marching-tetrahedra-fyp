@@ -14,7 +14,6 @@ kanban-plugin: board
 ## backlog
 
 - [ ] implement simple cubic lattice structure
-- [ ] wrap with graphical interface to view models live
 - [ ] improve merging algo - checks for degeration (concave merging) and edge-of-sample-cube merging
 
 
@@ -38,6 +37,7 @@ kanban-plugin: board
 - [ ] clean up project (organise files and structure)
 - [x] test vertex/index reservation for speedup
 - [x] implement normal generation
+- [x] wrap with graphical interface to view models live
 
 
 
