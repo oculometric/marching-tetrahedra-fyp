@@ -42,7 +42,7 @@
             }
           },
           {
-            "id": "a4940339f26bada4",
+            "id": "bf840b46f3fa0349",
             "type": "leaf",
             "state": {
               "type": "kanban",
@@ -63,7 +63,7 @@
             }
           },
           {
-            "id": "00ee984024088090",
+            "id": "bddc22907f098046",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -75,65 +75,9 @@
               "icon": "lucide-file",
               "title": "miscellaneous notes"
             }
-          },
-          {
-            "id": "a3be83dead91d1c7",
-            "type": "leaf",
-            "state": {
-              "type": "pdf",
-              "state": {
-                "file": "doc/papers/regularised marching tetrahedra 1999.pdf"
-              },
-              "icon": "lucide-file-text",
-              "title": "regularised marching tetrahedra 1999"
-            }
-          },
-          {
-            "id": "04b873c6183a4eb2",
-            "type": "leaf",
-            "state": {
-              "type": "pdf",
-              "state": {
-                "file": "doc/papers/marching cubes 1987.pdf"
-              },
-              "icon": "lucide-file-text",
-              "title": "marching cubes 1987"
-            }
-          },
-          {
-            "id": "0c3b182627c7cfb8",
-            "type": "leaf",
-            "state": {
-              "type": "pdf",
-              "state": {
-                "file": "doc/papers/regularised marching tetrahedra 1999.pdf"
-              },
-              "icon": "lucide-file-text",
-              "title": "regularised marching tetrahedra 1999"
-            }
-          },
-          {
-            "id": "bf840b46f3fa0349",
-            "type": "leaf",
-            "state": {
-              "type": "kanban",
-              "state": {
-                "file": "doc/task board.md",
-                "kanbanViewState": {
-                  "kanban-plugin": "board",
-                  "list-collapse": [
-                    false,
-                    false,
-                    false
-                  ]
-                }
-              },
-              "icon": "lucide-trello",
-              "title": "task board"
-            }
           }
         ],
-        "currentTab": 2
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -279,26 +223,28 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "a4940339f26bada4",
+  "active": "bddc22907f098046",
   "lastOpenFiles": [
-    "doc/lu29322jaem7.tmp",
-    "doc/lu29322jaem4.tmp",
-    "doc/lu29322jaem1.tmp",
-    "doc/lu29322jaely.tmp",
-    "doc/lu29322jaelv.tmp",
-    "doc/lu29322jaels.tmp",
-    "doc/papers/regularised marching tetrahedra 1999.pdf",
-    "doc/lu29322jaelp.tmp",
-    "doc/lu29322jaelm.tmp",
-    "doc/lu29322jaelj.tmp",
-    "doc/lu29322jaelg.tmp",
-    "doc/research notes/A new tetrahedral tessellation scheme for isosurface generation (1998).md",
-    "doc/research notes/Adaptive marching cubes 1995.md",
-    "doc/research notes/Marching Cubes (1987).md",
-    "doc/research notes/miscellaneous notes.md",
+    "doc/lu195443t43sk.tmp",
+    "doc/lu195443t43sh.tmp",
+    "doc/lu195443t43se.tmp",
+    "doc/lu195443t43sb.tmp",
+    "doc/lu195443t43s8.tmp",
+    "doc/lu195443t43s5.tmp",
+    "doc/lu195443t43s2.tmp",
+    "doc/lu195443t43rz.tmp",
+    "doc/lu195443t43rw.tmp",
+    "doc/lu195443t43rt.tmp",
+    "doc/lu195443t43rq.tmp",
     "doc/research kanban.md",
+    "doc/research notes/Adaptive marching cubes 1995.md",
+    "doc/research notes/miscellaneous notes.md",
+    "doc/research notes/Regularised marching tetrahedra (1999).md",
+    "doc/lit review template.md",
     "doc/task board.md",
     "doc/development todos.md",
+    "doc/research notes/A new tetrahedral tessellation scheme for isosurface generation (1998).md",
+    "doc/research notes/Marching Cubes (1987).md",
     "doc/misc shit.md",
     "lib/glm-1.0.2/readme.md",
     "lib/glm-1.0.2/manual.md",
@@ -316,10 +262,7 @@
     "lib/glfw-3.4.bin.WIN64/docs/html/tab_bd.png",
     "lib/glfw-3.4.bin.WIN64/README.md",
     "lib/glfw-3.4.bin.WIN64/LICENSE.md",
-    "doc/research notes/Regularised marching tetrahedra (1999).md",
     "doc/questionnaire template.md",
-    "doc/lit review template.md",
-    "doc/lit review template.md",
     "doc/merging reductions.md",
     "doc/research notes.md",
     "Untitled.canvas",
