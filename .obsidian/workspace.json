@@ -61,23 +61,9 @@
               "icon": "lucide-trello",
               "title": "research kanban"
             }
-          },
-          {
-            "id": "bddc22907f098046",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "doc/research notes/miscellaneous notes.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "miscellaneous notes"
-            }
           }
         ],
-        "currentTab": 3
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -223,22 +209,22 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "bddc22907f098046",
+  "active": "bf840b46f3fa0349",
   "lastOpenFiles": [
-    "doc/lu195443t43sk.tmp",
-    "doc/lu195443t43sh.tmp",
-    "doc/lu195443t43se.tmp",
-    "doc/lu195443t43sb.tmp",
-    "doc/lu195443t43s8.tmp",
-    "doc/lu195443t43s5.tmp",
-    "doc/lu195443t43s2.tmp",
-    "doc/lu195443t43rz.tmp",
-    "doc/lu195443t43rw.tmp",
-    "doc/lu195443t43rt.tmp",
-    "doc/lu195443t43rq.tmp",
+    "doc/lu195443t43tt.tmp",
+    "doc/lu195443t43tq.tmp",
+    "doc/lu195443t43tn.tmp",
+    "doc/lu195443t43tk.tmp",
+    "doc/lu195443t43th.tmp",
+    "doc/lu195443t43te.tmp",
+    "doc/lu195443t43tb.tmp",
+    "doc/lu195443t43t8.tmp",
+    "doc/lu195443t43t5.tmp",
+    "doc/lu195443t43t2.tmp",
+    "doc/lu195443t43sz.tmp",
+    "doc/research notes/miscellaneous notes.md",
     "doc/research kanban.md",
     "doc/research notes/Adaptive marching cubes 1995.md",
-    "doc/research notes/miscellaneous notes.md",
     "doc/research notes/Regularised marching tetrahedra (1999).md",
     "doc/lit review template.md",
     "doc/task board.md",
