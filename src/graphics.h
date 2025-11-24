@@ -85,7 +85,7 @@ private:
 	int gif_length_frames = 120;
 	float gif_distance = 1.2f;
 	float gif_up_angle = 30.0f;
-	std::string gif_name = "output.gif";
+	std::string image_name = "output";
 	glm::mat4 rtt_transform;
 
 public:
@@ -102,6 +102,7 @@ private:
 	void configureImGui();
 	void drawImGui();
 
+	void renderStill();
 	void renderGIF();
 	void initialiseRTTState();
 	void drawRTTScene();

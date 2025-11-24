@@ -7,8 +7,13 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <locale>
 #include <stb_image.h>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
 #define GIF_FLIP_VERT
 #include <gif.h>
+#include <Windows.h>
+
+#include "resource.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -168,6 +173,9 @@ bool GraphicsEnv::create(int width, int height)
     glfwSetKeyCallback(window, keyboardCallback);
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
     glfwSetCursorPosCallback(window, mouseMovedCallback);
+
+    HBITMAP hBtMpBall = LoadBitmap(NULL, MAKEINTRESOURCE(IDB_BITMAP1));
+
     glViewport(0, 0, width, height);
     configureImGui();
 
@@ -672,19 +680,21 @@ void GraphicsEnv::drawImGui()
     if (ImGui::Begin("script controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
         // TODO: batch and benchmarking config, including gif generator, csv export, etc
-        if (ImGui::CollapsingHeader("turntable GIF creator", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+        if (ImGui::CollapsingHeader("image tool", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
         {
             int size[2] = { rtt_width, rtt_height };
-            gif_name.resize(128);
-            ImGui::InputText("name", gif_name.data(), gif_name.size(), ImGuiInputTextFlags_CharsNoBlank);
-            ImGui::InputFloat("distance", &gif_distance, 0.1f, 0.5f);
-            ImGui::InputFloat("up angle", &gif_up_angle, 10.0f, 30.0f);
+            image_name.resize(128);
+            ImGui::InputText("name", image_name.data(), image_name.size(), ImGuiInputTextFlags_CharsNoBlank);
             ImGui::SliderInt2("resolution", size, 10, 1024);
             rtt_width = size[0];
             rtt_height = size[1];
+            if (ImGui::Button("create still"))
+                renderStill();
+            ImGui::InputFloat("distance", &gif_distance, 0.1f, 0.5f);
+            ImGui::InputFloat("up angle", &gif_up_angle, 10.0f, 30.0f);
             ImGui::SliderFloat("length (sec)", &gif_length_seconds, 0.5f, 10.0f);
             ImGui::SliderInt("frames", &gif_length_frames, 10, 300);
-            if (ImGui::Button("generate"))
+            if (ImGui::Button("generate GIF"))
                 renderGIF();
         }
 
@@ -701,6 +711,39 @@ void GraphicsEnv::drawImGui()
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     is_first_run = false;
+}
+
+void GraphicsEnv::renderStill()
+{
+    if (mesh_data.indices.empty())
+        return;
+    initialiseRTTState();
+
+    rtt_transform = glm::mat4(1.0f);
+    rtt_transform = glm::rotate(rtt_transform, -glm::radians(camera_euler.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    rtt_transform = glm::rotate(rtt_transform, -glm::radians(camera_euler.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    rtt_transform = glm::rotate(rtt_transform, -glm::radians(camera_euler.z), glm::vec3(0.0f, 0.0f, 1.0f));
+    rtt_transform = glm::translate(rtt_transform, -camera_position);
+    rtt_transform = glm::perspective(camera_fov, (float)rtt_width / (float)rtt_height, 0.0001f, 100.0f) * rtt_transform;
+    drawRTTScene();
+
+    auto image = exportRTTResult();
+    string png_name = image_name.c_str();
+    png_name += ".png";
+    for (size_t y0 = 0, y1 = (rtt_height - 1); y0 < rtt_height / 2; ++y0, --y1)
+    {
+        for (size_t x = 0; x < rtt_width; ++x)
+        {
+            size_t offset0 = ((y0 * rtt_width) + x) * 4;
+            size_t offset1 = ((y1 * rtt_width) + x) * 4;
+            uint8_t tmp[4];
+            memcpy(tmp, image.data() + offset0, 4);
+            memcpy(image.data() + offset0, image.data() + offset1, 4);
+            memcpy(image.data() + offset1, tmp, 4);
+        }
+    }
+    stbi_write_png(png_name.c_str(), rtt_width, rtt_height, 4, image.data(), rtt_width * 4);
+    destroyRTTState();
 }
 
 void GraphicsEnv::renderGIF()
@@ -725,6 +768,8 @@ void GraphicsEnv::renderGIF()
 
     GifWriter gw;
     uint32_t delay = (gif_length_seconds / gif_length_frames) * 100.0f;
+    string gif_name = image_name.c_str();
+    gif_name += ".gif";
     GifBegin(&gw, gif_name.c_str(), rtt_width, rtt_height, delay, true);
     for (auto& frame : frames)
         GifWriteFrame(&gw, frame.data(), rtt_width, rtt_height, delay, 8, true);
@@ -786,6 +831,18 @@ void GraphicsEnv::drawRTTScene()
         glCullFace(backface_mode == 1 ? GL_BACK : GL_FRONT);
     }
     glDrawElements(GL_TRIANGLES, static_cast<int>(mesh_data.indices.size()), GL_UNSIGNED_INT, 0);
+
+    if (wireframe_mode)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glDisable(GL_CULL_FACE);
+        glUniform1i(shvar_shading_mode, 0);
+        glUniform1i(shvar_backface_highlight, 0);
+        if (smooth_shading)
+            glDrawElements(GL_TRIANGLES, static_cast<int>(mesh_data.indices.size()), GL_UNSIGNED_INT, 0);
+        else
+            glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(flat_shaded_data.size()));
+    }
 }
 
 vector<uint8_t> GraphicsEnv::exportRTTResult()
