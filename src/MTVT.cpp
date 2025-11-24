@@ -13,6 +13,7 @@
 using namespace std;
 using namespace MTVT;
 
+
 static inline size_t computeCubicFunction(size_t x, size_t y, size_t z, size_t a, size_t b, size_t c, size_t d)
 {
     return (a * x * y * z) + (b * ((x * y) + (x * z) + (y * z))) + (c * (x + y + z)) + d;
@@ -186,9 +187,6 @@ void Builder::destroyBuffers()
 #define PXNYNZ 12
 #define NXNYNZ 13
 
-#define IS_POSITIVE_X(p) ((p == PX) || ((p >= 6) && ((p % 2) == 0)))
-#define IS_NEGATIVE_X(p) ((p == NX) || ((p >= 6) && ((p % 2) == 1)))
-
 void Builder::populateIndexOffsets()
 {
     // generate a set of index offsets for surrounding sample points,
@@ -341,11 +339,108 @@ static constexpr EdgeFlags edge_neighbour_masks[14] =
    // diag......perp..
 };
 
-#define VERTEX_POSITION(vec, td, van, val, pos) ((vec * (td / (van - val))) + pos)
+static inline uint8_t fastBitCount(EdgeFlags val)
+{
+    static constexpr uint8_t counts[16] =
+    { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
+    return counts[val & 0xf] + counts[(val >> 4) & 0xf] + counts[(val >> 8) & 0xf] + counts[(val >> 12) & 0xf];
+}
 
-// this macro simply turns an edge address into the edge address pointing in the 
-// opposite direction
-#define INVERT_EDGE_INDEX(i) (EdgeAddr)((i < 6) ? (i + 1 - ((i % 2) * 2)) : (19 - i))
+static inline EdgeAddr ilog2(const unsigned x) {
+    return static_cast<EdgeAddr>(((8 * sizeof(unsigned)) - (__lzcnt((unsigned)(x))) - 1));
+}
+
+struct ConnectivityGraph
+{
+    EdgeFlags link_bits[14] = { };
+    uint8_t highest_mergeable_count = 0;
+    EdgeAddr highest_counted_edge = EDGE_NULL;
+    EdgeFlags usable_edges = 0;
+    uint8_t num_usable_edges = 0;
+
+    ConnectivityGraph() = delete;
+    inline ConnectivityGraph(EdgeFlags _usable_edges, uint8_t _num_usable_edges)
+    {
+        usable_edges = _usable_edges;
+        num_usable_edges = _num_usable_edges;
+        memcpy(link_bits, edge_neighbour_masks, sizeof(EdgeFlags) * 14);
+        // iterate over the edges and strike out candidate edges which
+        // are not both usable
+        EdgeFlags mask = 1;
+        for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
+        {
+            if (!(usable_edges & mask))
+            {
+                link_bits[p] = 0;
+                continue;
+            }
+            else
+                link_bits[p] &= usable_edges;
+            auto mergeable_candidates = fastBitCount(link_bits[p]);
+            if (mergeable_candidates > highest_mergeable_count)
+            {
+                highest_mergeable_count = mergeable_candidates;
+                highest_counted_edge = p;
+            }
+        }
+    }
+
+    inline vector<EdgeFlags> getIslands()
+    {
+        int group_ids[14] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+        EdgeFlags grouped_flags = 0;
+        int current_group_index = 0;
+        size_t total_grouped_size = 0;
+        EdgeAddr current_edge = 0;
+        vector<EdgeAddr> edge_queue; edge_queue.reserve(14);
+        vector<EdgeFlags> groups; edge_queue.reserve(8);
+        EdgeFlags current_group = 0;
+        // traverse breadth-first to neighbours, marking each as part of the current group
+        // when this is complete, if there are unmarked edges, find the first unmarked
+        // and repeat traversal.
+        while (total_grouped_size < num_usable_edges)
+        {
+            while ((grouped_flags & (1 << current_edge)) || !(usable_edges & (1 << current_edge)))
+                ++current_edge;
+            // add this edge to the current group
+            edge_queue.push_back(current_edge);
+            grouped_flags |= (1 << current_edge);
+            group_ids[current_edge] = current_group_index;
+            int queue_index = 0;
+            // repeat until we run out
+            while (queue_index < edge_queue.size())
+            {
+                EdgeFlags mask = 1;
+                // jump to the current edge in the queue
+                current_edge = edge_queue[queue_index];
+                current_group |= (1 << current_edge);
+                for (EdgeAddr next_edge = 0; next_edge < 14u; ++next_edge, mask <<= 1)
+                {
+                    // check this edge for connected neighbours, mark each one
+                    // and add it to the queue (if it isn't already marked!)
+                    if ((link_bits[current_edge] & mask) && !(grouped_flags & (1 << next_edge)))
+                    {
+                        edge_queue.push_back(next_edge);
+                        grouped_flags |= (1 << next_edge);
+                        group_ids[next_edge] = current_group_index;
+                    }
+                }
+                // step to the next element in the queue
+                ++queue_index;
+            }
+            // reset in case we have to find another island
+            total_grouped_size += edge_queue.size();
+            groups.push_back(current_group);
+            edge_queue.clear();
+            current_edge = 0;
+            current_group = 0;
+            ++current_group_index;
+        }
+        return groups;
+    }
+};
+
+#define VERTEX_POSITION(vec, td, van, val, pos) ((vec * (td / (van - val))) + pos)
 
 inline VertexRef Builder::addVertex(const float* neighbour_values, const EdgeAddr p, const float thresh_diff, const float value, const Vector3& position, vector<Vector3>& verts)
 {
@@ -384,17 +479,6 @@ inline void Builder::addVerticesIndividually(const float* neighbour_values, cons
             continue;
         edges.references[p] = addVertex(neighbour_values, p, thresh_diff, value, position, verts);
     }
-}
-
-static inline uint8_t fastBitCount(EdgeFlags val)
-{
-    static constexpr uint8_t counts[16] =
-    { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
-    return counts[val & 0xf] + counts[(val >> 4) & 0xf] + counts[(val >> 8) & 0xf] + counts[(val >> 12) & 0xf];
-}
-
-static inline EdgeAddr ilog2(const unsigned x) {
-    return static_cast<EdgeAddr>(((8 * sizeof(unsigned)) - (__lzcnt((unsigned)(x))) - 1));
 }
 
 // this table contains pairs of edge masks, where the first item is used
@@ -667,37 +751,10 @@ void Builder::vertexPass()
                 // the connectivity graph is an adjacency matrix where each bit
                 // represents whether there is a connection between the two
                 // edges used to index that bit in the array
-                EdgeFlags connectivity_graph[14] = { };
-                memcpy(connectivity_graph, edge_neighbour_masks, sizeof(EdgeFlags) * 14);
-                // mergeable candidates represents how many edges can be merged with
-                // each edge (essentially, how many bits are set in each row of the
-                // adjacency matrix)
-                uint8_t mergeable_candidates[14] = { 0 };
-                uint8_t highest_mergeable_count = 0;
-                EdgeAddr highest_counted_edge = EDGE_NULL;
-                // iterate over the edges and strike out candidate edges which
-                // are not both usable
-                mask = 1;
-                for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
-                {
-                    if (!(usable_edges & mask))
-                    {
-                        connectivity_graph[p] = 0;
-                        mergeable_candidates[p] = 0;
-                        continue;
-                    }
-                    else
-                        connectivity_graph[p] &= usable_edges;
-                    mergeable_candidates[p] = fastBitCount(connectivity_graph[p]);
-                    if (mergeable_candidates[p] > highest_mergeable_count)
-                    {
-                        highest_mergeable_count = mergeable_candidates[p];
-                        highest_counted_edge = p;
-                    }
-                }
+                ConnectivityGraph usable_graph(usable_edges, num_flagged_edges);
 
                 // if there are no mergeable edges anywhere, do them all individually and finish
-                if (highest_mergeable_count == 0)
+                if (usable_graph.highest_mergeable_count == 0)
                 {
                     addVerticesIndividually(neighbour_values, thresh_diff, value, position, usable_edges, vertices, edges);
                     sample_edge_indices[index] = edges;
@@ -708,7 +765,7 @@ void Builder::vertexPass()
                 // if there's an edge where the number of mergeable candidates is equal to 
                 // the number of total usable edges - 1 (i.e. all are mergeable to this edge)
                 // then merge them all together and finish
-                if (highest_mergeable_count == num_flagged_edges - 1)
+                if (usable_graph.highest_mergeable_count == num_flagged_edges - 1)
                 {
                     addMergedVertex(neighbour_values, thresh_diff, value, position, usable_edges, vertices, edges);
                     sample_edge_indices[index] = edges;
@@ -716,86 +773,49 @@ void Builder::vertexPass()
                     continue;
                 }
 
+                // however, we want to check if there are holes/loops in the graph. to
+                // do this, we can look for islands of zero values, instead of islands
+                // of one values. if we find more than one island of non-mergeable
+                // edges, then we know there must be an enclosed island somewhere, and
+                // hence we shouldn't merge things
+                EdgeFlags unusable_edges = (~usable_edges) & 0b0011111111111111;
+                ConnectivityGraph unusable_graph(unusable_edges, fastBitCount(unusable_edges));
+                auto negative_groups = unusable_graph.getIslands();
+
                 // otherwise, separate the data into islands by traversing to connected
                 // neighbours and marking them as part of an island, until all edges are
                 // marked. then, we check each island for opposing edges using a bitmask;
                 // if the island has no opposing edges it can be safely merged, otherwise
                 // it must be split into two new groups based on the two opposing edges,
                 // before it can be merged
-
-                // TODO: HERE ------------------------->
-                // however, we want to check if there are holes/loops in the graph. to
-                // do this, we can look for islands of zero values, instead of islands
-                // of one values. if we find more than one island of non-mergeable
-                // edges, then we know there must be an enclosed island somewhere, and
-                // hence we shouldn't merge things
+                if (negative_groups.size() > 1)
+                {
+                    addVerticesIndividually(neighbour_values, thresh_diff, value, position, usable_edges, vertices, edges);
+                    sample_edge_indices[index] = edges;
+                    ++index;
+                    continue;
+                }
 
                 // separate the remaining data into islands (continuously connected regions)
-                int group_ids[14] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-                int current_group_index = 0;
-                size_t total_grouped_size = 0;
-                EdgeAddr current_edge = 0;
-                vector<EdgeAddr> edge_queue; edge_queue.reserve(14);
-                vector<EdgeFlags> groups; edge_queue.reserve(8);
-                EdgeFlags current_group = 0;
-                // traverse breadth-first to neighbours, marking each as part of the current group
-                // when this is complete, if there are unmarked edges, find the first unmarked
-                // and repeat traversal.
-                while (total_grouped_size < num_flagged_edges)
-                {
-                    while (group_ids[current_edge] != -1 || !(usable_edges & (1 << current_edge)))
-                        ++current_edge;
-                    // add this edge to the current group
-                    edge_queue.push_back(current_edge);
-                    group_ids[current_edge] = current_group_index;
-                    int queue_index = 0;
-                    // repeat until we run out
-                    while (queue_index < edge_queue.size())
-                    {
-                        mask = 1;
-                        // jump to the current edge in the queue
-                        current_edge = edge_queue[queue_index];
-                        current_group |= (1 << current_edge);
-                        for (EdgeAddr next_edge = 0; next_edge < 14u; ++next_edge, mask <<= 1)
-                        {
-                            // check this edge for connected neighbours, mark each one
-                            // and add it to the queue (if it isn't already marked!)
-                            if ((connectivity_graph[current_edge] & mask) && group_ids[next_edge] == -1)
-                            {
-                                edge_queue.push_back(next_edge);
-                                group_ids[next_edge] = current_group_index;
-                            }
-                        }
-                        // step to the next element in the queue
-                        ++queue_index;
-                    }
-                    // reset in case we have to find another island
-                    total_grouped_size += edge_queue.size();
-                    groups.push_back(current_group);
-                    edge_queue.clear();
-                    current_edge = 0;
-                    current_group = 0;
-                    ++current_group_index;
-                }
+                auto groups = usable_graph.getIslands();
 
                 // next, iterate over the islands, checking each for opposing edges.
                 // any islands which do not contain opposing edges can be merged,
                 // other islands need to be rebuilt as two groups (using bitmasks 
                 // to separate the island into halves)
                 // FIXME: change the opposing edge checks to be MORE THAN 180 degrees, not 180. i.e., the maximum traversal distance in the group
-                // FIXME: find cycles!
                 for (EdgeFlags group_mask : groups)
                 {
-                    int mask_index;
-                    for (mask_index = 0; mask_index < 7; ++mask_index)
-                    {
-                        mask = opposing_edge_masks[mask_index][0];
-                        if ((group_mask & mask) == mask)
-                        {
-                            // we found an opposing edge! kill it!
-                            break;
-                        }
-                    }
+                    //int mask_index;
+                    //for (mask_index = 0; mask_index < 7; ++mask_index)
+                    //{
+                    //    mask = opposing_edge_masks[mask_index][0];
+                    //    if ((group_mask & mask) == mask)
+                    //    {
+                    //        // we found an opposing edge! kill it!
+                    //        break;
+                    //    }
+                    //}
                     //if (mask_index >= 7)
                     //{
                         // all good! merge them!
@@ -936,6 +956,10 @@ static constexpr int8_t tetrahedral_edge_address_patterns[16][4] =
     {  1,  0,  2, -1 }, // 0b1110
     { -1, -1, -1, -1 }, // all bits set
 };
+
+// this macro simply turns an edge address into the edge address pointing in the 
+// opposite direction
+#define INVERT_EDGE_INDEX(i) (EdgeAddr)((i < 6) ? (i + 1 - ((i % 2) * 2)) : (19 - i))
 
 void Builder::geometryPass()
 {
