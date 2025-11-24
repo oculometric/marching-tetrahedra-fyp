@@ -723,6 +723,13 @@ void Builder::vertexPass()
                 // it must be split into two new groups based on the two opposing edges,
                 // before it can be merged
 
+                // TODO: HERE ------------------------->
+                // however, we want to check if there are holes/loops in the graph. to
+                // do this, we can look for islands of zero values, instead of islands
+                // of one values. if we find more than one island of non-mergeable
+                // edges, then we know there must be an enclosed island somewhere, and
+                // hence we shouldn't merge things
+
                 // separate the remaining data into islands (continuously connected regions)
                 int group_ids[14] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
                 int current_group_index = 0;
