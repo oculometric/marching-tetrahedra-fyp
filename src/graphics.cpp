@@ -13,7 +13,7 @@
 #include <gif.h>
 #include <Windows.h>
 
-#include "resource.h"
+#include "../res/resource.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -174,7 +174,39 @@ bool GraphicsEnv::create(int width, int height)
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
     glfwSetCursorPosCallback(window, mouseMovedCallback);
 
-    HBITMAP hBtMpBall = LoadBitmap(NULL, MAKEINTRESOURCE(IDB_BITMAP1));
+    HMODULE module = NULL;
+    GetModuleHandleEx(
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+        (LPCTSTR)framebufferResizeCallback,
+        &module);
+    HBITMAP bitmap_handle = (HBITMAP)LoadImage(module, MAKEINTRESOURCE(IDB_BITMAP1), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+    BITMAP bitmap;
+    GetObject(bitmap_handle, sizeof(bitmap), (LPVOID)&bitmap);
+    uint8_t* bitmap_expanded = new uint8_t[bitmap.bmWidth * bitmap.bmHeight * 4];
+    for (size_t i = 0; i < bitmap.bmWidth * bitmap.bmHeight; ++i)
+    {
+        bitmap_expanded[(i * 4) + 0] = ((uint8_t*)bitmap.bmBits)[(i * 3) + 2];
+        bitmap_expanded[(i * 4) + 1] = ((uint8_t*)bitmap.bmBits)[(i * 3) + 1];
+        bitmap_expanded[(i * 4) + 2] = ((uint8_t*)bitmap.bmBits)[(i * 3) + 0];
+        bitmap_expanded[(i * 4) + 3] = 0xFF;
+    }
+    for (size_t y0 = 0, y1 = (bitmap.bmHeight - 1); y0 < bitmap.bmHeight / 2; ++y0, --y1)
+    {
+        for (size_t x = 0; x < bitmap.bmWidth; ++x)
+        {
+            size_t offset0 = ((y0 * bitmap.bmWidth) + x) * 4;
+            size_t offset1 = ((y1 * bitmap.bmWidth) + x) * 4;
+            uint8_t tmp[3];
+            memcpy(tmp, bitmap_expanded + offset0, 3);
+            memcpy(bitmap_expanded + offset0, bitmap_expanded + offset1, 3);
+            memcpy(bitmap_expanded + offset1, tmp, 3);
+        }
+    }
+    GLFWimage icons[1];
+    icons[0].pixels = bitmap_expanded;
+    icons[0].width = bitmap.bmWidth;
+    icons[0].height = bitmap.bmHeight;
+    glfwSetWindowIcon(window, 1, icons);
 
     glViewport(0, 0, width, height);
     configureImGui();

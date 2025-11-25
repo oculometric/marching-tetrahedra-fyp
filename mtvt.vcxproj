@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="res\resource.h" />
     <ClInclude Include="src\backface_image_raw.h" />
     <ClInclude Include="src\demo_functions.h" />
     <ClInclude Include="src\fbm.h" />
@@ -167,6 +168,14 @@
     <ClCompile Include="src\MTVT.cpp" />
     <ClCompile Include="src\obj_loader.cpp" />
     <ClCompile Include="src\stb.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="res\mtvt.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon2.bmp" />
+    <Image Include="res\icon2.bmp" />
+    <Image Include="res\icon2.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
