@@ -35,9 +35,12 @@ struct DebugStats
 };
 
 typedef uint32_t VertexRef;
+static constexpr VertexRef VERTEX_NULL = (VertexRef)-1;
 typedef uint16_t EdgeFlags;
 typedef size_t Index;
+static constexpr Index INDEX_NULL = (Index)-1;
 typedef uint8_t EdgeAddr;
+static constexpr EdgeAddr EDGE_NULL = (EdgeAddr)-1;
 
 struct Mesh
 {

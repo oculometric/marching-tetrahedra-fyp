@@ -17,7 +17,7 @@ MappedMesh bunny_mesh;
 
 int main()
 {
-    bool start_gui = false;
+    bool start_gui = true;
 
     if (start_gui)
     {

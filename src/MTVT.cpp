@@ -6,13 +6,8 @@
 #include <thread>
 #include <intrin.h>
 
-// TODO: reorganise PX/NX defines into enums
 // TODO: different lattice structures
 // TODO: different merging techniques
-
-#define VERTEX_NULL (VertexRef)-1
-#define INDEX_NULL (Index)-1
-#define EDGE_NULL (EdgeAddr)-1
 
 using namespace std;
 using namespace MTVT;
@@ -175,21 +170,47 @@ void Builder::destroyBuffers()
 
 // these are all the possible EdgeAddr values, the defines give them
 // readable names. specific to the diamond lattice pattern!
-#define PX 0
-#define NX 1
-#define PY 2
-#define NY 3
-#define PZ 4
-#define NZ 5
+enum EdgeAddrBCDL : EdgeAddr
+{
+    EDGE_BCDL_PX = 0,
+    EDGE_BCDL_NX = 1,
+    EDGE_BCDL_PY = 2,
+    EDGE_BCDL_NY = 3,
+    EDGE_BCDL_PZ = 4,
+    EDGE_BCDL_NZ = 5,
 
-#define PXPYPZ 6
-#define NXPYPZ 7
-#define PXNYPZ 8
-#define NXNYPZ 9
-#define PXPYNZ 10
-#define NXPYNZ 11
-#define PXNYNZ 12
-#define NXNYNZ 13
+    EDGE_BCDL_PXPYPZ = 6,
+    EDGE_BCDL_NXPYPZ = 7,
+    EDGE_BCDL_PXNYPZ = 8,
+    EDGE_BCDL_NXNYPZ = 9,
+    EDGE_BCDL_PXPYNZ = 10,
+    EDGE_BCDL_NXPYNZ = 11,
+    EDGE_BCDL_PXNYNZ = 12,
+    EDGE_BCDL_NXNYNZ = 13,
+
+    EDGE_BCDL_MAX = 14
+};
+
+enum EdgeFlagBCDL : EdgeFlags
+{
+    FLAG_BCDL_PX = (1 << EdgeAddrBCDL::EDGE_BCDL_PX),
+    FLAG_BCDL_NX = (1 << EdgeAddrBCDL::EDGE_BCDL_NX),
+    FLAG_BCDL_PY = (1 << EdgeAddrBCDL::EDGE_BCDL_PY),
+    FLAG_BCDL_NY = (1 << EdgeAddrBCDL::EDGE_BCDL_NY),
+    FLAG_BCDL_PZ = (1 << EdgeAddrBCDL::EDGE_BCDL_PZ),
+    FLAG_BCDL_NZ = (1 << EdgeAddrBCDL::EDGE_BCDL_NZ),
+
+    FLAG_BCDL_PXPYPZ = (1 << EdgeAddrBCDL::EDGE_BCDL_PXPYPZ),
+    FLAG_BCDL_NXPYPZ = (1 << EdgeAddrBCDL::EDGE_BCDL_NXPYPZ),
+    FLAG_BCDL_PXNYPZ = (1 << EdgeAddrBCDL::EDGE_BCDL_PXNYPZ),
+    FLAG_BCDL_NXNYPZ = (1 << EdgeAddrBCDL::EDGE_BCDL_NXNYPZ),
+    FLAG_BCDL_PXPYNZ = (1 << EdgeAddrBCDL::EDGE_BCDL_PXPYNZ),
+    FLAG_BCDL_NXPYNZ = (1 << EdgeAddrBCDL::EDGE_BCDL_NXPYNZ),
+    FLAG_BCDL_PXNYNZ = (1 << EdgeAddrBCDL::EDGE_BCDL_PXNYNZ),
+    FLAG_BCDL_NXNYNZ = (1 << EdgeAddrBCDL::EDGE_BCDL_NXNYNZ),
+
+    FLAG_BCDL_ALL = 0b0011111111111111
+};
 
 void Builder::populateIndexOffsets()
 {
@@ -200,56 +221,56 @@ void Builder::populateIndexOffsets()
     int s_hz = samples_y * s_y;
     int s_z = s_hz * 2;
 
-    index_offsets_evenz[PX] = 1;                    //  0 - 0b00000000 00000001 - +X
-    index_offsets_evenz[NX] = -1;                   //  1 - 0b00000000 00000010 - -X
-    index_offsets_evenz[PY] = s_y;                  //  2 - 0b00000000 00000100 - +Y
-    index_offsets_evenz[NY] = -s_y;                 //  3 - 0b00000000 00001000 - -Y
-    index_offsets_evenz[PZ] = s_z;                  //  4 - 0b00000000 00010000 - +Z
-    index_offsets_evenz[NZ] = -s_z;                 //  5 - 0b00000000 00100000 - -Z
+    index_offsets_evenz[EDGE_BCDL_PX] = 1;                    //  0 - 0b00000000 00000001 - +X
+    index_offsets_evenz[EDGE_BCDL_NX] = -1;                   //  1 - 0b00000000 00000010 - -X
+    index_offsets_evenz[EDGE_BCDL_PY] = s_y;                  //  2 - 0b00000000 00000100 - +Y
+    index_offsets_evenz[EDGE_BCDL_NY] = -s_y;                 //  3 - 0b00000000 00001000 - -Y
+    index_offsets_evenz[EDGE_BCDL_PZ] = s_z;                  //  4 - 0b00000000 00010000 - +Z
+    index_offsets_evenz[EDGE_BCDL_NZ] = -s_z;                 //  5 - 0b00000000 00100000 - -Z
 
-    index_offsets_evenz[PXPYPZ] = s_hz;             //  6 - 0b00000000 01000000 - +X+Y+Z
-    index_offsets_evenz[NXPYPZ] = s_hz - 1;         //  7 - 0b00000000 10000000 - -X+Y+Z
-    index_offsets_evenz[PXNYPZ] = s_hz - s_y;       //  8 - 0b00000001 00000000 - +X-Y+Z
-    index_offsets_evenz[NXNYPZ] = s_hz - s_y - 1;   //  9 - 0b00000010 00000000 - -X-Y+Z
-    index_offsets_evenz[PXPYNZ] = -s_hz;            // 10 - 0b00000100 00000000 - +X+Y-Z
-    index_offsets_evenz[NXPYNZ] = -s_hz - 1;        // 11 - 0b00001000 00000000 - -X+Y-Z
-    index_offsets_evenz[PXNYNZ] = -s_hz - s_y;      // 12 - 0b00010000 00000000 - +X-Y-Z
-    index_offsets_evenz[NXNYNZ] = -s_hz - s_y - 1;  // 13 - 0b00100000 00000000 - -X-Y-Z
+    index_offsets_evenz[EDGE_BCDL_PXPYPZ] = s_hz;             //  6 - 0b00000000 01000000 - +X+Y+Z
+    index_offsets_evenz[EDGE_BCDL_NXPYPZ] = s_hz - 1;         //  7 - 0b00000000 10000000 - -X+Y+Z
+    index_offsets_evenz[EDGE_BCDL_PXNYPZ] = s_hz - s_y;       //  8 - 0b00000001 00000000 - +X-Y+Z
+    index_offsets_evenz[EDGE_BCDL_NXNYPZ] = s_hz - s_y - 1;   //  9 - 0b00000010 00000000 - -X-Y+Z
+    index_offsets_evenz[EDGE_BCDL_PXPYNZ] = -s_hz;            // 10 - 0b00000100 00000000 - +X+Y-Z
+    index_offsets_evenz[EDGE_BCDL_NXPYNZ] = -s_hz - 1;        // 11 - 0b00001000 00000000 - -X+Y-Z
+    index_offsets_evenz[EDGE_BCDL_PXNYNZ] = -s_hz - s_y;      // 12 - 0b00010000 00000000 - +X-Y-Z
+    index_offsets_evenz[EDGE_BCDL_NXNYNZ] = -s_hz - s_y - 1;  // 13 - 0b00100000 00000000 - -X-Y-Z
 
-    index_offsets_oddz[PX] = index_offsets_evenz[PX];
-    index_offsets_oddz[NX] = index_offsets_evenz[NX];
-    index_offsets_oddz[PY] = index_offsets_evenz[PY];
-    index_offsets_oddz[NY] = index_offsets_evenz[NY];
-    index_offsets_oddz[PZ] = index_offsets_evenz[PZ];
-    index_offsets_oddz[NZ] = index_offsets_evenz[NZ];
+    index_offsets_oddz[EDGE_BCDL_PX] = index_offsets_evenz[EDGE_BCDL_PX];
+    index_offsets_oddz[EDGE_BCDL_NX] = index_offsets_evenz[EDGE_BCDL_NX];
+    index_offsets_oddz[EDGE_BCDL_PY] = index_offsets_evenz[EDGE_BCDL_PY];
+    index_offsets_oddz[EDGE_BCDL_NY] = index_offsets_evenz[EDGE_BCDL_NY];
+    index_offsets_oddz[EDGE_BCDL_PZ] = index_offsets_evenz[EDGE_BCDL_PZ];
+    index_offsets_oddz[EDGE_BCDL_NZ] = index_offsets_evenz[EDGE_BCDL_NZ];
 
-    index_offsets_oddz[PXPYPZ] = s_hz + s_y + 1;
-    index_offsets_oddz[NXPYPZ] = s_hz + s_y;
-    index_offsets_oddz[PXNYPZ] = s_hz + 1;
-    index_offsets_oddz[NXNYPZ] = s_hz;
-    index_offsets_oddz[PXPYNZ] = -s_hz + s_y + 1;
-    index_offsets_oddz[NXPYNZ] = -s_hz + s_y;
-    index_offsets_oddz[PXNYNZ] = -s_hz + 1;
-    index_offsets_oddz[NXNYNZ] = -s_hz;
+    index_offsets_oddz[EDGE_BCDL_PXPYPZ] = s_hz + s_y + 1;
+    index_offsets_oddz[EDGE_BCDL_NXPYPZ] = s_hz + s_y;
+    index_offsets_oddz[EDGE_BCDL_PXNYPZ] = s_hz + 1;
+    index_offsets_oddz[EDGE_BCDL_NXNYPZ] = s_hz;
+    index_offsets_oddz[EDGE_BCDL_PXPYNZ] = -s_hz + s_y + 1;
+    index_offsets_oddz[EDGE_BCDL_NXPYNZ] = -s_hz + s_y;
+    index_offsets_oddz[EDGE_BCDL_PXNYNZ] = -s_hz + 1;
+    index_offsets_oddz[EDGE_BCDL_NXNYNZ] = -s_hz;
 
     float step = resolution;
     float diag = step / 2;
 
-    vector_offsets[PX] = {  step, 0, 0 };
-    vector_offsets[NX] = { -step, 0, 0 };
-    vector_offsets[PY] = { 0,  step, 0 };
-    vector_offsets[NY] = { 0, -step, 0 };
-    vector_offsets[PZ] = { 0, 0,  step };
-    vector_offsets[NZ] = { 0, 0, -step };
+    vector_offsets[EDGE_BCDL_PX] = {  step, 0, 0 };
+    vector_offsets[EDGE_BCDL_NX] = { -step, 0, 0 };
+    vector_offsets[EDGE_BCDL_PY] = { 0,  step, 0 };
+    vector_offsets[EDGE_BCDL_NY] = { 0, -step, 0 };
+    vector_offsets[EDGE_BCDL_PZ] = { 0, 0,  step };
+    vector_offsets[EDGE_BCDL_NZ] = { 0, 0, -step };
 
-    vector_offsets[PXPYPZ] = {  diag,  diag,  diag };
-    vector_offsets[NXPYPZ] = { -diag,  diag,  diag };
-    vector_offsets[PXNYPZ] = {  diag, -diag,  diag };
-    vector_offsets[NXNYPZ] = { -diag, -diag,  diag };
-    vector_offsets[PXPYNZ] = {  diag,  diag, -diag };
-    vector_offsets[NXPYNZ] = { -diag,  diag, -diag };
-    vector_offsets[PXNYNZ] = {  diag, -diag, -diag };
-    vector_offsets[NXNYNZ] = { -diag, -diag, -diag };
+    vector_offsets[EDGE_BCDL_PXPYPZ] = {  diag,  diag,  diag };
+    vector_offsets[EDGE_BCDL_NXPYPZ] = { -diag,  diag,  diag };
+    vector_offsets[EDGE_BCDL_PXNYPZ] = {  diag, -diag,  diag };
+    vector_offsets[EDGE_BCDL_NXNYPZ] = { -diag, -diag,  diag };
+    vector_offsets[EDGE_BCDL_PXPYNZ] = {  diag,  diag, -diag };
+    vector_offsets[EDGE_BCDL_NXPYNZ] = { -diag,  diag, -diag };
+    vector_offsets[EDGE_BCDL_PXNYNZ] = {  diag, -diag, -diag };
+    vector_offsets[EDGE_BCDL_NXNYNZ] = { -diag, -diag, -diag };
 }
 
 void Builder::samplingPass()
@@ -305,43 +326,26 @@ inline Vector3 MTVT::Builder::clampToBounds(Vector3 v)
     return max(min(v, max_extent), min_extent);
 }
 
-// each entry defines the set of either 4 or 6 edges which are closest 
-// to the edge used to index the array
-static constexpr EdgeAddr edge_neighbour_addresses[14][6] =
-{
-    { PXPYPZ, PXNYPZ, PXPYNZ, PXNYNZ, EDGE_NULL },      // PX
-    { NXPYPZ, NXNYPZ, NXPYNZ, NXNYNZ, EDGE_NULL },      // NX
-    { PXPYPZ, NXPYPZ, PXPYNZ, NXPYNZ, EDGE_NULL },      // PY
-    { PXNYPZ, NXNYPZ, PXNYNZ, NXNYNZ, EDGE_NULL },      // NY
-    { PXPYPZ, NXPYPZ, PXNYPZ, NXNYPZ, EDGE_NULL },      // PZ
-    { PXPYNZ, NXPYNZ, PXNYNZ, NXNYNZ, EDGE_NULL },      // NZ
-    { PX,     PY,     PZ,     NXPYPZ, PXNYPZ, PXPYNZ }, // PXPYPZ
-    { NX,     PY,     PZ,     PXPYPZ, NXNYPZ, NXPYNZ }, // NXPYPZ
-    { PX,     NY,     PZ,     NXNYPZ, PXPYPZ, PXNYNZ }, // PXNYPZ
-    { NX,     NY,     PZ,     PXNYPZ, NXPYPZ, NXNYNZ }, // NXNYPZ
-    { PX,     PY,     NZ,     NXPYNZ, PXNYNZ, PXPYPZ }, // PXPYNZ
-    { NX,     PY,     NZ,     PXPYNZ, NXNYNZ, NXPYPZ }, // NXPYNZ
-    { PX,     NY,     NZ,     NXNYNZ, PXPYNZ, PXNYPZ }, // PXNYNZ
-    { NX,     NY,     NZ,     PXNYNZ, NXPYNZ, NXNYPZ }, // NXNYNZ
-};
-
-// essentially a bitmask version of the table above!
+// each entry defines the set of either 4 or 6 edges which are adjacent 
+// to the edge used to index the array, expressed as bitflags. used
+// to represent the graph of mergeable edges. this is essentailly a
+// template adjacency matrix
 static constexpr EdgeFlags edge_neighbour_masks[14] =
-{  // diag......perp..
-    0b0001010101000000,     // PX
-    0b0010101010000000,     // NX
-    0b0000110011000000,     // PY
-    0b0011001100000000,     // NY
-    0b0000001111000000,     // PZ
-    0b0011110000000000,     // NZ
-    0b0000010110010101,     // PXPYPZ
-    0b0000101001010110,     // NXPYPZ
-    0b0001001001011001,     // PXNYPZ
-    0b0010000110011010,     // NXNYPZ
-    0b0001100001100101,     // PXPYNZ
-    0b0010010010100110,     // NXPYNZ
-    0b0001101000101001,     // PXNYNZ
-   // diag......perp..
+{                                                                                                                                   // diag......perp..
+    FLAG_BCDL_PXPYPZ | FLAG_BCDL_PXNYPZ | FLAG_BCDL_PXPYNZ | FLAG_BCDL_PXNYNZ,                                       // PX         //0b0001010101000000,
+    FLAG_BCDL_NXPYPZ | FLAG_BCDL_NXNYPZ | FLAG_BCDL_NXPYNZ | FLAG_BCDL_NXNYNZ,                                       // NX         //0b0010101010000000,
+    FLAG_BCDL_PXPYPZ | FLAG_BCDL_NXPYPZ | FLAG_BCDL_PXPYNZ | FLAG_BCDL_NXPYNZ,                                       // PY         //0b0000110011000000,
+    FLAG_BCDL_PXNYPZ | FLAG_BCDL_NXNYPZ | FLAG_BCDL_PXNYNZ | FLAG_BCDL_NXNYNZ,                                       // NY         //0b0011001100000000,
+    FLAG_BCDL_PXPYPZ | FLAG_BCDL_NXPYPZ | FLAG_BCDL_PXNYPZ | FLAG_BCDL_NXNYPZ,                                       // PZ         //0b0000001111000000,
+    FLAG_BCDL_PXPYNZ | FLAG_BCDL_NXPYNZ | FLAG_BCDL_PXNYNZ | FLAG_BCDL_NXNYNZ,                                       // NZ         //0b0011110000000000,
+    FLAG_BCDL_PX     | FLAG_BCDL_PY     | FLAG_BCDL_PZ     | FLAG_BCDL_NXPYPZ | FLAG_BCDL_PXNYPZ | FLAG_BCDL_PXPYNZ, // PXPYPZ     //0b0000010110010101,
+    FLAG_BCDL_NX     | FLAG_BCDL_PY     | FLAG_BCDL_PZ     | FLAG_BCDL_PXPYPZ | FLAG_BCDL_NXNYPZ | FLAG_BCDL_NXPYNZ, // NXPYPZ     //0b0000101001010110,
+    FLAG_BCDL_PX     | FLAG_BCDL_NY     | FLAG_BCDL_PZ     | FLAG_BCDL_NXNYPZ | FLAG_BCDL_PXPYPZ | FLAG_BCDL_PXNYNZ, // PXNYPZ     //0b0001001001011001,
+    FLAG_BCDL_NX     | FLAG_BCDL_NY     | FLAG_BCDL_PZ     | FLAG_BCDL_PXNYPZ | FLAG_BCDL_NXPYPZ | FLAG_BCDL_NXNYNZ, // NXNYPZ     //0b0010000110011010,
+    FLAG_BCDL_PX     | FLAG_BCDL_PY     | FLAG_BCDL_NZ     | FLAG_BCDL_NXPYNZ | FLAG_BCDL_PXNYNZ | FLAG_BCDL_PXPYPZ, // PXPYNZ     //0b0001100001100101,
+    FLAG_BCDL_NX     | FLAG_BCDL_PY     | FLAG_BCDL_NZ     | FLAG_BCDL_PXPYNZ | FLAG_BCDL_NXNYNZ | FLAG_BCDL_NXPYPZ, // NXPYNZ     //0b0010010010100110,
+    FLAG_BCDL_PX     | FLAG_BCDL_NY     | FLAG_BCDL_NZ     | FLAG_BCDL_NXNYNZ | FLAG_BCDL_PXPYNZ | FLAG_BCDL_PXNYPZ, // PXNYNZ     //0b0001101000101001,
+    FLAG_BCDL_NX     | FLAG_BCDL_NY     | FLAG_BCDL_NZ     | FLAG_BCDL_PXNYNZ | FLAG_BCDL_NXPYNZ | FLAG_BCDL_NXNYPZ, // NXNYNZ      // diag......perp..
 };
 
 static inline uint8_t fastBitCount(EdgeFlags val)
@@ -574,95 +578,96 @@ void Builder::vertexPass()
                 // on the outer faces of the sample cube as the outermost points
                 // do not have neighbours in that face's direction (i.e. these
                 // indices would be invalid)
+                // FIXME: could we do this faster with bitflags??-------------------------------->
                 if (is_min_z)
                 {
-                    connected_indices[NZ] = INDEX_NULL;
+                    connected_indices[EDGE_BCDL_NZ] = INDEX_NULL;
                     if (!is_odd_z)
                     {
-                        connected_indices[PX] = INDEX_NULL;
-                        connected_indices[NX] = INDEX_NULL;
-                        connected_indices[PY] = INDEX_NULL;
-                        connected_indices[NY] = INDEX_NULL;
-                        connected_indices[PXPYNZ] = INDEX_NULL;
-                        connected_indices[NXPYNZ] = INDEX_NULL;
-                        connected_indices[PXNYNZ] = INDEX_NULL;
-                        connected_indices[NXNYNZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PX] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NX] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PY] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NY] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PXPYNZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NXPYNZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PXNYNZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NXNYNZ] = INDEX_NULL;
                     }
                 }
                 if (is_min_y)
                 {
-                    connected_indices[NY] = INDEX_NULL;
+                    connected_indices[EDGE_BCDL_NY] = INDEX_NULL;
                     
                     if (!is_odd_z)
                     {
-                        connected_indices[PX] = INDEX_NULL;
-                        connected_indices[NX] = INDEX_NULL;
-                        connected_indices[PZ] = INDEX_NULL;
-                        connected_indices[NZ] = INDEX_NULL;
-                        connected_indices[PXNYPZ] = INDEX_NULL;
-                        connected_indices[NXNYPZ] = INDEX_NULL;
-                        connected_indices[PXNYNZ] = INDEX_NULL;
-                        connected_indices[NXNYNZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PX] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NX] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PXNYPZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NXNYPZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PXNYNZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NXNYNZ] = INDEX_NULL;
                     }
                 }
                 if (is_min_x)
                 {
-                    connected_indices[NX] = INDEX_NULL;
+                    connected_indices[EDGE_BCDL_NX] = INDEX_NULL;
                     if (!is_odd_z)
                     {
-                        connected_indices[PY] = INDEX_NULL;
-                        connected_indices[NY] = INDEX_NULL;
-                        connected_indices[PZ] = INDEX_NULL;
-                        connected_indices[NZ] = INDEX_NULL;
-                        connected_indices[NXPYPZ] = INDEX_NULL;
-                        connected_indices[NXNYPZ] = INDEX_NULL;
-                        connected_indices[NXPYNZ] = INDEX_NULL;
-                        connected_indices[NXNYNZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PY] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NY] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NXPYPZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NXNYPZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NXPYNZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NXNYNZ] = INDEX_NULL;
                     }
                 }
                 if (is_max_z)
                 {
-                    connected_indices[PZ] = INDEX_NULL;
+                    connected_indices[EDGE_BCDL_PZ] = INDEX_NULL;
                     if (!is_odd_z)
                     {
-                        connected_indices[PX] = INDEX_NULL;
-                        connected_indices[NX] = INDEX_NULL;
-                        connected_indices[PY] = INDEX_NULL;
-                        connected_indices[NY] = INDEX_NULL;
-                        connected_indices[PXPYPZ] = INDEX_NULL;
-                        connected_indices[NXPYPZ] = INDEX_NULL;
-                        connected_indices[PXNYPZ] = INDEX_NULL;
-                        connected_indices[NXNYPZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PX] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NX] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PY] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NY] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PXPYPZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NXPYPZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PXNYPZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NXNYPZ] = INDEX_NULL;
                     }
                 }
                 if (is_max_y)
                 {
-                    connected_indices[PY] = INDEX_NULL;
+                    connected_indices[EDGE_BCDL_PY] = INDEX_NULL;
                     if (!is_odd_z)
                     {
-                        connected_indices[PX] = INDEX_NULL;
-                        connected_indices[NX] = INDEX_NULL;
-                        connected_indices[PZ] = INDEX_NULL;
-                        connected_indices[NZ] = INDEX_NULL;
-                        connected_indices[PXPYPZ] = INDEX_NULL;
-                        connected_indices[NXPYPZ] = INDEX_NULL;
-                        connected_indices[PXPYNZ] = INDEX_NULL;
-                        connected_indices[NXPYNZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PX] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NX] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PXPYPZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NXPYPZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PXPYNZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NXPYNZ] = INDEX_NULL;
                     }
                 }
                 if (is_max_x)
                 {
-                    connected_indices[PX] = INDEX_NULL;
+                    connected_indices[EDGE_BCDL_PX] = INDEX_NULL;
                     if (!is_odd_z)
                     {
-                        connected_indices[PY] = INDEX_NULL;
-                        connected_indices[NY] = INDEX_NULL;
-                        connected_indices[PZ] = INDEX_NULL;
-                        connected_indices[NZ] = INDEX_NULL;
-                        connected_indices[PXPYPZ] = INDEX_NULL;
-                        connected_indices[PXNYPZ] = INDEX_NULL;
-                        connected_indices[PXPYNZ] = INDEX_NULL;
-                        connected_indices[PXNYNZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PY] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NY] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_NZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PXPYPZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PXNYPZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PXPYNZ] = INDEX_NULL;
+                        connected_indices[EDGE_BCDL_PXNYNZ] = INDEX_NULL;
                     }
                 }
 
@@ -686,7 +691,7 @@ void Builder::vertexPass()
                 bool thresh_less = thresh_dist < 0.0f;
                 if (thresh_less) thresh_dist = -thresh_dist;
                 EdgeFlags mask = 1;
-                for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
+                for (EdgeAddr p = 0; p < EDGE_BCDL_MAX; ++p, mask <<= 1)
                 {
                     if (connected_indices[p] == INDEX_NULL)
                         continue;
@@ -852,35 +857,35 @@ void Builder::vertexPass()
 static constexpr EdgeAddr tetrahedra_sample_index_templates[24][3] =
 {
     // +x side
-    { PX, PXNYPZ, PXNYNZ },
-    { PX, PXNYNZ, PXPYNZ },
-    { PX, PXPYNZ, PXPYPZ },
-    { PX, PXPYPZ, PXNYPZ },
+    { EDGE_BCDL_PX, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXNYNZ },
+    { EDGE_BCDL_PX, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXPYNZ },
+    { EDGE_BCDL_PX, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXPYPZ },
+    { EDGE_BCDL_PX, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXNYPZ },
     // -x side
-    { NX, NXPYPZ, NXPYNZ },
-    { NX, NXPYNZ, NXNYNZ },
-    { NX, NXNYNZ, NXNYPZ },
-    { NX, NXNYPZ, NXPYPZ },
+    { EDGE_BCDL_NX, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXPYNZ },
+    { EDGE_BCDL_NX, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXNYNZ },
+    { EDGE_BCDL_NX, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXNYPZ },
+    { EDGE_BCDL_NX, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXPYPZ },
     // +y side
-    { PY, PXPYPZ, PXPYNZ },
-    { PY, PXPYNZ, NXPYNZ },
-    { PY, NXPYNZ, NXPYPZ },
-    { PY, NXPYPZ, PXPYPZ },
+    { EDGE_BCDL_PY, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXPYNZ },
+    { EDGE_BCDL_PY, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NXPYNZ },
+    { EDGE_BCDL_PY, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXPYPZ },
+    { EDGE_BCDL_PY, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PXPYPZ },
     // -y side
-    { NY, NXNYPZ, NXNYNZ },
-    { NY, NXNYNZ, PXNYNZ },
-    { NY, PXNYNZ, PXNYPZ },
-    { NY, PXNYPZ, NXNYPZ },
+    { EDGE_BCDL_NY, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXNYNZ },
+    { EDGE_BCDL_NY, EDGE_BCDL_NXNYNZ, EDGE_BCDL_PXNYNZ },
+    { EDGE_BCDL_NY, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXNYPZ },
+    { EDGE_BCDL_NY, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NXNYPZ },
     // +z side
-    { PZ, NXPYPZ, NXNYPZ },
-    { PZ, NXNYPZ, PXNYPZ },
-    { PZ, PXNYPZ, PXPYPZ },
-    { PZ, PXPYPZ, NXPYPZ },
+    { EDGE_BCDL_PZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXNYPZ },
+    { EDGE_BCDL_PZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PXNYPZ },
+    { EDGE_BCDL_PZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXPYPZ },
+    { EDGE_BCDL_PZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_NXPYPZ },
     // -z side
-    { NZ, NXNYNZ, NXPYNZ },
-    { NZ, NXPYNZ, PXPYNZ },
-    { NZ, PXPYNZ, PXNYNZ },
-    { NZ, PXNYNZ, NXNYNZ },
+    { EDGE_BCDL_NZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXPYNZ },
+    { EDGE_BCDL_NZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PXPYNZ },
+    { EDGE_BCDL_NZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXNYNZ },
+    { EDGE_BCDL_NZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NXNYNZ },
 };
 
 // each pair of entries defines which of the four sample points involved with a tetrahedron
@@ -907,35 +912,35 @@ static constexpr uint8_t tetrahedra_edge_sample_point_indices[12] =
 static constexpr EdgeAddr tetrahedra_edge_address_templates[24][6] =
 {
     // +x side
-    { PX, PXNYPZ, PXNYNZ, NXNYPZ, NXNYNZ, NZ },
-    { PX, PXNYNZ, PXPYNZ, NXNYNZ, NXPYNZ, PY },
-    { PX, PXPYNZ, PXPYPZ, NXPYNZ, NXPYPZ, PZ },
-    { PX, PXPYPZ, PXNYPZ, NXPYPZ, NXNYPZ, NY },
+    { EDGE_BCDL_PX, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NZ },
+    { EDGE_BCDL_PX, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PY },
+    { EDGE_BCDL_PX, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PZ },
+    { EDGE_BCDL_PX, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NY },
     // -x side
-    { NX, NXPYPZ, NXPYNZ, PXPYPZ, PXPYNZ, NZ },
-    { NX, NXPYNZ, NXNYNZ, PXPYNZ, PXNYNZ, NY },
-    { NX, NXNYNZ, NXNYPZ, PXNYNZ, PXNYPZ, PZ },
-    { NX, NXNYPZ, NXPYPZ, PXNYPZ, PXPYPZ, PY },
+    { EDGE_BCDL_NX, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NZ },
+    { EDGE_BCDL_NX, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NY },
+    { EDGE_BCDL_NX, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PZ },
+    { EDGE_BCDL_NX, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PY },
     // +y side
-    { PY, PXPYPZ, PXPYNZ, PXNYPZ, PXNYNZ, NZ },
-    { PY, PXPYNZ, NXPYNZ, PXNYNZ, NXNYNZ, NX },
-    { PY, NXPYNZ, NXPYPZ, NXNYNZ, NXNYPZ, PZ },
-    { PY, NXPYPZ, PXPYPZ, NXNYPZ, PXNYPZ, PX },
+    { EDGE_BCDL_PY, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NZ },
+    { EDGE_BCDL_PY, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NX },
+    { EDGE_BCDL_PY, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PZ },
+    { EDGE_BCDL_PY, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PX },
     // -y side
-    { NY, NXNYPZ, NXNYNZ, NXPYPZ, NXPYNZ, NZ },
-    { NY, NXNYNZ, PXNYNZ, NXPYNZ, PXPYNZ, PX },
-    { NY, PXNYNZ, PXNYPZ, PXPYNZ, PXPYPZ, PZ },
-    { NY, PXNYPZ, NXNYPZ, PXPYPZ, NXPYPZ, NX },
+    { EDGE_BCDL_NY, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NZ },
+    { EDGE_BCDL_NY, EDGE_BCDL_NXNYNZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PX },
+    { EDGE_BCDL_NY, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PZ },
+    { EDGE_BCDL_NY, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NX },
     // +z side
-    { PZ, NXPYPZ, NXNYPZ, NXPYNZ, NXNYNZ, NY },
-    { PZ, NXNYPZ, PXNYPZ, NXNYNZ, PXNYNZ, PX },
-    { PZ, PXNYPZ, PXPYPZ, PXNYNZ, PXPYNZ, PY },
-    { PZ, PXPYPZ, NXPYPZ, PXPYNZ, NXPYNZ, NX },
+    { EDGE_BCDL_PZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NY },
+    { EDGE_BCDL_PZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PX },
+    { EDGE_BCDL_PZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PY },
+    { EDGE_BCDL_PZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NX },
     // -z side
-    { NZ, NXNYNZ, NXPYNZ, NXNYPZ, NXPYPZ, PY },
-    { NZ, NXPYNZ, PXPYNZ, NXPYPZ, PXPYPZ, PX },
-    { NZ, PXPYNZ, PXNYNZ, PXPYPZ, PXNYPZ, NY },
-    { NZ, PXNYNZ, NXNYNZ, PXNYPZ, NXNYPZ, NX }
+    { EDGE_BCDL_NZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PY },
+    { EDGE_BCDL_NZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PX },
+    { EDGE_BCDL_NZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NY },
+    { EDGE_BCDL_NZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NX }
 };
 
 // look up table for the geometry patterns for different tetrahedra configurations
