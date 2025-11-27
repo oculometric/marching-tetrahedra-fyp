@@ -6,6 +6,10 @@
 #include <thread>
 #include <intrin.h>
 
+// TODO: reorganise PX/NX defines into enums
+// TODO: different lattice structures
+// TODO: different merging techniques
+
 #define VERTEX_NULL (VertexRef)-1
 #define INDEX_NULL (Index)-1
 #define EDGE_NULL (EdgeAddr)-1
@@ -118,7 +122,7 @@ Mesh Builder::generate(DebugStats& stats)
     stats.cubes_y                   = cubes_y;
     stats.cubes_z                   = cubes_z;
     stats.min_sample_points         = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 2, 3, 1, 1);
-    stats.mem_sample_points         = sizeof(float) * grid_data_length;
+    stats.mem_sample_points         = sizeof(SampleValue) * grid_data_length;
 #if defined DEBUG_GRID
     stats.mem_sample_points        += sizeof(Vector3) * grid_data_length;
 #endif
@@ -151,7 +155,7 @@ Mesh Builder::generate(DebugStats& stats)
 
 void Builder::prepareBuffers()
 {
-    sample_values = new float[grid_data_length];
+    sample_values = new SampleValue[grid_data_length];
 #if defined DEBUG_GRID
     sample_positions = new Vector3[grid_data_length];
 #endif
@@ -281,7 +285,8 @@ void MTVT::Builder::samplingLayer(const int start, const int layers)
             for (int xi = 0; xi < samples_x; ++xi)
             {
                 // i tested logic for skipping out points whose values will never be used, but it was actually less efficient!
-                sample_values[index] = sampler(position);
+                float value = sampler(position);
+                sample_values[index] = { value };
 #if defined DEBUG_GRID
                 sample_positions[index] = position;
 #endif
@@ -664,7 +669,8 @@ void Builder::vertexPass()
                 // grab useful data about ourself
                 EdgeFlags edge_proximity_flags = 0;
                 EdgeFlags edge_crossing_flags = 0;
-                float value = sample_values[index];
+                SampleValue sample_value = sample_values[index];
+                float value = sample_value.value;
                 float thresh_diff = threshold - value;
                 float neighbour_values[14];
 
@@ -685,15 +691,15 @@ void Builder::vertexPass()
                     if (connected_indices[p] == INDEX_NULL)
                         continue;
 
-                    float value_at_neighbour = sample_values[connected_indices[p]];
-                    float neighbour_dist = threshold - value_at_neighbour;
+                    SampleValue value_at_neighbour = sample_values[connected_indices[p]];
+                    float neighbour_dist = threshold - value_at_neighbour.value;
                     if ((neighbour_dist < 0.0f) == thresh_less)
                         continue;
                     edge_crossing_flags |= mask;
 
                     if (thresh_dist > (thresh_less ? neighbour_dist : -neighbour_dist))
                         continue;
-                    neighbour_values[p] = value_at_neighbour;
+                    neighbour_values[p] = value_at_neighbour.value;
                     edge_proximity_flags |= mask;
                 }
                 sample_crossing_flags[index] = edge_crossing_flags;
@@ -987,7 +993,7 @@ void Builder::geometryPass()
                 for (int e = 0; e < 14; ++e)
                     connected_indices[e] = central_sample_index + index_offsets_evenz[e];
 
-                const bool center_greater_thresh = (sample_values[central_sample_index] > threshold);
+                const bool center_greater_thresh = (sample_values[central_sample_index].value > threshold);
 
                 // skip out some tetrahedra depending where we are in the lattice,
                 // otherwise we'll be marching lots of tetrahedra twice over
@@ -1173,6 +1179,3 @@ void Builder::computeVertexNormals()
     for (Vector3& normal : normals)
         normal = norm(normal);
 }
-
-// TODO: different lattice structures
-// TODO: different merging techniques

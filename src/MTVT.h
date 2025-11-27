@@ -63,6 +63,11 @@ public:
     };
 
 private:
+    struct SampleValue
+    {
+        float value;
+    };
+
     struct EdgeReferences
     {
         VertexRef references[14];
@@ -86,7 +91,7 @@ private:
     int index_offsets_oddz[14];
     Vector3 vector_offsets[14];
 
-    float* sample_values = nullptr;
+    SampleValue* sample_values = nullptr;
 #if defined DEBUG_GRID
     Vector3* sample_positions = nullptr;
 #endif

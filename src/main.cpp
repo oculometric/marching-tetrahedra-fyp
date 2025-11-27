@@ -17,25 +17,28 @@ MappedMesh bunny_mesh;
 
 int main()
 {
-    GraphicsEnv graphics;
-    graphics.create(1024, 1024);
+    bool start_gui = false;
 
-    auto result = runBenchmark("realtime test", 1, { -1, -1, -1 }, { 1, 1, 1 }, 0.2f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
-    graphics.setSummary(result.first);
-    graphics.setMesh(result.second, { 0, 0, 0 });
-
-    while (graphics.draw())
+    if (start_gui)
     {
+        GraphicsEnv graphics;
+        graphics.create(1024, 1024);
 
+        auto result = runBenchmark("realtime test", 1, { -1, -1, -1 }, { 1, 1, 1 }, 0.05f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
+        graphics.setSummary(result.first);
+        graphics.setMesh(result.second, { 0, 0, 0 });
+
+        while (graphics.draw());
+
+        graphics.destroy();
     }
-
-    graphics.destroy();
-
-    return 2;
-
-
-
-
+    else
+    {
+        auto result = runBenchmark("fbm", 50, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
+        printBenchmarkSummary(result.first);
+        result = runBenchmark("sphere", 50, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, sphereFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
+        printBenchmarkSummary(result.first);
+    }
     
 
     //csv_file += runBenchmark("sphere", 10, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f, Builder::BODY_CENTERED_DIAMOND, Builder::NONE, 8);
@@ -44,11 +47,6 @@ int main()
     //csv_file += runBenchmark("fbm", 10, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
     //csv_file += runBenchmark("bump", 10, { -4, -4, -4 }, { 4, 4, 4 }, 0.08f, [](Vector3 v) { return (1.0f / ((v.x * v.x) + (v.y * v.y) + 1)) - v.z; }, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::NONE, 8);
     //csv_file += runBenchmark("bump", 10, { -4, -4, -4 }, { 4, 4, 4 }, 0.08f, [](Vector3 v) { return (1.0f / ((v.x * v.x) + (v.y * v.y) + 1)) - v.z; }, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
-    //
-    //runBenchmark("fbm1", 10, { -1, -1, -1 }, { -0.5f, 1, 1 }, 0.02f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
-    //runBenchmark("fbm2", 10, { -0.5f, -1, -1 }, { 0, 1, 1 }, 0.02f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
-    //runBenchmark("fbm3", 10, { 0, -1, -1 }, { 0.5f, 1, 1 }, 0.02f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
-    //runBenchmark("fbm4", 10, { 0.5f, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
     //
     /*bunny_mesh.load("res/stanford_bunny/bunny_touchup.obj");
 
