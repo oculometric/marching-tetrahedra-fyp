@@ -730,7 +730,7 @@ void GraphicsEnv::drawImGui()
                 renderGIF();
         }
 
-        if (ImGui::CollapsingHeader("OBJ export", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+        if (ImGui::CollapsingHeader("OBJ exporter", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
         {
 
         }
