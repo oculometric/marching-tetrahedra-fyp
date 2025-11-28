@@ -545,6 +545,12 @@ void Builder::vertexPass()
                     continue;
                 }
                 bool is_min_x = xi <= 0;
+                uint8_t min_max_bits = (is_min_x ? 0b0000001 : 0)
+                                     | (is_max_x ? 0b0000010 : 0)
+                                     | (is_min_y ? 0b0000100 : 0)
+                                     | (is_max_y ? 0b0001000 : 0)
+                                     | (is_min_z ? 0b0010000 : 0)
+                                     | (is_max_z ? 0b0100000 : 0);
                 if (!is_odd_z)
                 {
                     int num_edges = 0;
@@ -578,96 +584,73 @@ void Builder::vertexPass()
                 // on the outer faces of the sample cube as the outermost points
                 // do not have neighbours in that face's direction (i.e. these
                 // indices would be invalid)
-                // FIXME: could we do this faster with bitflags??-------------------------------->
-                if (is_min_z)
+                EdgeFlags checkable_edges = FLAG_BCDL_ALL;
                 {
-                    connected_indices[EDGE_BCDL_NZ] = INDEX_NULL;
-                    if (!is_odd_z)
+                    if (is_min_z)
                     {
-                        connected_indices[EDGE_BCDL_PX] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NX] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PY] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NY] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PXPYNZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NXPYNZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PXNYNZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NXNYNZ] = INDEX_NULL;
+                        checkable_edges ^= FLAG_BCDL_NZ;
+                        if (!is_odd_z)
+                        {
+                            checkable_edges ^= (FLAG_BCDL_PX | FLAG_BCDL_NX |
+                                FLAG_BCDL_PY | FLAG_BCDL_NY |
+                                FLAG_BCDL_PXPYNZ | FLAG_BCDL_NXPYNZ |
+                                FLAG_BCDL_PXNYNZ | FLAG_BCDL_NXNYNZ);
+                        }
                     }
-                }
-                if (is_min_y)
-                {
-                    connected_indices[EDGE_BCDL_NY] = INDEX_NULL;
-                    
-                    if (!is_odd_z)
+                    if (is_min_y)
                     {
-                        connected_indices[EDGE_BCDL_PX] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NX] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PXNYPZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NXNYPZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PXNYNZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NXNYNZ] = INDEX_NULL;
+                        checkable_edges ^= FLAG_BCDL_NY;
+                        if (!is_odd_z)
+                        {
+                            checkable_edges ^= (FLAG_BCDL_PX | FLAG_BCDL_NX |
+                                FLAG_BCDL_PZ | FLAG_BCDL_NZ |
+                                FLAG_BCDL_PXNYPZ | FLAG_BCDL_NXNYPZ |
+                                FLAG_BCDL_PXNYNZ | FLAG_BCDL_NXNYNZ);
+                        }
                     }
-                }
-                if (is_min_x)
-                {
-                    connected_indices[EDGE_BCDL_NX] = INDEX_NULL;
-                    if (!is_odd_z)
+                    if (is_min_x)
                     {
-                        connected_indices[EDGE_BCDL_PY] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NY] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NXPYPZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NXNYPZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NXPYNZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NXNYNZ] = INDEX_NULL;
+                        checkable_edges ^= FLAG_BCDL_NX;
+                        if (!is_odd_z)
+                        {
+                            checkable_edges ^= (FLAG_BCDL_PY | FLAG_BCDL_NY |
+                                FLAG_BCDL_PZ | FLAG_BCDL_NZ |
+                                FLAG_BCDL_NXPYPZ | FLAG_BCDL_NXNYPZ |
+                                FLAG_BCDL_NXPYNZ | FLAG_BCDL_NXNYNZ);
+                        }
                     }
-                }
-                if (is_max_z)
-                {
-                    connected_indices[EDGE_BCDL_PZ] = INDEX_NULL;
-                    if (!is_odd_z)
+                    if (is_max_z)
                     {
-                        connected_indices[EDGE_BCDL_PX] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NX] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PY] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NY] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PXPYPZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NXPYPZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PXNYPZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NXNYPZ] = INDEX_NULL;
+                        checkable_edges ^= FLAG_BCDL_PZ;
+                        if (!is_odd_z)
+                        {
+                            checkable_edges ^= (FLAG_BCDL_PX | FLAG_BCDL_NX |
+                                FLAG_BCDL_PY | FLAG_BCDL_NY |
+                                FLAG_BCDL_PXPYPZ | FLAG_BCDL_NXPYPZ |
+                                FLAG_BCDL_PXNYPZ | FLAG_BCDL_NXNYPZ);
+                        }
                     }
-                }
-                if (is_max_y)
-                {
-                    connected_indices[EDGE_BCDL_PY] = INDEX_NULL;
-                    if (!is_odd_z)
+                    if (is_max_y)
                     {
-                        connected_indices[EDGE_BCDL_PX] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NX] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PXPYPZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NXPYPZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PXPYNZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NXPYNZ] = INDEX_NULL;
+                        checkable_edges ^= FLAG_BCDL_PY;
+                        if (!is_odd_z)
+                        {
+                            checkable_edges ^= (FLAG_BCDL_PX | FLAG_BCDL_NX |
+                                FLAG_BCDL_PZ | FLAG_BCDL_NZ |
+                                FLAG_BCDL_PXPYPZ | FLAG_BCDL_NXPYPZ |
+                                FLAG_BCDL_PXPYNZ | FLAG_BCDL_NXPYNZ);
+                        }
                     }
-                }
-                if (is_max_x)
-                {
-                    connected_indices[EDGE_BCDL_PX] = INDEX_NULL;
-                    if (!is_odd_z)
+                    if (is_max_x)
                     {
-                        connected_indices[EDGE_BCDL_PY] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NY] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_NZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PXPYPZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PXNYPZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PXPYNZ] = INDEX_NULL;
-                        connected_indices[EDGE_BCDL_PXNYNZ] = INDEX_NULL;
+                        checkable_edges ^= FLAG_BCDL_PX;
+                        if (!is_odd_z)
+                        {
+                            checkable_edges ^= (FLAG_BCDL_PY | FLAG_BCDL_NY |
+                                FLAG_BCDL_PZ | FLAG_BCDL_NZ |
+                                FLAG_BCDL_PXPYPZ | FLAG_BCDL_PXNYPZ |
+                                FLAG_BCDL_PXPYNZ | FLAG_BCDL_PXNYNZ);
+                        }
                     }
                 }
 
@@ -693,7 +676,7 @@ void Builder::vertexPass()
                 EdgeFlags mask = 1;
                 for (EdgeAddr p = 0; p < EDGE_BCDL_MAX; ++p, mask <<= 1)
                 {
-                    if (connected_indices[p] == INDEX_NULL)
+                    if (!(checkable_edges & mask))
                         continue;
 
                     SampleValue value_at_neighbour = sample_values[connected_indices[p]];
