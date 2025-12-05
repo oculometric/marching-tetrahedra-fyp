@@ -8,10 +8,7 @@ kanban-plugin: board
 
 - [ ] [sample lit review](https://www.researchgate.net/profile/Faizan-Hussain-2/publication/348917348_Unity_Game_Development_Engine_A_Technical_Survey/links/60167daf45851517ef2b2c0d/Unity-Game-Development-Engine-A-Technical-Survey.pdf)
 - [ ] [Dual Marching Tetrahedra (2008)](https://www.researchgate.net/publication/220845354_Dual_Marching_Tetrahedra_Contouring_in_the_Tetrahedronal_Environment)
-- [ ] [large isosurface simplification (2016)](https://link.springer.com/article/10.1007/s12650-016-0359-5) [[large isosurface simplification 2016.pdf]]
-- [ ] [[mesh simplification comparison.pdf]] [A comparison of mesh simplification algorithms (1998)](https://www.sciencedirect.com/science/article/abs/pii/S0097849397000824)
 - [ ] blender's dynamic topology
-- [ ] [octree-based dual contouring (2014)](https://link.springer.com/article/10.1007/s00366-013-0328-8) [[octree dual contouring 2013.pdf]]
 - [ ] [Occupancy-Based Dual Contouring (2024)](https://dl.acm.org/doi/full/10.1145/3680528.3687581)
 - [ ] [more octree dual contouring](https://ngildea.blogspot.com/2014/11/implementing-dual-contouring.html)
 
@@ -57,6 +54,9 @@ kanban-plugin: board
 - [ ] [Tetrahedral grid refinement (1995)](https://link.springer.com/article/10.1007/BF02238487) [[Tetrahedral grid refinement 1995.pdf]] -> [[miscellaneous notes]]
 - [ ] [An elaborate ambiguity detection method for constructing isosurfaces within tetrahedral meshes (1995)](https://www.sciencedirect.com/science/article/abs/pii/009784939500006X) [[ambiguity detection within tetrahedral meshes 1995.pdf]] -> [[miscellaneous notes]]
 - [ ] [Exploiting triangulated surface extraction using tetrahedral decomposition (1995)](https://ieeexplore.ieee.org/document/485620) [[triangulated surface extraction using tetrahedral decomposition 1995.pdf]] -> [[miscellaneous notes]]
+- [ ] [octree-based dual contouring (2014)](https://link.springer.com/article/10.1007/s00366-013-0328-8) [[octree dual contouring 2013.pdf]] -> [[miscellaneous notes]]
+- [ ] [large isosurface simplification (2016)](https://link.springer.com/article/10.1007/s12650-016-0359-5) [[large isosurface simplification 2016.pdf]] -> [[simplification notes]]
+- [ ] [[mesh simplification comparison.pdf]] [A comparison of mesh simplification algorithms (1998)](https://www.sciencedirect.com/science/article/abs/pii/S0097849397000824) -> [[simplification notes]]
 
 
 ## discarded

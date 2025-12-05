@@ -92,3 +92,8 @@ works on the simple-cubic-5-irregular tessellation. addresses the ambiguity prob
 ## Exploiting Triangulated Surface Extraction Using Tetrahedral Decomposition
 link - https://ieeexplore.ieee.org/document/485620
 represents the surface with something something... surface graph, stored per tetrahedron... six edges in each cell between 5 tetrahedra, no tetrahedron ever contains more than one vertex. they use a simplification algorithm which i guess is faster since its a graph with edges (i.e. we don't have to n^2 the vertices).
+
+## An octree-based dual contouring method for triangular and tetrahedral mesh generation with guaranteed angle range
+link - https://link.springer.com/article/10.1007/s00366-013-0328-8
+mentions **octree-based**, **delaunay-based**, and **advancing front**. works by recursively, conditionally subdividing an octree grid. then the corners of the octree grid are adjusted to either place them on the contour, or reasonably far from the surface (half the grid size). then triangles are constructed using a dual contouring approach. limits the dihedral angle (angle between faces), and produces geometry with triangle density dependent on curvature/detail. may generate extremely high density geometry in order to replicate the original data topology.
+HAS SOME USEFUL REFERENCES TO OTHER TECHNIQUES! MAYBE COME BACK TO THIS
