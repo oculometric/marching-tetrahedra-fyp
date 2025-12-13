@@ -61,6 +61,26 @@
               "icon": "lucide-trello",
               "title": "task board"
             }
+          },
+          {
+            "id": "61e4c19b0ae78350",
+            "type": "leaf",
+            "state": {
+              "type": "kanban",
+              "state": {
+                "file": "doc/development todos.md",
+                "kanbanViewState": {
+                  "kanban-plugin": "board",
+                  "list-collapse": [
+                    false,
+                    false,
+                    false
+                  ]
+                }
+              },
+              "icon": "lucide-trello",
+              "title": "development todos"
+            }
           }
         ]
       }
@@ -210,19 +230,20 @@
   },
   "active": "bf840b46f3fa0349",
   "lastOpenFiles": [
-    "doc/task board.md",
-    "doc/papers/mesh simplification comparison.pdf",
     "doc/research notes/simplification notes.md",
-    "doc/research notes/simplification table.png.~tmp",
-    "doc/research notes/simplification table.png",
+    "doc/papers/External_memory_management_and_simplification_of_huge_meshes.pdf",
+    "doc/task board.md",
     "doc/research kanban.md",
     "doc/papers/large isosurface simplification 2016.pdf",
+    "doc/development todos.md",
+    "doc/papers/mesh simplification comparison.pdf",
+    "doc/research notes/simplification table.png.~tmp",
+    "doc/research notes/simplification table.png",
     "doc/research notes/annoyingly fast simplification.png",
     "doc/research notes/simplified bunny.png",
     "doc/research notes/on the fly simplification.png",
     "doc/research notes/miscellaneous notes.md",
     "doc/papers/octree dual contouring 2013.pdf",
-    "doc/development todos.md",
     "doc/misc shit.md",
     "doc/research notes/Adaptive marching cubes 1995.md",
     "doc/research notes/Marching Cubes (1987).md",
@@ -232,7 +253,6 @@
     "doc/lu96643gao22.tmp",
     "doc/lu96643gao1z.tmp",
     "doc/lu96643gao1w.tmp",
-    "doc/lu96643gao1t.tmp",
     "doc/lit review template.md",
     "doc/research notes/A new tetrahedral tessellation scheme for isosurface generation (1998).md",
     "lib/glm-1.0.2/readme.md",

@@ -57,6 +57,7 @@ kanban-plugin: board
 - [ ] [octree-based dual contouring (2014)](https://link.springer.com/article/10.1007/s00366-013-0328-8) [[octree dual contouring 2013.pdf]] -> [[miscellaneous notes]]
 - [ ] [large isosurface simplification (2016)](https://link.springer.com/article/10.1007/s12650-016-0359-5) [[large isosurface simplification 2016.pdf]] -> [[simplification notes]]
 - [ ] [[mesh simplification comparison.pdf]] [A comparison of mesh simplification algorithms (1998)](https://www.sciencedirect.com/science/article/abs/pii/S0097849397000824) -> [[simplification notes]]
+- [ ] [octree external memory meshes](https://dl.acm.org/doi/abs/10.1109/TVCG.2003.1260746)[[External_memory_management_and_simplification_of_huge_meshes.pdf]] -> [[simplification notes]]
 
 
 ## discarded

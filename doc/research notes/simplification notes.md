@@ -18,3 +18,7 @@ merging methods:
 - clustering - just grouping vertices by distance and merging them into a single one. bad at preserving topology, but fast
 - wavelet decomposition - mostly useful for grid-like meshes, and computationally costly
 - octree heirarchical remeshing - octree-ify the mesh, then destroy/unsubdivide octree levels, and regenerate the relevant mesh at lower resolution
+
+## External Memory Management and Simplification of Huge Meshes
+link - https://ieeexplore.ieee.org/document/1260746
+develop an advanced representation for large meshes, using octrees for storage. dynamic loading of chunks. maintains information about topology, enabling powerful simplification techniques which preserve topology (using the quadric error metric approach). however, most samples almost double the memory requirements of the raw mesh, and just the build time of the OEMM data structure itself is on the order of a minute per million triangles (not viable).

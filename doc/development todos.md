@@ -6,14 +6,14 @@ kanban-plugin: board
 
 ## todo
 
-- [ ] parallelise vertex pass
 - [ ] implement alternative merging algorithm
+- [ ] implement simple cubic lattice structure
 - [ ] fix bunny benchmark
 
 
 ## backlog
 
-- [ ] implement simple cubic lattice structure
+- [ ] parallelise vertex pass
 - [ ] improve merging algo - checks for degeration (concave merging) and edge-of-sample-cube merging
 
 
