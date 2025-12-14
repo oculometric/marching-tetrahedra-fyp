@@ -5,6 +5,9 @@
 #include <format>
 #include <thread>
 #include <intrin.h>
+#include <map>
+#include <set>
+#include <unordered_map>
 
 // TODO: different lattice structures
 // TODO: different merging techniques
@@ -101,6 +104,8 @@ Mesh Builder::generate(DebugStats& stats)
 
     auto geometry_start = chrono::high_resolution_clock::now();
     geometryPass();
+    if (clustering == POST_PROCESED)
+        performSimpleClustering();
     float geometry = ((chrono::duration<float>)(chrono::high_resolution_clock::now() - geometry_start)).count();
 
     auto normaling_start = chrono::high_resolution_clock::now();
@@ -1129,6 +1134,167 @@ void Builder::geometryPass()
             }
         }
     }
+}
+
+struct MeshEdge
+{
+    VertexRef a;
+    VertexRef b;
+    size_t triangle_a;
+    size_t triangle_b;
+};
+
+inline uint64_t makeEdge(VertexRef a, VertexRef b)
+{
+    if (a < b)
+        return ((uint64_t)a << 32) | b;
+    return ((uint64_t)b << 32) | a;
+}
+
+void Builder::performSimpleClustering()
+{
+    // build a multimap of edge length to MeshEdge
+    unordered_map<uint64_t, size_t> edges;
+    multimap<float, MeshEdge> edge_lengths;
+
+    for (size_t tri = 0; tri < indices.size(); tri += 3)
+    {
+        uint64_t e0 = makeEdge(indices[tri], indices[tri + 1]);
+        uint64_t e1 = makeEdge(indices[tri], indices[tri + 2]);
+        uint64_t e2 = makeEdge(indices[tri + 1], indices[tri + 2]);
+
+        auto e0_it = edges.find(e0);
+        if (e0_it != edges.end())
+        {
+            float length = mag(vertices[indices[tri]] - vertices[indices[tri + 1]]);
+            edge_lengths.insert({ length, MeshEdge
+            {
+                indices[tri], indices[tri + 1],
+                tri, e0_it->second
+            } });
+        }
+        else
+            edges.insert(e0_it, { e0, tri });
+        auto e1_it = edges.find(e1);
+        if (e1_it != edges.end())
+        {
+            float length = mag(vertices[indices[tri]] - vertices[indices[tri + 2]]);
+            edge_lengths.insert({ length, MeshEdge
+            {
+                indices[tri], indices[tri + 2],
+                tri, e1_it->second
+            } });
+        }
+        else
+            edges.insert(e1_it, { e1, tri });
+        auto e2_it = edges.find(e2);
+        if (e2_it != edges.end())
+        {
+            float length = mag(vertices[indices[tri + 2]] - vertices[indices[tri + 1]]);
+            edge_lengths.insert({ length, MeshEdge
+            {
+                indices[tri + 2], indices[tri + 1],
+                tri, e2_it->second
+            } });
+        }
+        else
+            edges.insert(e2_it, { e2, tri });
+    }
+
+    map<VertexRef, VertexRef> redirections;
+
+    // for all edges shorter than the clustering distance, collapse
+    auto edge_it = edge_lengths.begin();
+    while (edge_it != edge_lengths.end() && edge_it->first < resolution * 0.5f)
+    {
+        MeshEdge edge_info = edge_it->second;
+        if (redirections.contains(edge_info.b) || redirections.contains(edge_info.a))
+        {
+            ++edge_it;
+            continue;
+        }
+            // mark the two triangles as destroyed
+        indices[edge_info.triangle_a] = VERTEX_NULL;
+        indices[edge_info.triangle_b] = VERTEX_NULL;
+        // move the first vertex to the merged position
+        vertices[edge_info.a] = (vertices[edge_info.a] + vertices[edge_info.b]) * 0.5f;
+        // mark the second vertex as redirecting to the first
+        redirections[edge_info.b] = edge_info.a; // FIXME: what if we merge multiple edges which involve a specific vertex?
+        redirections[edge_info.a] = edge_info.a; // FIXME: what if we merge multiple edges which involve a specific vertex?
+
+        ++edge_it;
+    }
+
+    vector<Vector3> new_vertices(vertices.size());
+    vector<VertexRef> new_indices(indices.size());
+    map<VertexRef, VertexRef> old_ref_to_new_ref;
+
+    // remove destroyed triangles and reroute vertex references
+    for (size_t tri = 0; tri < indices.size(); tri += 3)
+    {
+        if (indices[tri] == VERTEX_NULL)
+            continue;
+
+        // try to find the VRs in the old-to-new map
+        // if we can't, try to find them in the redirection map, and insert and create them in the old-to-new map
+        VertexRef v0 = indices[tri];
+        auto it = old_ref_to_new_ref.find(v0);
+        if (it != old_ref_to_new_ref.end())
+            v0 = it->second;
+        else
+        {
+            VertexRef v0_new = new_vertices.size();
+            old_ref_to_new_ref[v0] = v0_new;
+            auto it2 = redirections.find(v0);
+            if (it2 != redirections.end())
+            {
+                v0 = it2->second;
+                old_ref_to_new_ref[v0] = v0_new;
+            }
+            new_vertices.push_back(vertices[v0]);
+            v0 = v0_new;
+        }
+        VertexRef v1 = indices[tri + 1];
+        it = old_ref_to_new_ref.find(v1);
+        if (it != old_ref_to_new_ref.end())
+            v1 = it->second;
+        else
+        {
+            VertexRef v1_new = new_vertices.size();
+            old_ref_to_new_ref[v1] = v1_new;
+            auto it2 = redirections.find(v1);
+            if (it2 != redirections.end())
+            {
+                v1 = it2->second;
+                old_ref_to_new_ref[v1] = v1_new;
+            }
+            new_vertices.push_back(vertices[v1]);
+            v1 = v1_new;
+        }
+        VertexRef v2 = indices[tri + 2];
+        it = old_ref_to_new_ref.find(v2);
+        if (it != old_ref_to_new_ref.end())
+            v2 = it->second;
+        else
+        {
+            VertexRef v2_new = new_vertices.size();
+            old_ref_to_new_ref[v2] = v2_new;
+            auto it2 = redirections.find(v2);
+            if (it2 != redirections.end())
+            {
+                v2 = it2->second;
+                old_ref_to_new_ref[v2] = v2_new;
+            }
+            new_vertices.push_back(vertices[v2]);
+            v2 = v2_new;
+        }
+        new_indices.push_back(v0);
+        new_indices.push_back(v1);
+        new_indices.push_back(v2);
+    }
+
+    vertices = new_vertices;
+    indices = new_indices;
 }
 
 void Builder::computeVertexNormals()

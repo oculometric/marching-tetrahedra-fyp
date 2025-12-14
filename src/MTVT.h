@@ -126,6 +126,7 @@ private:
     void addVerticesIndividually(const float* neighbour_values, const float thresh_diff, const float value, const Vector3& position, EdgeFlags usable_edges, std::vector<Vector3>& verts, EdgeReferences& edges);
     void vertexPass();
     void geometryPass();
+    void performSimpleClustering();
     void computeVertexNormals();
 };
 
