@@ -1151,76 +1151,55 @@ inline uint64_t makeEdge(VertexRef a, VertexRef b)
     return ((uint64_t)b << 32) | a;
 }
 
+inline VertexRef findRedirector(VertexRef ref, map<VertexRef, VertexRef> redirections)
+{
+    VertexRef live_ref = ref;
+    while (true)
+    {
+        auto it = redirections.find(live_ref);
+        if (it == redirections.end() || (it->second == live_ref))
+            return live_ref;
+        live_ref = it->second;
+    }
+
+}
+
 void Builder::performSimpleClustering()
 {
     // build a multimap of edge length to MeshEdge
-    unordered_map<uint64_t, size_t> edges;
-    multimap<float, MeshEdge> edge_lengths;
+    set<uint64_t> edges;
 
     for (size_t tri = 0; tri < indices.size(); tri += 3)
     {
         uint64_t e0 = makeEdge(indices[tri], indices[tri + 1]);
         uint64_t e1 = makeEdge(indices[tri], indices[tri + 2]);
         uint64_t e2 = makeEdge(indices[tri + 1], indices[tri + 2]);
-
-        auto e0_it = edges.find(e0);
-        if (e0_it != edges.end())
-        {
-            float length = mag(vertices[indices[tri]] - vertices[indices[tri + 1]]);
-            edge_lengths.insert({ length, MeshEdge
-            {
-                indices[tri], indices[tri + 1],
-                tri, e0_it->second
-            } });
-        }
-        else
-            edges.insert(e0_it, { e0, tri });
-        auto e1_it = edges.find(e1);
-        if (e1_it != edges.end())
-        {
-            float length = mag(vertices[indices[tri]] - vertices[indices[tri + 2]]);
-            edge_lengths.insert({ length, MeshEdge
-            {
-                indices[tri], indices[tri + 2],
-                tri, e1_it->second
-            } });
-        }
-        else
-            edges.insert(e1_it, { e1, tri });
-        auto e2_it = edges.find(e2);
-        if (e2_it != edges.end())
-        {
-            float length = mag(vertices[indices[tri + 2]] - vertices[indices[tri + 1]]);
-            edge_lengths.insert({ length, MeshEdge
-            {
-                indices[tri + 2], indices[tri + 1],
-                tri, e2_it->second
-            } });
-        }
-        else
-            edges.insert(e2_it, { e2, tri });
+        edges.insert(e0);
+        edges.insert(e1);
+        edges.insert(e2);
     }
 
     map<VertexRef, VertexRef> redirections;
+    float distance = resolution * resolution / 4.0f;
 
     // for all edges shorter than the clustering distance, collapse
-    auto edge_it = edge_lengths.begin();
-    while (edge_it != edge_lengths.end() && edge_it->first < resolution * 0.5f)
+    auto edge_it = edges.begin();
+    while (edge_it != edges.end())
     {
-        MeshEdge edge_info = edge_it->second;
-        if (redirections.contains(edge_info.b) || redirections.contains(edge_info.a))
+        // find the actual vertices using the redirection table
+        // (recursively, until we find no redirector, or the redirector links to itself)
+        VertexRef a = findRedirector((*edge_it) >> 32, redirections);
+        VertexRef b = findRedirector((*edge_it) & UINT32_MAX, redirections);
+        if (sq_mag(vertices[a] - vertices[b]) > distance)
         {
             ++edge_it;
             continue;
         }
-            // mark the two triangles as destroyed
-        indices[edge_info.triangle_a] = VERTEX_NULL;
-        indices[edge_info.triangle_b] = VERTEX_NULL;
-        // move the first vertex to the merged position
-        vertices[edge_info.a] = (vertices[edge_info.a] + vertices[edge_info.b]) * 0.5f;
-        // mark the second vertex as redirecting to the first
-        redirections[edge_info.b] = edge_info.a; // FIXME: what if we merge multiple edges which involve a specific vertex?
-        redirections[edge_info.a] = edge_info.a; // FIXME: what if we merge multiple edges which involve a specific vertex?
+
+        // move the first vertex into place, redirect the second to the first (use the original vertex ref as the key)
+        vertices[a] = (vertices[a] + vertices[b]) * 0.5f;
+        redirections[(*edge_it) & UINT32_MAX] = a;
+        redirections[b] = a;
 
         ++edge_it;
     }
@@ -1229,12 +1208,9 @@ void Builder::performSimpleClustering()
     vector<VertexRef> new_indices(indices.size());
     map<VertexRef, VertexRef> old_ref_to_new_ref;
 
-    // remove destroyed triangles and reroute vertex references
+    // rebuild triangles using the redirector table, discarding ones which have duplicate vertices
     for (size_t tri = 0; tri < indices.size(); tri += 3)
     {
-        if (indices[tri] == VERTEX_NULL)
-            continue;
-
         // try to find the VRs in the old-to-new map
         // if we can't, try to find them in the redirection map, and insert and create them in the old-to-new map
         VertexRef v0 = indices[tri];
@@ -1288,6 +1264,10 @@ void Builder::performSimpleClustering()
             new_vertices.push_back(vertices[v2]);
             v2 = v2_new;
         }
+
+        if (v0 == v1 || v0 == v2 || v1 == v2)
+            continue;
+
         new_indices.push_back(v0);
         new_indices.push_back(v1);
         new_indices.push_back(v2);
