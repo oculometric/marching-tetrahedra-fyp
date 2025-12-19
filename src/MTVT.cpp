@@ -1179,7 +1179,7 @@ void Builder::performSimpleClustering()
         edges.insert(e2);
     }
 
-    map<VertexRef, VertexRef> redirections;
+    map<VertexRef, VertexRef> redirections; // FIXME: convert this to just be an array?
     float distance = resolution * resolution / 4.0f;
 
     // for all edges shorter than the clustering distance, collapse
@@ -1198,7 +1198,7 @@ void Builder::performSimpleClustering()
 
         // move the first vertex into place, redirect the second to the first (use the original vertex ref as the key)
         vertices[a] = (vertices[a] + vertices[b]) * 0.5f;
-        redirections[(*edge_it) & UINT32_MAX] = a;
+        redirections[(*edge_it) & UINT32_MAX] = a; // FIXME: this just isnt working....
         redirections[b] = a;
 
         ++edge_it;

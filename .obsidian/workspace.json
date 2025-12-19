@@ -82,7 +82,8 @@
               "title": "development todos"
             }
           }
-        ]
+        ],
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -228,12 +229,19 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "bf840b46f3fa0349",
+  "active": "61e4c19b0ae78350",
   "lastOpenFiles": [
-    "doc/research notes/simplification notes.md",
-    "doc/papers/External_memory_management_and_simplification_of_huge_meshes.pdf",
+    "x64/Release/mtvt.tlog/link.read.32.tlog",
+    "x64/Release/mtvt.tlog/link-cvtres.write.1.tlog",
+    "x64/Release/mtvt.tlog/link-cvtres.read.1.tlog",
+    "x64/Release/mtvt.tlog/link-rc.write.1.tlog",
+    "x64/Release/mtvt.tlog/link-rc.read.1.tlog",
+    "x64/Release/MTVT.obj",
+    "x64/Release/mtvt.tlog/unsuccessfulbuild",
     "doc/task board.md",
     "doc/research kanban.md",
+    "doc/research notes/simplification notes.md",
+    "doc/papers/External_memory_management_and_simplification_of_huge_meshes.pdf",
     "doc/papers/large isosurface simplification 2016.pdf",
     "doc/development todos.md",
     "doc/papers/mesh simplification comparison.pdf",
@@ -243,16 +251,10 @@
     "doc/research notes/simplified bunny.png",
     "doc/research notes/on the fly simplification.png",
     "doc/research notes/miscellaneous notes.md",
-    "doc/papers/octree dual contouring 2013.pdf",
     "doc/misc shit.md",
     "doc/research notes/Adaptive marching cubes 1995.md",
     "doc/research notes/Marching Cubes (1987).md",
     "doc/research notes/Regularised marching tetrahedra (1999).md",
-    "doc/lu199243n4siv.tmp",
-    "doc/lu96643gao25.tmp",
-    "doc/lu96643gao22.tmp",
-    "doc/lu96643gao1z.tmp",
-    "doc/lu96643gao1w.tmp",
     "doc/lit review template.md",
     "doc/research notes/A new tetrahedral tessellation scheme for isosurface generation (1998).md",
     "lib/glm-1.0.2/readme.md",
