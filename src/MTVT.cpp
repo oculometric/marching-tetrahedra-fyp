@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <unordered_map>
+#include <iostream>
 
 // TODO: different lattice structures
 // TODO: different merging techniques
@@ -1151,7 +1152,7 @@ inline uint64_t makeEdge(VertexRef a, VertexRef b)
     return ((uint64_t)b << 32) | a;
 }
 
-inline VertexRef findRedirector(VertexRef ref, vector<VertexRef> redirections)
+inline VertexRef findRedirector(VertexRef ref, vector<VertexRef>& redirections)
 {
     VertexRef live_ref = ref;
     while (true)
@@ -1159,7 +1160,7 @@ inline VertexRef findRedirector(VertexRef ref, vector<VertexRef> redirections)
         VertexRef next = redirections[live_ref];
         if (next == VERTEX_NULL || next == live_ref)
             return live_ref;
-        live_ref = live_ref;
+        live_ref = next;
     }
 
 }
@@ -1184,11 +1185,10 @@ void Builder::performSimpleClustering()
     float distance = resolution * resolution / 4.0f;
 
     // for all edges shorter than the clustering distance, collapse
-    bool collapsed = false;
-    int pass = 0;
+    int collapse_count = 0;
     do
     {
-        collapsed = false;
+        collapse_count = 0;
         auto edge_it = edges.begin();
         while (edge_it != edges.end())
         {
@@ -1196,7 +1196,7 @@ void Builder::performSimpleClustering()
             // (recursively, until we find no redirector, or the redirector links to itself)
             VertexRef a = findRedirector((*edge_it) >> 32, redirections);
             VertexRef b = findRedirector((*edge_it) & UINT32_MAX, redirections);
-            if (a == b || sq_mag(vertices[a] - vertices[b]) > distance)
+            if ((a == b) || (sq_mag(vertices[a] - vertices[b]) > distance))
             {
                 ++edge_it;
                 continue;
@@ -1206,16 +1206,17 @@ void Builder::performSimpleClustering()
             vertices[a] = (vertices[a] + vertices[b]) * 0.5f;
             redirections[(*edge_it) & UINT32_MAX] = a;
             redirections[b] = a;
-            collapsed = true;
 
             ++edge_it;
         }
-        ++pass;
-    } while (collapsed && pass < 10);
+    } while (collapse_count > 0);
 
-    vector<Vector3> new_vertices(vertices.size());
-    vector<VertexRef> new_indices(indices.size());
-    map<VertexRef, VertexRef> old_ref_to_new_ref;
+    vector<Vector3> new_vertices;
+    new_vertices.reserve(vertices.size());
+    vector<VertexRef> new_indices;
+    new_indices.reserve(indices.size());
+    vector<VertexRef> old_ref_to_new_ref;
+    old_ref_to_new_ref.resize(vertices.size(), VERTEX_NULL);
 
     // rebuild triangles using the redirector table, discarding ones which have duplicate vertices
     for (size_t tri = 0; tri < indices.size(); tri += 3)
@@ -1223,44 +1224,70 @@ void Builder::performSimpleClustering()
         // try to find the VRs in the old-to-new map
         // if we can't, try to find them in the redirection map, and insert and create them in the old-to-new map
         VertexRef v0 = indices[tri];
-        auto it = old_ref_to_new_ref.find(v0);
-        if (it != old_ref_to_new_ref.end())
-            v0 = it->second;
-        else
+        VertexRef tmp = old_ref_to_new_ref[v0];
+        if (tmp == VERTEX_NULL)
         {
-            VertexRef v0_new = new_vertices.size();
-            old_ref_to_new_ref[v0] = v0_new;
-            v0 = findRedirector(v0, redirections);
-            new_vertices.push_back(vertices[v0]);
-            v0 = v0_new;
+            tmp = findRedirector(v0, redirections);
+            if (old_ref_to_new_ref[tmp] != VERTEX_NULL)
+            {
+                tmp = old_ref_to_new_ref[tmp];
+                old_ref_to_new_ref[v0] = tmp;
+            }
+            else
+            {
+                new_vertices.push_back(vertices[tmp]);
+                old_ref_to_new_ref[tmp] = new_vertices.size() - 1;
+                tmp = old_ref_to_new_ref[tmp];
+                old_ref_to_new_ref[v0] = tmp;
+            }
         }
+        v0 = tmp;
+
         VertexRef v1 = indices[tri + 1];
-        it = old_ref_to_new_ref.find(v1);
-        if (it != old_ref_to_new_ref.end())
-            v1 = it->second;
-        else
+        tmp = old_ref_to_new_ref[v1];
+        if (tmp == VERTEX_NULL)
         {
-            VertexRef v1_new = new_vertices.size();
-            old_ref_to_new_ref[v1] = v1_new;
-            v1 = findRedirector(v1, redirections);
-            new_vertices.push_back(vertices[v1]);
-            v1 = v1_new;
+            tmp = findRedirector(v1, redirections);
+            if (old_ref_to_new_ref[tmp] != VERTEX_NULL)
+            {
+                tmp = old_ref_to_new_ref[tmp];
+                old_ref_to_new_ref[v1] = tmp;
+            }
+            else
+            {
+                new_vertices.push_back(vertices[tmp]);
+                old_ref_to_new_ref[tmp] = new_vertices.size() - 1;
+                tmp = old_ref_to_new_ref[tmp];
+                old_ref_to_new_ref[v1] = tmp;
+            }
         }
+        v1 = tmp;
+
         VertexRef v2 = indices[tri + 2];
-        it = old_ref_to_new_ref.find(v2);
-        if (it != old_ref_to_new_ref.end())
-            v2 = it->second;
-        else
+        tmp = old_ref_to_new_ref[v2];
+        if (tmp == VERTEX_NULL)
         {
-            VertexRef v2_new = new_vertices.size();
-            old_ref_to_new_ref[v2] = v2_new;
-            v2 = findRedirector(v2, redirections);
-            new_vertices.push_back(vertices[v2]);
-            v2 = v2_new;
+            tmp = findRedirector(v2, redirections);
+            if (old_ref_to_new_ref[tmp] != VERTEX_NULL)
+            {
+                tmp = old_ref_to_new_ref[tmp];
+                old_ref_to_new_ref[v2] = tmp;
+            }
+            else
+            {
+                new_vertices.push_back(vertices[tmp]);
+                old_ref_to_new_ref[tmp] = new_vertices.size() - 1;
+                tmp = old_ref_to_new_ref[tmp];
+                old_ref_to_new_ref[v2] = tmp;
+            }
         }
+        v2 = tmp;
 
         if (v0 == v1 || v0 == v2 || v1 == v2)
+        {
+            degenerate_triangles++;
             continue;
+        }
 
         new_indices.push_back(v0);
         new_indices.push_back(v1);
