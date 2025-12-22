@@ -1151,15 +1151,15 @@ inline uint64_t makeEdge(VertexRef a, VertexRef b)
     return ((uint64_t)b << 32) | a;
 }
 
-inline VertexRef findRedirector(VertexRef ref, map<VertexRef, VertexRef> redirections)
+inline VertexRef findRedirector(VertexRef ref, vector<VertexRef> redirections)
 {
     VertexRef live_ref = ref;
     while (true)
     {
-        auto it = redirections.find(live_ref);
-        if (it == redirections.end() || (it->second == live_ref))
+        VertexRef next = redirections[live_ref];
+        if (next == VERTEX_NULL || next == live_ref)
             return live_ref;
-        live_ref = it->second;
+        live_ref = live_ref;
     }
 
 }
@@ -1179,30 +1179,39 @@ void Builder::performSimpleClustering()
         edges.insert(e2);
     }
 
-    map<VertexRef, VertexRef> redirections; // FIXME: convert this to just be an array?
+    vector<VertexRef> redirections;
+    redirections.resize(vertices.size(), VERTEX_NULL);
     float distance = resolution * resolution / 4.0f;
 
     // for all edges shorter than the clustering distance, collapse
-    auto edge_it = edges.begin();
-    while (edge_it != edges.end())
+    bool collapsed = false;
+    int pass = 0;
+    do
     {
-        // find the actual vertices using the redirection table
-        // (recursively, until we find no redirector, or the redirector links to itself)
-        VertexRef a = findRedirector((*edge_it) >> 32, redirections);
-        VertexRef b = findRedirector((*edge_it) & UINT32_MAX, redirections);
-        if (sq_mag(vertices[a] - vertices[b]) > distance)
+        collapsed = false;
+        auto edge_it = edges.begin();
+        while (edge_it != edges.end())
         {
+            // find the actual vertices using the redirection table
+            // (recursively, until we find no redirector, or the redirector links to itself)
+            VertexRef a = findRedirector((*edge_it) >> 32, redirections);
+            VertexRef b = findRedirector((*edge_it) & UINT32_MAX, redirections);
+            if (a == b || sq_mag(vertices[a] - vertices[b]) > distance)
+            {
+                ++edge_it;
+                continue;
+            }
+
+            // move the first vertex into place, redirect the second to the first (use the original vertex ref as the key)
+            vertices[a] = (vertices[a] + vertices[b]) * 0.5f;
+            redirections[(*edge_it) & UINT32_MAX] = a;
+            redirections[b] = a;
+            collapsed = true;
+
             ++edge_it;
-            continue;
         }
-
-        // move the first vertex into place, redirect the second to the first (use the original vertex ref as the key)
-        vertices[a] = (vertices[a] + vertices[b]) * 0.5f;
-        redirections[(*edge_it) & UINT32_MAX] = a; // FIXME: this just isnt working....
-        redirections[b] = a;
-
-        ++edge_it;
-    }
+        ++pass;
+    } while (collapsed && pass < 10);
 
     vector<Vector3> new_vertices(vertices.size());
     vector<VertexRef> new_indices(indices.size());
@@ -1221,12 +1230,7 @@ void Builder::performSimpleClustering()
         {
             VertexRef v0_new = new_vertices.size();
             old_ref_to_new_ref[v0] = v0_new;
-            auto it2 = redirections.find(v0);
-            if (it2 != redirections.end())
-            {
-                v0 = it2->second;
-                old_ref_to_new_ref[v0] = v0_new;
-            }
+            v0 = findRedirector(v0, redirections);
             new_vertices.push_back(vertices[v0]);
             v0 = v0_new;
         }
@@ -1238,12 +1242,7 @@ void Builder::performSimpleClustering()
         {
             VertexRef v1_new = new_vertices.size();
             old_ref_to_new_ref[v1] = v1_new;
-            auto it2 = redirections.find(v1);
-            if (it2 != redirections.end())
-            {
-                v1 = it2->second;
-                old_ref_to_new_ref[v1] = v1_new;
-            }
+            v1 = findRedirector(v1, redirections);
             new_vertices.push_back(vertices[v1]);
             v1 = v1_new;
         }
@@ -1255,12 +1254,7 @@ void Builder::performSimpleClustering()
         {
             VertexRef v2_new = new_vertices.size();
             old_ref_to_new_ref[v2] = v2_new;
-            auto it2 = redirections.find(v2);
-            if (it2 != redirections.end())
-            {
-                v2 = it2->second;
-                old_ref_to_new_ref[v2] = v2_new;
-            }
+            v2 = findRedirector(v2, redirections);
             new_vertices.push_back(vertices[v2]);
             v2 = v2_new;
         }
