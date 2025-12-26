@@ -48,19 +48,6 @@ void Builder::configure(Vector3 minimum_extent, Vector3 maximum_extent, float cu
     if (tmp >= (INT_MAX / 2) - 3) throw exception("mesh builder: sample volume Z size too big");
     if (tmp < 1) throw exception("mesh builder: sample volume X size too small");
     cubes_z = (int)tmp;
-    // sample points will contain space for the entire lattice
-    // this means we need space for cubes_s + 1 + cubes_s + 2 points for the BCDL
-    // and every other layer in each direction is one sample shorter (and we just leave the last one blank)
-    samples_x = cubes_x + 2;
-    samples_y = cubes_y + 2;
-    samples_z = (cubes_z * 2) + 3;
-    grid_data_length = static_cast<size_t>(samples_x) * static_cast<size_t>(samples_y) * static_cast<size_t>(samples_z);
-    if ((grid_data_length / static_cast<size_t>(samples_x)) / static_cast<size_t>(samples_y) != static_cast<size_t>(samples_z))
-        throw exception("mesh builder: sample volume dimensions too big");
-    int s_z = samples_x * samples_y * 2;
-    if ((s_z / samples_x) / samples_y != 2)
-        throw exception("mesh builder: sample volume X/Y size too big");
-    populateIndexOffsets();
 }
 
 void Builder::configureModes(LatticeType lattice_type, ClusteringMode clustering_mode, unsigned short parallel_threads)
@@ -80,6 +67,7 @@ Mesh Builder::generate(DebugStats& stats)
     invalid_triangles = 0;
     tetrahedra_evaluated = 0;
     prepareBuffers();
+    populateIndexOffsets();
     vertices.clear();
     indices.clear();
     float allocation = ((chrono::duration<float>)(chrono::high_resolution_clock::now() - allocation_start)).count();
@@ -153,6 +141,28 @@ Mesh Builder::generate(DebugStats& stats)
 
 void Builder::prepareBuffers()
 {
+    if (structure == LatticeType::BODY_CENTERED_DIAMOND)
+    {
+        samples_x = cubes_x + 2;
+        samples_y = cubes_y + 2;
+        samples_z = (cubes_z * 2) + 3;
+        int s_z = samples_x * samples_y * 2;
+        if ((s_z / samples_x) / samples_y != 2)
+            throw exception("mesh builder: sample volume X/Y size too big");
+    }
+    else if (structure == LatticeType::SIMPLE_CUBIC)
+    {
+        samples_x = cubes_x + 1;
+        samples_y = cubes_y + 1;
+        samples_z = cubes_z + 1;
+        int s_z = samples_x * samples_y * 2;
+        if ((s_z / samples_x) / samples_y != 2)
+            throw exception("mesh builder: sample volume X/Y size too big");
+    }
+    grid_data_length = static_cast<size_t>(samples_x) * static_cast<size_t>(samples_y) * static_cast<size_t>(samples_z);
+    if ((grid_data_length / static_cast<size_t>(samples_x)) / static_cast<size_t>(samples_y) != static_cast<size_t>(samples_z))
+        throw exception("mesh builder: sample volume dimensions too big");
+
     sample_values = new SampleValue[grid_data_length];
 #if defined DEBUG_GRID
     sample_positions = new Vector3[grid_data_length];
@@ -190,8 +200,6 @@ enum EdgeAddrBCDL : EdgeAddr
     EDGE_BCDL_NXPYNZ = 11,
     EDGE_BCDL_PXNYNZ = 12,
     EDGE_BCDL_NXNYNZ = 13,
-
-    EDGE_BCDL_MAX = 14
 };
 
 enum EdgeFlagBCDL : EdgeFlags
@@ -211,8 +219,6 @@ enum EdgeFlagBCDL : EdgeFlags
     FLAG_BCDL_NXPYNZ = (1 << EdgeAddrBCDL::EDGE_BCDL_NXPYNZ),
     FLAG_BCDL_PXNYNZ = (1 << EdgeAddrBCDL::EDGE_BCDL_PXNYNZ),
     FLAG_BCDL_NXNYNZ = (1 << EdgeAddrBCDL::EDGE_BCDL_NXNYNZ),
-
-    FLAG_BCDL_ALL = 0b0011111111111111
 };
 
 enum EdgeAddrSIMP : EdgeAddr
@@ -233,8 +239,6 @@ enum EdgeAddrSIMP : EdgeAddr
 
     EDGE_SIMP_PXPYPZ = 12,
     EDGE_SIMP_NXNYNZ = 13,
-
-    EDGE_SIMP_MAX = 14
 };
 
 enum EdgeFlagSIMP : EdgeFlags
@@ -255,24 +259,23 @@ enum EdgeFlagSIMP : EdgeFlags
 
     FLAG_SIMP_PXPYPZ = (1 << EdgeAddrSIMP::EDGE_SIMP_PXPYPZ),
     FLAG_SIMP_NXNYNZ = (1 << EdgeAddrSIMP::EDGE_SIMP_NXNYNZ),
-
-    FLAG_SIMP_ALL = 0b0011111111111111
 };
 
+static constexpr EdgeAddr EDGE_MAX = 14;
+static constexpr EdgeFlags FLAG_ALL = 0b0011111111111111;
+
 // TODO: alternative lattice structure requirements:
-// - different arrangement, different amount of points allocated
+// - different computation for min edges etc
 // - alternative index offsets and vector offsets tables
 // - different behaviour for sampling pass, i.e. remove position offsetting, double the layer height
 // - half the number of layers
 // - replacement for edge neighbour masks
 // - modify vertex pass to not care about odd/even layers and NOT to do any skipping of 'ignored' points
-// - replace all 14-iteration loop maxes and 0b0011111111111111 values with EDGE_MAX and FLAG_ALL (merge these
 // - rewrite tetrahedron tables
 // - change iteration method (and really most of) geometry pass to operate on 2x2 blocks of cubes, to keep
 // the midpoint-based discarding thing
 // - alternative invert edge index
 // - different number of tetrahedra in the geometry pass, no skipping on adjacent cubes, since nothing overlaps between cubes
-
 
 void Builder::populateIndexOffsets()
 {
@@ -392,7 +395,7 @@ inline Vector3 MTVT::Builder::clampToBounds(Vector3 v)
 // to the edge used to index the array, expressed as bitflags. used
 // to represent the graph of mergeable edges. this is essentailly a
 // template adjacency matrix
-static constexpr EdgeFlags edge_neighbour_masks[14] =
+static constexpr EdgeFlags edge_neighbour_masks[EDGE_MAX] =
 {                                                                                                                                   // diag......perp..
     FLAG_BCDL_PXPYPZ | FLAG_BCDL_PXNYPZ | FLAG_BCDL_PXPYNZ | FLAG_BCDL_PXNYNZ,                                       // PX         //0b0001010101000000,
     FLAG_BCDL_NXPYPZ | FLAG_BCDL_NXNYPZ | FLAG_BCDL_NXPYNZ | FLAG_BCDL_NXNYNZ,                                       // NX         //0b0010101010000000,
@@ -423,7 +426,7 @@ static inline EdgeAddr ilog2(const unsigned x) {
 
 struct ConnectivityGraph
 {
-    EdgeFlags link_bits[14] = { };
+    EdgeFlags link_bits[EDGE_MAX] = { };
     uint8_t highest_mergeable_count = 0;
     EdgeAddr highest_counted_edge = EDGE_NULL;
     EdgeFlags usable_edges = 0;
@@ -434,11 +437,11 @@ struct ConnectivityGraph
     {
         usable_edges = _usable_edges;
         num_usable_edges = _num_usable_edges;
-        memcpy(link_bits, edge_neighbour_masks, sizeof(EdgeFlags) * 14);
+        memcpy(link_bits, edge_neighbour_masks, sizeof(EdgeFlags) * EDGE_MAX);
         // iterate over the edges and strike out candidate edges which
         // are not both usable
         EdgeFlags mask = 1;
-        for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
+        for (EdgeAddr p = 0; p < EDGE_MAX; ++p, mask <<= 1)
         {
             if (!(usable_edges & mask))
             {
@@ -458,12 +461,12 @@ struct ConnectivityGraph
 
     inline vector<EdgeFlags> getIslands()
     {
-        int group_ids[14] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+        int group_ids[EDGE_MAX] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
         EdgeFlags grouped_flags = 0;
         int current_group_index = 0;
         size_t total_grouped_size = 0;
         EdgeAddr current_edge = 0;
-        vector<EdgeAddr> edge_queue; edge_queue.reserve(14);
+        vector<EdgeAddr> edge_queue; edge_queue.reserve(EDGE_MAX);
         vector<EdgeFlags> groups; edge_queue.reserve(8);
         EdgeFlags current_group = 0;
         // traverse breadth-first to neighbours, marking each as part of the current group
@@ -485,7 +488,7 @@ struct ConnectivityGraph
                 // jump to the current edge in the queue
                 current_edge = edge_queue[queue_index];
                 current_group |= (1 << current_edge);
-                for (EdgeAddr next_edge = 0; next_edge < 14u; ++next_edge, mask <<= 1)
+                for (EdgeAddr next_edge = 0; next_edge < EDGE_MAX; ++next_edge, mask <<= 1)
                 {
                     // check this edge for connected neighbours, mark each one
                     // and add it to the queue (if it isn't already marked!)
@@ -528,7 +531,7 @@ inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const f
     VertexRef ref = static_cast<VertexRef>(verts.size());
     EdgeFlags mask = 1;
     int merged_count = 0;
-    for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
+    for (EdgeAddr p = 0; p < EDGE_MAX; ++p, mask <<= 1)
     {
         if (!(usable_edges & mask))
             continue;
@@ -544,7 +547,7 @@ inline VertexRef Builder::addMergedVertex(const float* neighbour_values, const f
 inline void Builder::addVerticesIndividually(const float* neighbour_values, const float thresh_diff, const float value, const Vector3& position, EdgeFlags usable_edges, vector<Vector3>& verts, EdgeReferences& edges)
 {
     EdgeFlags mask = 1;
-    for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
+    for (EdgeAddr p = 0; p < EDGE_MAX; ++p, mask <<= 1)
     {
         if (!(usable_edges & mask))
             continue;
@@ -561,9 +564,9 @@ void Builder::vertexPass()
     float step = resolution / 2.0f;
     Vector3 position;
     Index index = 0;
-    Index connected_indices[14] = { 0 };
+    Index connected_indices[EDGE_MAX] = { 0 };
     EdgeReferences edges;
-    EdgeReferences edges_template; for (int p = 0; p < 14; ++p) edges_template.references[p] = VERTEX_NULL;
+    EdgeReferences edges_template; for (int p = 0; p < EDGE_MAX; ++p) edges_template.references[p] = VERTEX_NULL;
 
     bool is_odd_z = true;
     for (int zi = 0; zi < samples_z; ++zi)
@@ -608,12 +611,12 @@ void Builder::vertexPass()
                 // populate the list of neighbouring indices
                 if (!is_odd_z)
                 {
-                    for (int t = 0; t < 14; ++t)
+                    for (int t = 0; t < EDGE_MAX; ++t)
                         connected_indices[t] = index + index_offsets_evenz[t];
                 }
                 else
                 {
-                    for (int t = 0; t < 14; ++t)
+                    for (int t = 0; t < EDGE_MAX; ++t)
                         connected_indices[t] = index + index_offsets_oddz[t];
                 }
 
@@ -621,7 +624,7 @@ void Builder::vertexPass()
                 // on the outer faces of the sample cube as the outermost points
                 // do not have neighbours in that face's direction (i.e. these
                 // indices would be invalid)
-                EdgeFlags checkable_edges = FLAG_BCDL_ALL;
+                EdgeFlags checkable_edges = FLAG_ALL;
                 {
                     if (is_min_z)
                     {
@@ -697,7 +700,7 @@ void Builder::vertexPass()
                 SampleValue sample_value = sample_values[index];
                 float value = sample_value.value;
                 float thresh_diff = threshold - value;
-                float neighbour_values[14];
+                float neighbour_values[EDGE_MAX];
 
                 // perform edge flagging, by going through and marking a 
                 // corresponding bit for each connected edge which
@@ -711,7 +714,7 @@ void Builder::vertexPass()
                 bool thresh_less = thresh_dist < 0.0f;
                 if (thresh_less) thresh_dist = -thresh_dist;
                 EdgeFlags mask = 1;
-                for (EdgeAddr p = 0; p < EDGE_BCDL_MAX; ++p, mask <<= 1)
+                for (EdgeAddr p = 0; p < EDGE_MAX; ++p, mask <<= 1)
                 {
                     if (!(checkable_edges & mask))
                         continue;
@@ -744,7 +747,7 @@ void Builder::vertexPass()
                 if (clustering != ClusteringMode::INTEGRATED)
                 {
                     mask = 1;
-                    for (EdgeAddr p = 0; p < 14u; ++p, mask <<= 1)
+                    for (EdgeAddr p = 0; p < EDGE_MAX; ++p, mask <<= 1)
                         if (edge_proximity_flags & mask)
                             edges.references[p] = addVertex(neighbour_values, p, thresh_diff, value, position, vertices);
                     sample_edge_indices[index] = edges;
@@ -809,7 +812,7 @@ void Builder::vertexPass()
                 // of one values. if we find more than one island of non-mergeable
                 // edges, then we know there must be an enclosed island somewhere, and
                 // hence we shouldn't merge things
-                EdgeFlags unusable_edges = (~usable_edges) & 0b0011111111111111;
+                EdgeFlags unusable_edges = (~usable_edges) & FLAG_ALL;
                 ConnectivityGraph unusable_graph(unusable_edges, fastBitCount(unusable_edges));
                 auto negative_groups = unusable_graph.getIslands();
 
@@ -998,7 +1001,7 @@ void Builder::geometryPass()
     // edge/sample point info, discard triangles with zero size, 
     // skip sample cubes with no edge crossings.
 
-    Index connected_indices[14] = { 0 };
+    Index connected_indices[EDGE_MAX] = { 0 };
     for (int zi = 0; zi < cubes_z; ++zi)
     {
         for (int yi = 0; yi < cubes_y; ++yi)
@@ -1015,7 +1018,7 @@ void Builder::geometryPass()
                 if (central_sample_crossing_flags == 0)
                     continue; // HUGE SPEEDUP!! 0.03538 -> 0.00412
                 // compute all the neighbouring indices in this lattice segment
-                for (int e = 0; e < 14; ++e)
+                for (int e = 0; e < EDGE_MAX; ++e)
                     connected_indices[e] = central_sample_index + index_offsets_evenz[e];
 
                 const bool center_greater_thresh = (sample_values[central_sample_index].value > threshold);
