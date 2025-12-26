@@ -10,9 +10,6 @@
 #include <unordered_map>
 #include <iostream>
 
-// TODO: different lattice structures
-// TODO: different merging techniques
-
 using namespace std;
 using namespace MTVT;
 
@@ -217,6 +214,65 @@ enum EdgeFlagBCDL : EdgeFlags
 
     FLAG_BCDL_ALL = 0b0011111111111111
 };
+
+enum EdgeAddrSIMP : EdgeAddr
+{
+    EDGE_SIMP_PX = 0,
+    EDGE_SIMP_NX = 1,
+    EDGE_SIMP_PY = 2,
+    EDGE_SIMP_NY = 3,
+    EDGE_SIMP_PZ = 4,
+    EDGE_SIMP_NZ = 5,
+
+    EDGE_SIMP_PXPY = 6,
+    EDGE_SIMP_NXNY = 7,
+    EDGE_SIMP_PXPZ = 8,
+    EDGE_SIMP_NXNZ = 9,
+    EDGE_SIMP_PYPZ = 10,
+    EDGE_SIMP_NYNZ = 11,
+
+    EDGE_SIMP_PXPYPZ = 12,
+    EDGE_SIMP_NXNYNZ = 13,
+
+    EDGE_SIMP_MAX = 14
+};
+
+enum EdgeFlagSIMP : EdgeFlags
+{
+    FLAG_SIMP_PX = (1 << EdgeAddrSIMP::EDGE_SIMP_PX),
+    FLAG_SIMP_NX = (1 << EdgeAddrSIMP::EDGE_SIMP_NX),
+    FLAG_SIMP_PY = (1 << EdgeAddrSIMP::EDGE_SIMP_PY),
+    FLAG_SIMP_NY = (1 << EdgeAddrSIMP::EDGE_SIMP_NY),
+    FLAG_SIMP_PZ = (1 << EdgeAddrSIMP::EDGE_SIMP_PZ),
+    FLAG_SIMP_NZ = (1 << EdgeAddrSIMP::EDGE_SIMP_NZ),
+
+    FLAG_SIMP_PXPY = (1 << EdgeAddrSIMP::EDGE_SIMP_PXPY),
+    FLAG_SIMP_NXNY = (1 << EdgeAddrSIMP::EDGE_SIMP_NXNY),
+    FLAG_SIMP_PXPZ = (1 << EdgeAddrSIMP::EDGE_SIMP_PXPZ),
+    FLAG_SIMP_NXNZ = (1 << EdgeAddrSIMP::EDGE_SIMP_NXNZ),
+    FLAG_SIMP_PYPZ = (1 << EdgeAddrSIMP::EDGE_SIMP_PYPZ),
+    FLAG_SIMP_NYNZ = (1 << EdgeAddrSIMP::EDGE_SIMP_NYNZ),
+
+    FLAG_SIMP_PXPYPZ = (1 << EdgeAddrSIMP::EDGE_SIMP_PXPYPZ),
+    FLAG_SIMP_NXNYNZ = (1 << EdgeAddrSIMP::EDGE_SIMP_NXNYNZ),
+
+    FLAG_SIMP_ALL = 0b0011111111111111
+};
+
+// TODO: alternative lattice structure requirements:
+// - different arrangement, different amount of points allocated
+// - alternative index offsets and vector offsets tables
+// - different behaviour for sampling pass, i.e. remove position offsetting, double the layer height
+// - half the number of layers
+// - replacement for edge neighbour masks
+// - modify vertex pass to not care about odd/even layers and NOT to do any skipping of 'ignored' points
+// - replace all 14-iteration loop maxes and 0b0011111111111111 values with EDGE_MAX and FLAG_ALL (merge these
+// - rewrite tetrahedron tables
+// - change iteration method (and really most of) geometry pass to operate on 2x2 blocks of cubes, to keep
+// the midpoint-based discarding thing
+// - alternative invert edge index
+// - different number of tetrahedra in the geometry pass, no skipping on adjacent cubes, since nothing overlaps between cubes
+
 
 void Builder::populateIndexOffsets()
 {
@@ -496,25 +552,6 @@ inline void Builder::addVerticesIndividually(const float* neighbour_values, cons
     }
 }
 
-// this table contains pairs of edge masks, where the first item is used
-// to check for the presence of opposing edges in an edge-flags value,
-// and the second can be used to mask out one side of those flags (the
-// bitwise inverse of the second value can be used to mask the opposite side)
-static constexpr EdgeFlags opposing_edge_masks[7][2] =
-{
-    { 0b0000000000000011, 0b0001010101010101 }, // PX - NX
-    { 0b0000000000001100, 0b0000110011010101 }, // PY - NY
-    { 0b0000000000110000, 0b0000001111010101 }, // PZ - NZ
-    { 0b0010000001000000, 0b0000010111010101 }, // PXPYPZ - NXNYNZ
-    { 0b0001000010000000, 0b0000101011010110 }, // NXPYPZ - PXNYNZ
-    { 0b0000100100000000, 0b0001001101011001 }, // PXNYPZ - NXPYNZ
-    { 0b0000011000000000, 0b0001110001100101 }  // PXPYNZ - NXNYPZ
-    //            npnpnp      ddccbbaazzyyxx
-    //    npnpnpnp            npnpnpnp
-    //    nnppnnpp            nnppnnpp
-    //    nnnnpppp            nnnnpppp
-};
-
 void Builder::vertexPass()
 {
     // flagging pass - check all of the edges around each sample point, and set the edge flag bits
@@ -551,12 +588,6 @@ void Builder::vertexPass()
                     continue;
                 }
                 bool is_min_x = xi <= 0;
-                uint8_t min_max_bits = (is_min_x ? 0b0000001 : 0)
-                                     | (is_max_x ? 0b0000010 : 0)
-                                     | (is_min_y ? 0b0000100 : 0)
-                                     | (is_max_y ? 0b0001000 : 0)
-                                     | (is_min_z ? 0b0010000 : 0)
-                                     | (is_max_z ? 0b0100000 : 0);
                 if (!is_odd_z)
                 {
                     int num_edges = 0;
