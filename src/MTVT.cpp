@@ -265,8 +265,7 @@ static constexpr EdgeAddr EDGE_MAX = 14;
 static constexpr EdgeFlags FLAG_ALL = 0b0011111111111111;
 
 // TODO: alternative lattice structure requirements:
-// - different computation for min edges etc
-// - alternative index offsets and vector offsets tables
+// - different computation for min edges count etc
 // - different behaviour for sampling pass, i.e. remove position offsetting, double the layer height
 // - half the number of layers
 // - replacement for edge neighbour masks
@@ -281,61 +280,105 @@ void Builder::populateIndexOffsets()
 {
     // generate a set of index offsets for surrounding sample points,
     // used in the flagging pass
-    // the bit-flagging is as follows:
-    int s_y = samples_x;
-    int s_hz = samples_y * s_y;
-    int s_z = s_hz * 2;
+    if (structure == LatticeType::BODY_CENTERED_DIAMOND)
+    {
+        int s_y = samples_x;
+        int s_hz = samples_y * s_y;
+        int s_z = s_hz * 2;
 
-    index_offsets_evenz[EDGE_BCDL_PX] = 1;                    //  0 - 0b00000000 00000001 - +X
-    index_offsets_evenz[EDGE_BCDL_NX] = -1;                   //  1 - 0b00000000 00000010 - -X
-    index_offsets_evenz[EDGE_BCDL_PY] = s_y;                  //  2 - 0b00000000 00000100 - +Y
-    index_offsets_evenz[EDGE_BCDL_NY] = -s_y;                 //  3 - 0b00000000 00001000 - -Y
-    index_offsets_evenz[EDGE_BCDL_PZ] = s_z;                  //  4 - 0b00000000 00010000 - +Z
-    index_offsets_evenz[EDGE_BCDL_NZ] = -s_z;                 //  5 - 0b00000000 00100000 - -Z
+        index_offsets_evenz[EDGE_BCDL_PX] = 1;                    //  0 - 0b00000000 00000001 - +X
+        index_offsets_evenz[EDGE_BCDL_NX] = -1;                   //  1 - 0b00000000 00000010 - -X
+        index_offsets_evenz[EDGE_BCDL_PY] = s_y;                  //  2 - 0b00000000 00000100 - +Y
+        index_offsets_evenz[EDGE_BCDL_NY] = -s_y;                 //  3 - 0b00000000 00001000 - -Y
+        index_offsets_evenz[EDGE_BCDL_PZ] = s_z;                  //  4 - 0b00000000 00010000 - +Z
+        index_offsets_evenz[EDGE_BCDL_NZ] = -s_z;                 //  5 - 0b00000000 00100000 - -Z
 
-    index_offsets_evenz[EDGE_BCDL_PXPYPZ] = s_hz;             //  6 - 0b00000000 01000000 - +X+Y+Z
-    index_offsets_evenz[EDGE_BCDL_NXPYPZ] = s_hz - 1;         //  7 - 0b00000000 10000000 - -X+Y+Z
-    index_offsets_evenz[EDGE_BCDL_PXNYPZ] = s_hz - s_y;       //  8 - 0b00000001 00000000 - +X-Y+Z
-    index_offsets_evenz[EDGE_BCDL_NXNYPZ] = s_hz - s_y - 1;   //  9 - 0b00000010 00000000 - -X-Y+Z
-    index_offsets_evenz[EDGE_BCDL_PXPYNZ] = -s_hz;            // 10 - 0b00000100 00000000 - +X+Y-Z
-    index_offsets_evenz[EDGE_BCDL_NXPYNZ] = -s_hz - 1;        // 11 - 0b00001000 00000000 - -X+Y-Z
-    index_offsets_evenz[EDGE_BCDL_PXNYNZ] = -s_hz - s_y;      // 12 - 0b00010000 00000000 - +X-Y-Z
-    index_offsets_evenz[EDGE_BCDL_NXNYNZ] = -s_hz - s_y - 1;  // 13 - 0b00100000 00000000 - -X-Y-Z
+        index_offsets_evenz[EDGE_BCDL_PXPYPZ] = s_hz;             //  6 - 0b00000000 01000000 - +X+Y+Z
+        index_offsets_evenz[EDGE_BCDL_NXPYPZ] = s_hz - 1;         //  7 - 0b00000000 10000000 - -X+Y+Z
+        index_offsets_evenz[EDGE_BCDL_PXNYPZ] = s_hz - s_y;       //  8 - 0b00000001 00000000 - +X-Y+Z
+        index_offsets_evenz[EDGE_BCDL_NXNYPZ] = s_hz - s_y - 1;   //  9 - 0b00000010 00000000 - -X-Y+Z
+        index_offsets_evenz[EDGE_BCDL_PXPYNZ] = -s_hz;            // 10 - 0b00000100 00000000 - +X+Y-Z
+        index_offsets_evenz[EDGE_BCDL_NXPYNZ] = -s_hz - 1;        // 11 - 0b00001000 00000000 - -X+Y-Z
+        index_offsets_evenz[EDGE_BCDL_PXNYNZ] = -s_hz - s_y;      // 12 - 0b00010000 00000000 - +X-Y-Z
+        index_offsets_evenz[EDGE_BCDL_NXNYNZ] = -s_hz - s_y - 1;  // 13 - 0b00100000 00000000 - -X-Y-Z
 
-    index_offsets_oddz[EDGE_BCDL_PX] = index_offsets_evenz[EDGE_BCDL_PX];
-    index_offsets_oddz[EDGE_BCDL_NX] = index_offsets_evenz[EDGE_BCDL_NX];
-    index_offsets_oddz[EDGE_BCDL_PY] = index_offsets_evenz[EDGE_BCDL_PY];
-    index_offsets_oddz[EDGE_BCDL_NY] = index_offsets_evenz[EDGE_BCDL_NY];
-    index_offsets_oddz[EDGE_BCDL_PZ] = index_offsets_evenz[EDGE_BCDL_PZ];
-    index_offsets_oddz[EDGE_BCDL_NZ] = index_offsets_evenz[EDGE_BCDL_NZ];
+        index_offsets_oddz[EDGE_BCDL_PX] = index_offsets_evenz[EDGE_BCDL_PX];
+        index_offsets_oddz[EDGE_BCDL_NX] = index_offsets_evenz[EDGE_BCDL_NX];
+        index_offsets_oddz[EDGE_BCDL_PY] = index_offsets_evenz[EDGE_BCDL_PY];
+        index_offsets_oddz[EDGE_BCDL_NY] = index_offsets_evenz[EDGE_BCDL_NY];
+        index_offsets_oddz[EDGE_BCDL_PZ] = index_offsets_evenz[EDGE_BCDL_PZ];
+        index_offsets_oddz[EDGE_BCDL_NZ] = index_offsets_evenz[EDGE_BCDL_NZ];
 
-    index_offsets_oddz[EDGE_BCDL_PXPYPZ] = s_hz + s_y + 1;
-    index_offsets_oddz[EDGE_BCDL_NXPYPZ] = s_hz + s_y;
-    index_offsets_oddz[EDGE_BCDL_PXNYPZ] = s_hz + 1;
-    index_offsets_oddz[EDGE_BCDL_NXNYPZ] = s_hz;
-    index_offsets_oddz[EDGE_BCDL_PXPYNZ] = -s_hz + s_y + 1;
-    index_offsets_oddz[EDGE_BCDL_NXPYNZ] = -s_hz + s_y;
-    index_offsets_oddz[EDGE_BCDL_PXNYNZ] = -s_hz + 1;
-    index_offsets_oddz[EDGE_BCDL_NXNYNZ] = -s_hz;
+        index_offsets_oddz[EDGE_BCDL_PXPYPZ] = s_hz + s_y + 1;
+        index_offsets_oddz[EDGE_BCDL_NXPYPZ] = s_hz + s_y;
+        index_offsets_oddz[EDGE_BCDL_PXNYPZ] = s_hz + 1;
+        index_offsets_oddz[EDGE_BCDL_NXNYPZ] = s_hz;
+        index_offsets_oddz[EDGE_BCDL_PXPYNZ] = -s_hz + s_y + 1;
+        index_offsets_oddz[EDGE_BCDL_NXPYNZ] = -s_hz + s_y;
+        index_offsets_oddz[EDGE_BCDL_PXNYNZ] = -s_hz + 1;
+        index_offsets_oddz[EDGE_BCDL_NXNYNZ] = -s_hz;
 
-    float step = resolution;
-    float diag = step / 2;
+        float step = resolution;
+        float diag = step / 2;
 
-    vector_offsets[EDGE_BCDL_PX] = {  step, 0, 0 };
-    vector_offsets[EDGE_BCDL_NX] = { -step, 0, 0 };
-    vector_offsets[EDGE_BCDL_PY] = { 0,  step, 0 };
-    vector_offsets[EDGE_BCDL_NY] = { 0, -step, 0 };
-    vector_offsets[EDGE_BCDL_PZ] = { 0, 0,  step };
-    vector_offsets[EDGE_BCDL_NZ] = { 0, 0, -step };
+        vector_offsets[EDGE_BCDL_PX] = { step, 0, 0 };
+        vector_offsets[EDGE_BCDL_NX] = { -step, 0, 0 };
+        vector_offsets[EDGE_BCDL_PY] = { 0,  step, 0 };
+        vector_offsets[EDGE_BCDL_NY] = { 0, -step, 0 };
+        vector_offsets[EDGE_BCDL_PZ] = { 0, 0,  step };
+        vector_offsets[EDGE_BCDL_NZ] = { 0, 0, -step };
 
-    vector_offsets[EDGE_BCDL_PXPYPZ] = {  diag,  diag,  diag };
-    vector_offsets[EDGE_BCDL_NXPYPZ] = { -diag,  diag,  diag };
-    vector_offsets[EDGE_BCDL_PXNYPZ] = {  diag, -diag,  diag };
-    vector_offsets[EDGE_BCDL_NXNYPZ] = { -diag, -diag,  diag };
-    vector_offsets[EDGE_BCDL_PXPYNZ] = {  diag,  diag, -diag };
-    vector_offsets[EDGE_BCDL_NXPYNZ] = { -diag,  diag, -diag };
-    vector_offsets[EDGE_BCDL_PXNYNZ] = {  diag, -diag, -diag };
-    vector_offsets[EDGE_BCDL_NXNYNZ] = { -diag, -diag, -diag };
+        vector_offsets[EDGE_BCDL_PXPYPZ] = { diag,  diag,  diag };
+        vector_offsets[EDGE_BCDL_NXPYPZ] = { -diag,  diag,  diag };
+        vector_offsets[EDGE_BCDL_PXNYPZ] = { diag, -diag,  diag };
+        vector_offsets[EDGE_BCDL_NXNYPZ] = { -diag, -diag,  diag };
+        vector_offsets[EDGE_BCDL_PXPYNZ] = { diag,  diag, -diag };
+        vector_offsets[EDGE_BCDL_NXPYNZ] = { -diag,  diag, -diag };
+        vector_offsets[EDGE_BCDL_PXNYNZ] = { diag, -diag, -diag };
+        vector_offsets[EDGE_BCDL_NXNYNZ] = { -diag, -diag, -diag };
+    }
+    else if (structure == LatticeType::SIMPLE_CUBIC)
+    {
+        int s_y = samples_x;
+        int s_z = samples_y * s_y;
+
+        index_offsets_evenz[EDGE_SIMP_PX] = 1;   
+        index_offsets_evenz[EDGE_SIMP_NX] = -1;  
+        index_offsets_evenz[EDGE_SIMP_PY] = s_y; 
+        index_offsets_evenz[EDGE_SIMP_NY] = -s_y;
+        index_offsets_evenz[EDGE_SIMP_PZ] = s_z; 
+        index_offsets_evenz[EDGE_SIMP_NZ] = -s_z;
+
+        index_offsets_evenz[EDGE_SIMP_PXPY] = s_y + 1;           
+        index_offsets_evenz[EDGE_SIMP_NXNY] = -s_y - 1;
+        index_offsets_evenz[EDGE_SIMP_PXPZ] = s_z + 1;
+        index_offsets_evenz[EDGE_SIMP_NXNZ] = -s_z - 1;
+        index_offsets_evenz[EDGE_SIMP_PYPZ] = s_z + s_y;
+        index_offsets_evenz[EDGE_SIMP_NYNZ] = -s_z - s_y;
+
+        index_offsets_evenz[EDGE_SIMP_PXPYPZ] = s_z + s_y + 1;
+        index_offsets_evenz[EDGE_SIMP_NXNYNZ] = -s_z - s_y - 1;
+
+        float step = resolution;
+        float diag = step / 2;
+
+        vector_offsets[EDGE_SIMP_PX] = { step, 0, 0 };
+        vector_offsets[EDGE_SIMP_NX] = { -step, 0, 0 };
+        vector_offsets[EDGE_SIMP_PY] = { 0,  step, 0 };
+        vector_offsets[EDGE_SIMP_NY] = { 0, -step, 0 };
+        vector_offsets[EDGE_SIMP_PZ] = { 0, 0,  step };
+        vector_offsets[EDGE_SIMP_NZ] = { 0, 0, -step };
+
+        vector_offsets[EDGE_SIMP_PXPY] = {  diag,  diag,     0 };
+        vector_offsets[EDGE_SIMP_NXNY] = { -diag, -diag,     0 };
+        vector_offsets[EDGE_SIMP_PXPZ] = {  diag,     0,  diag };
+        vector_offsets[EDGE_SIMP_NXNZ] = { -diag,     0, -diag };
+        vector_offsets[EDGE_SIMP_PYPZ] = {     0,  diag,  diag };
+        vector_offsets[EDGE_SIMP_NYNZ] = {     0, -diag, -diag };
+
+        vector_offsets[EDGE_SIMP_PXPYPZ] = {  diag,  diag,  diag };
+        vector_offsets[EDGE_BCDL_NXNYNZ] = { -diag, -diag, -diag };
+    }
 }
 
 void Builder::samplingPass()
