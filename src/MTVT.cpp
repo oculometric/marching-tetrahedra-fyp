@@ -265,16 +265,14 @@ static constexpr EdgeAddr EDGE_MAX = 14;
 static constexpr EdgeFlags FLAG_ALL = 0b0011111111111111;
 
 // TODO: alternative lattice structure requirements:
-// - different computation for min edges count etc
-// - different behaviour for sampling pass, i.e. remove position offsetting, double the layer height
-// - half the number of layers
-// - replacement for edge neighbour masks
 // - modify vertex pass to not care about odd/even layers and NOT to do any skipping of 'ignored' points
+// - vertex pass 'unconnected' outer-facing edge needs alternative method
 // - rewrite tetrahedron tables
 // - change iteration method (and really most of) geometry pass to operate on 2x2 blocks of cubes, to keep
 // the midpoint-based discarding thing
 // - alternative invert edge index
 // - different number of tetrahedra in the geometry pass, no skipping on adjacent cubes, since nothing overlaps between cubes
+// - different computation for min edges count etc
 
 void Builder::populateIndexOffsets()
 {
@@ -393,7 +391,7 @@ void Builder::samplingPass()
         t->join();
 }
 
-void MTVT::Builder::samplingLayer(const int start, const int layers)
+void Builder::samplingLayer(const int start, const int layers)
 {
     // sampling pass - compute the values at all of the sample points
     const float step = resolution / 2.0f;
@@ -401,16 +399,27 @@ void MTVT::Builder::samplingLayer(const int start, const int layers)
     // our position in the array, saves recomputing this all the time
     Index index = static_cast<Index>(start) * samples_x * samples_y;
     // current sample point position
-    Vector3 position = Vector3{ 0, 0, (min_extent.z - step) + (static_cast<Index>(start) * step) };
+
+    Vector3 position;
+    if (structure == BODY_CENTERED_DIAMOND)
+        position = Vector3{ 0, 0, (min_extent.z - step) + (static_cast<Index>(start) * step) };
+    else
+        position = Vector3{ 0, 0, min_extent.z + (static_cast<Index>(start) * resolution) };
     for (int zi = start; zi < layers + start; ++zi)
     {
         // reset the Y position according to whether this is a key row (zi % 2 = 1)
         // or an off row (zi % 2 = 0). this creates the diamond pattern
-        position.y = (zi % 2 == 0) ? (min_extent.y - step) : min_extent.y;
+        if (structure == BODY_CENTERED_DIAMOND)
+            position.y = (zi % 2 == 0) ? (min_extent.y - step) : min_extent.y;
+        else
+            position.y = min_extent.y;
         for (int yi = 0; yi < samples_y; ++yi)
         {
             // similarly, reset the X position
-            position.x = (zi % 2 == 0) ? (min_extent.x - step) : min_extent.x;
+            if (structure == BODY_CENTERED_DIAMOND)
+                position.x = (zi % 2 == 0) ? (min_extent.x - step) : min_extent.x;
+            else
+                position.x = min_extent.x;
             for (int xi = 0; xi < samples_x; ++xi)
             {
                 // i tested logic for skipping out points whose values will never be used, but it was actually less efficient!
@@ -425,11 +434,14 @@ void MTVT::Builder::samplingLayer(const int start, const int layers)
             position.y += resolution;
         }
         // move along by one sample point
-        position.z += step;
+        if (structure == BODY_CENTERED_DIAMOND)
+            position.z += step;
+        else
+            position.z += resolution;
     }
 }
 
-inline Vector3 MTVT::Builder::clampToBounds(Vector3 v)
+inline Vector3 Builder::clampToBounds(Vector3 v)
 {
     return max(min(v, max_extent), min_extent);
 }
@@ -438,23 +450,43 @@ inline Vector3 MTVT::Builder::clampToBounds(Vector3 v)
 // to the edge used to index the array, expressed as bitflags. used
 // to represent the graph of mergeable edges. this is essentailly a
 // template adjacency matrix
-static constexpr EdgeFlags edge_neighbour_masks[EDGE_MAX] =
-{                                                                                                                                   // diag......perp..
-    FLAG_BCDL_PXPYPZ | FLAG_BCDL_PXNYPZ | FLAG_BCDL_PXPYNZ | FLAG_BCDL_PXNYNZ,                                       // PX         //0b0001010101000000,
-    FLAG_BCDL_NXPYPZ | FLAG_BCDL_NXNYPZ | FLAG_BCDL_NXPYNZ | FLAG_BCDL_NXNYNZ,                                       // NX         //0b0010101010000000,
-    FLAG_BCDL_PXPYPZ | FLAG_BCDL_NXPYPZ | FLAG_BCDL_PXPYNZ | FLAG_BCDL_NXPYNZ,                                       // PY         //0b0000110011000000,
-    FLAG_BCDL_PXNYPZ | FLAG_BCDL_NXNYPZ | FLAG_BCDL_PXNYNZ | FLAG_BCDL_NXNYNZ,                                       // NY         //0b0011001100000000,
-    FLAG_BCDL_PXPYPZ | FLAG_BCDL_NXPYPZ | FLAG_BCDL_PXNYPZ | FLAG_BCDL_NXNYPZ,                                       // PZ         //0b0000001111000000,
-    FLAG_BCDL_PXPYNZ | FLAG_BCDL_NXPYNZ | FLAG_BCDL_PXNYNZ | FLAG_BCDL_NXNYNZ,                                       // NZ         //0b0011110000000000,
-    FLAG_BCDL_PX     | FLAG_BCDL_PY     | FLAG_BCDL_PZ     | FLAG_BCDL_NXPYPZ | FLAG_BCDL_PXNYPZ | FLAG_BCDL_PXPYNZ, // PXPYPZ     //0b0000010110010101,
-    FLAG_BCDL_NX     | FLAG_BCDL_PY     | FLAG_BCDL_PZ     | FLAG_BCDL_PXPYPZ | FLAG_BCDL_NXNYPZ | FLAG_BCDL_NXPYNZ, // NXPYPZ     //0b0000101001010110,
-    FLAG_BCDL_PX     | FLAG_BCDL_NY     | FLAG_BCDL_PZ     | FLAG_BCDL_NXNYPZ | FLAG_BCDL_PXPYPZ | FLAG_BCDL_PXNYNZ, // PXNYPZ     //0b0001001001011001,
-    FLAG_BCDL_NX     | FLAG_BCDL_NY     | FLAG_BCDL_PZ     | FLAG_BCDL_PXNYPZ | FLAG_BCDL_NXPYPZ | FLAG_BCDL_NXNYNZ, // NXNYPZ     //0b0010000110011010,
-    FLAG_BCDL_PX     | FLAG_BCDL_PY     | FLAG_BCDL_NZ     | FLAG_BCDL_NXPYNZ | FLAG_BCDL_PXNYNZ | FLAG_BCDL_PXPYPZ, // PXPYNZ     //0b0001100001100101,
-    FLAG_BCDL_NX     | FLAG_BCDL_PY     | FLAG_BCDL_NZ     | FLAG_BCDL_PXPYNZ | FLAG_BCDL_NXNYNZ | FLAG_BCDL_NXPYPZ, // NXPYNZ     //0b0010010010100110,
-    FLAG_BCDL_PX     | FLAG_BCDL_NY     | FLAG_BCDL_NZ     | FLAG_BCDL_NXNYNZ | FLAG_BCDL_PXPYNZ | FLAG_BCDL_PXNYPZ, // PXNYNZ     //0b0001101000101001,
-    FLAG_BCDL_NX     | FLAG_BCDL_NY     | FLAG_BCDL_NZ     | FLAG_BCDL_PXNYNZ | FLAG_BCDL_NXPYNZ | FLAG_BCDL_NXNYPZ, // NXNYNZ      // diag......perp..
-};
+static constexpr struct EdgeNeighbourMasks
+{
+    EdgeFlags body_centered[EDGE_MAX] =
+    {                                                                                                                                   // diag......perp..
+        FLAG_BCDL_PXPYPZ | FLAG_BCDL_PXNYPZ | FLAG_BCDL_PXPYNZ | FLAG_BCDL_PXNYNZ,                                       // PX         //0b0001010101000000,
+        FLAG_BCDL_NXPYPZ | FLAG_BCDL_NXNYPZ | FLAG_BCDL_NXPYNZ | FLAG_BCDL_NXNYNZ,                                       // NX         //0b0010101010000000,
+        FLAG_BCDL_PXPYPZ | FLAG_BCDL_NXPYPZ | FLAG_BCDL_PXPYNZ | FLAG_BCDL_NXPYNZ,                                       // PY         //0b0000110011000000,
+        FLAG_BCDL_PXNYPZ | FLAG_BCDL_NXNYPZ | FLAG_BCDL_PXNYNZ | FLAG_BCDL_NXNYNZ,                                       // NY         //0b0011001100000000,
+        FLAG_BCDL_PXPYPZ | FLAG_BCDL_NXPYPZ | FLAG_BCDL_PXNYPZ | FLAG_BCDL_NXNYPZ,                                       // PZ         //0b0000001111000000,
+        FLAG_BCDL_PXPYNZ | FLAG_BCDL_NXPYNZ | FLAG_BCDL_PXNYNZ | FLAG_BCDL_NXNYNZ,                                       // NZ         //0b0011110000000000,
+        FLAG_BCDL_PX | FLAG_BCDL_PY | FLAG_BCDL_PZ | FLAG_BCDL_NXPYPZ | FLAG_BCDL_PXNYPZ | FLAG_BCDL_PXPYNZ, // PXPYPZ     //0b0000010110010101,
+        FLAG_BCDL_NX | FLAG_BCDL_PY | FLAG_BCDL_PZ | FLAG_BCDL_PXPYPZ | FLAG_BCDL_NXNYPZ | FLAG_BCDL_NXPYNZ, // NXPYPZ     //0b0000101001010110,
+        FLAG_BCDL_PX | FLAG_BCDL_NY | FLAG_BCDL_PZ | FLAG_BCDL_NXNYPZ | FLAG_BCDL_PXPYPZ | FLAG_BCDL_PXNYNZ, // PXNYPZ     //0b0001001001011001,
+        FLAG_BCDL_NX | FLAG_BCDL_NY | FLAG_BCDL_PZ | FLAG_BCDL_PXNYPZ | FLAG_BCDL_NXPYPZ | FLAG_BCDL_NXNYNZ, // NXNYPZ     //0b0010000110011010,
+        FLAG_BCDL_PX | FLAG_BCDL_PY | FLAG_BCDL_NZ | FLAG_BCDL_NXPYNZ | FLAG_BCDL_PXNYNZ | FLAG_BCDL_PXPYPZ, // PXPYNZ     //0b0001100001100101,
+        FLAG_BCDL_NX | FLAG_BCDL_PY | FLAG_BCDL_NZ | FLAG_BCDL_PXPYNZ | FLAG_BCDL_NXNYNZ | FLAG_BCDL_NXPYPZ, // NXPYNZ     //0b0010010010100110,
+        FLAG_BCDL_PX | FLAG_BCDL_NY | FLAG_BCDL_NZ | FLAG_BCDL_NXNYNZ | FLAG_BCDL_PXPYNZ | FLAG_BCDL_PXNYPZ, // PXNYNZ     //0b0001101000101001,
+        FLAG_BCDL_NX | FLAG_BCDL_NY | FLAG_BCDL_NZ | FLAG_BCDL_PXNYNZ | FLAG_BCDL_NXPYNZ | FLAG_BCDL_NXNYPZ, // NXNYNZ      // diag......perp..
+    };
+    EdgeFlags simple_cubic[EDGE_MAX] =
+    {
+        FLAG_SIMP_PXPY | FLAG_SIMP_PXPZ | FLAG_SIMP_PXPYPZ | FLAG_SIMP_NY | FLAG_SIMP_NZ | FLAG_SIMP_NYNZ, // PX
+        FLAG_SIMP_PY | FLAG_SIMP_PZ | FLAG_SIMP_PYPZ | FLAG_SIMP_NXNYNZ | FLAG_SIMP_NXNY | FLAG_SIMP_NXNZ, // NX
+        FLAG_SIMP_PXPY | FLAG_SIMP_PYPZ | FLAG_SIMP_PXPYPZ | FLAG_SIMP_NX | FLAG_SIMP_NZ | FLAG_SIMP_NXNZ, // PY
+        FLAG_SIMP_PX | FLAG_SIMP_PZ | FLAG_SIMP_PXPZ | FLAG_SIMP_NXNYNZ | FLAG_SIMP_NXNY | FLAG_SIMP_NYNZ, // NY
+        FLAG_SIMP_PXPZ | FLAG_SIMP_PYPZ | FLAG_SIMP_PXPYPZ | FLAG_SIMP_NX | FLAG_SIMP_NY | FLAG_SIMP_NXNY, // PZ
+        FLAG_SIMP_PX | FLAG_SIMP_PX | FLAG_SIMP_PXPY | FLAG_SIMP_NXNYNZ | FLAG_SIMP_NXNZ | FLAG_SIMP_NYNZ, // NZ
+        FLAG_SIMP_PXPYPZ | FLAG_SIMP_PX | FLAG_SIMP_PY | FLAG_SIMP_NZ, // PXPY
+        FLAG_SIMP_NXNYNZ | FLAG_SIMP_PZ | FLAG_SIMP_NX | FLAG_SIMP_NY, // NXNY
+        FLAG_SIMP_PXPYPZ | FLAG_SIMP_PX | FLAG_SIMP_PZ | FLAG_SIMP_NY, // PXPZ
+        FLAG_SIMP_NXNYNZ | FLAG_SIMP_PY | FLAG_SIMP_NX | FLAG_SIMP_NZ, // NXNZ
+        FLAG_SIMP_PXPYPZ | FLAG_SIMP_PY | FLAG_SIMP_PZ | FLAG_SIMP_NX, // PYPZ
+        FLAG_SIMP_NXNYNZ | FLAG_SIMP_PX | FLAG_SIMP_NY | FLAG_SIMP_NZ, // NYNZ
+        FLAG_SIMP_PX | FLAG_SIMP_PY | FLAG_SIMP_PZ | FLAG_SIMP_PXPY | FLAG_SIMP_PXPZ | FLAG_SIMP_PYPZ, // PXPYPZ
+        FLAG_SIMP_NX | FLAG_SIMP_NY | FLAG_SIMP_NZ | FLAG_SIMP_NXNY | FLAG_SIMP_NXNZ | FLAG_SIMP_NYNZ, // NXNYNZ
+    };
+} edge_neighbour_masks;
 
 static inline uint8_t fastBitCount(EdgeFlags val)
 {
@@ -476,11 +508,11 @@ struct ConnectivityGraph
     uint8_t num_usable_edges = 0;
 
     ConnectivityGraph() = delete;
-    inline ConnectivityGraph(EdgeFlags _usable_edges, uint8_t _num_usable_edges)
+    inline ConnectivityGraph(const EdgeFlags* connectivity_template, EdgeFlags _usable_edges, uint8_t _num_usable_edges)
     {
         usable_edges = _usable_edges;
         num_usable_edges = _num_usable_edges;
-        memcpy(link_bits, edge_neighbour_masks, sizeof(EdgeFlags) * EDGE_MAX);
+        memcpy(link_bits, connectivity_template, sizeof(EdgeFlags) * EDGE_MAX);
         // iterate over the edges and strike out candidate edges which
         // are not both usable
         EdgeFlags mask = 1;
@@ -610,6 +642,8 @@ void Builder::vertexPass()
     Index connected_indices[EDGE_MAX] = { 0 };
     EdgeReferences edges;
     EdgeReferences edges_template; for (int p = 0; p < EDGE_MAX; ++p) edges_template.references[p] = VERTEX_NULL;
+    const EdgeFlags* connectivity_template = (structure == BODY_CENTERED_DIAMOND)
+        ? edge_neighbour_masks.body_centered : edge_neighbour_masks.simple_cubic;
 
     bool is_odd_z = true;
     for (int zi = 0; zi < samples_z; ++zi)
@@ -828,7 +862,7 @@ void Builder::vertexPass()
                 // the connectivity graph is an adjacency matrix where each bit
                 // represents whether there is a connection between the two
                 // edges used to index that bit in the array
-                ConnectivityGraph usable_graph(usable_edges, num_flagged_edges);
+                ConnectivityGraph usable_graph(connectivity_template, usable_edges, num_flagged_edges);
 
                 // if there are no mergeable edges anywhere, do them all individually and finish
                 if (usable_graph.highest_mergeable_count == 0)
@@ -856,7 +890,7 @@ void Builder::vertexPass()
                 // edges, then we know there must be an enclosed island somewhere, and
                 // hence we shouldn't merge things
                 EdgeFlags unusable_edges = (~usable_edges) & FLAG_ALL;
-                ConnectivityGraph unusable_graph(unusable_edges, fastBitCount(unusable_edges));
+                ConnectivityGraph unusable_graph(connectivity_template, unusable_edges, fastBitCount(unusable_edges));
                 auto negative_groups = unusable_graph.getIslands();
 
                 // otherwise, separate the data into islands by traversing to connected
@@ -880,34 +914,9 @@ void Builder::vertexPass()
                 // any islands which do not contain opposing edges can be merged,
                 // other islands need to be rebuilt as two groups (using bitmasks 
                 // to separate the island into halves)
-                // FIXME: change the opposing edge checks to be MORE THAN 180 degrees, not 180. i.e., the maximum traversal distance in the group
+                // FIXME: improvements to prevent the last few fucked up cases
                 for (EdgeFlags group_mask : groups)
-                {
-                    //int mask_index;
-                    //for (mask_index = 0; mask_index < 7; ++mask_index)
-                    //{
-                    //    mask = opposing_edge_masks[mask_index][0];
-                    //    if ((group_mask & mask) == mask)
-                    //    {
-                    //        // we found an opposing edge! kill it!
-                    //        break;
-                    //    }
-                    //}
-                    //if (mask_index >= 7)
-                    //{
-                        // all good! merge them!
-                        addMergedVertex(neighbour_values, thresh_diff, value, position, group_mask, vertices, edges);
-                    //}
-                    //else
-                    //{
-                    //    // split the group
-                    //    EdgeFlags half_mask = opposing_edge_masks[mask_index][1];
-                    //    EdgeFlags group_a = group_mask & half_mask;
-                    //    EdgeFlags group_b = group_mask & ~half_mask;
-                    //    addMergedVertex(neighbour_values, thresh_diff, value, position, group_a, vertices, edges);
-                    //    addMergedVertex(neighbour_values, thresh_diff, value, position, group_b, vertices, edges);
-                    //}
-                }
+                    addMergedVertex(neighbour_values, thresh_diff, value, position, group_mask, vertices, edges);
 
                 // write back the sample edge indices and continue to the next sample point
                 sample_edge_indices[index] = edges;
