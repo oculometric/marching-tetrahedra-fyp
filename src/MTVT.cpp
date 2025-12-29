@@ -13,8 +13,9 @@
 using namespace std;
 using namespace MTVT;
 
+// TODO: keep resources around from configure to destruct (or clear()) in case you want to re-generate stuff
 
-static inline size_t computeCubicFunction(size_t x, size_t y, size_t z, size_t a, size_t b, size_t c, size_t d)
+static inline size_t computeCubicFunction(size_t x, size_t y, size_t z, int a, int b, int c, int d)
 {
     return (a * x * y * z) + (b * ((x * y) + (x * z) + (y * z))) + (c * (x + y + z)) + d;
 }
@@ -107,16 +108,25 @@ Mesh Builder::generate(DebugStats& stats)
     stats.cubes_x                   = cubes_x;
     stats.cubes_y                   = cubes_y;
     stats.cubes_z                   = cubes_z;
-    stats.min_sample_points         = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 2, 3, 1, 1);
+    if (structure == BODY_CENTERED_DIAMOND)
+        stats.min_sample_points     = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 2, 3, 1, 1);
+    else
+        stats.min_sample_points     = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 1, -1, 1, -1);
     stats.mem_sample_points         = sizeof(SampleValue) * grid_data_length;
 #if defined DEBUG_GRID
     stats.mem_sample_points        += sizeof(Vector3) * grid_data_length;
 #endif
     stats.edges_allocated           = grid_data_length * 14;
-    stats.min_edges                 = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 14, 11, 1, 0);
+    if (structure == BODY_CENTERED_DIAMOND)
+        stats.min_edges                 = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 14, 11, 1, 0);
+    else
+        stats.min_edges = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 7, -3, 1, 0);
     stats.mem_edges                 = (sizeof(EdgeFlags) + sizeof(EdgeReferences)) * grid_data_length;
     stats.tetrahedra_evaluated      = tetrahedra_evaluated;
-    stats.max_tetrahedra            = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 12, 4, 0, 0);
+    if (structure == BODY_CENTERED_DIAMOND)
+        stats.max_tetrahedra            = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 12, 4, 0, 0);
+    else
+        stats.max_tetrahedra = computeCubicFunction(stats.cubes_x, stats.cubes_y, stats.cubes_z, 6, 0, 0, 0);
     stats.vertices                  = vertices.size();
     stats.indices                   = indices.size();
     stats.degenerate_triangles      = degenerate_triangles;
@@ -263,14 +273,6 @@ enum EdgeFlagSIMP : EdgeFlags
 
 static constexpr EdgeAddr EDGE_MAX = 14;
 static constexpr EdgeFlags FLAG_ALL = 0b0011111111111111;
-
-// TODO: alternative lattice structure requirements:
-// - rewrite tetrahedron tables
-// - change iteration method (and really most of) geometry pass to operate on 2x2 blocks of cubes, to keep
-// the midpoint-based discarding thing
-// - alternative invert edge index
-// - different number of tetrahedra in the geometry pass, no skipping on adjacent cubes, since nothing overlaps between cubes
-// - different computation for min edges count etc
 
 void Builder::populateIndexOffsets()
 {
@@ -961,126 +963,143 @@ void Builder::vertexPass()
     }
 }
 
-// each entry defines a collection of indices into the list of neighbouring sample points.
-// the 24 entries represent the 24 tetrahedra embedded in each cube.
-// the cube center is always assumed to be treated as the first sample point
-static constexpr EdgeAddr tetrahedra_sample_index_templates[24][3] =
-{
-    // +x side
-    { EDGE_BCDL_PX, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXNYNZ },
-    { EDGE_BCDL_PX, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXPYNZ },
-    { EDGE_BCDL_PX, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXPYPZ },
-    { EDGE_BCDL_PX, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXNYPZ },
-    // -x side
-    { EDGE_BCDL_NX, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXPYNZ },
-    { EDGE_BCDL_NX, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXNYNZ },
-    { EDGE_BCDL_NX, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXNYPZ },
-    { EDGE_BCDL_NX, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXPYPZ },
-    // +y side
-    { EDGE_BCDL_PY, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXPYNZ },
-    { EDGE_BCDL_PY, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NXPYNZ },
-    { EDGE_BCDL_PY, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXPYPZ },
-    { EDGE_BCDL_PY, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PXPYPZ },
-    // -y side
-    { EDGE_BCDL_NY, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXNYNZ },
-    { EDGE_BCDL_NY, EDGE_BCDL_NXNYNZ, EDGE_BCDL_PXNYNZ },
-    { EDGE_BCDL_NY, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXNYPZ },
-    { EDGE_BCDL_NY, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NXNYPZ },
-    // +z side
-    { EDGE_BCDL_PZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXNYPZ },
-    { EDGE_BCDL_PZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PXNYPZ },
-    { EDGE_BCDL_PZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXPYPZ },
-    { EDGE_BCDL_PZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_NXPYPZ },
-    // -z side
-    { EDGE_BCDL_NZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXPYNZ },
-    { EDGE_BCDL_NZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PXPYNZ },
-    { EDGE_BCDL_NZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXNYNZ },
-    { EDGE_BCDL_NZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NXNYNZ },
-};
 
-// each pair of entries defines which of the four sample points involved with a tetrahedron
-// make up a particular generic edge. order matters! these are generic indices
-// into the array of sample point indices relevant to the current tetrahedron.
-static constexpr uint8_t tetrahedra_edge_sample_point_indices[12] =
-{
-    0, 1,   // edge 0 = center -> pyramid   (CP)
-    0, 2,   // edge 1 = center -> upper     (CU)
-    0, 3,   // edge 2 = center -> lower     (CL)
-    1, 2,   // edge 3 = pyramid -> upper    (PU)
-    1, 3,   // edge 4 = pyramid -> lower    (PL)
-    2, 3    // edge 5 = upper -> lower      (UL)
-};
+// TODO: alternative lattice structure requirements:
 
-// each entry defines a collection of generic edge indices relative to a sample point.
-// the table above relates the sample points involved for each of the generic edges
-// described in this list. each element in an entry can be inverted using the macro,
-// and applied relative to the other end of the edge (for example, instead of PX of sp0,
-// you would have NX of sp1) in order to find the alternate storage location for the relevant
-// data.
-// hence, entries represent the 6 edges in the tetrahedron and are ordered
-//     CP, CU, CL, PU, PL, UL
-static constexpr EdgeAddr tetrahedra_edge_address_templates[24][6] =
-{
-    // +x side
-    { EDGE_BCDL_PX, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NZ },
-    { EDGE_BCDL_PX, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PY },
-    { EDGE_BCDL_PX, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PZ },
-    { EDGE_BCDL_PX, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NY },
-    // -x side
-    { EDGE_BCDL_NX, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NZ },
-    { EDGE_BCDL_NX, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NY },
-    { EDGE_BCDL_NX, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PZ },
-    { EDGE_BCDL_NX, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PY },
-    // +y side
-    { EDGE_BCDL_PY, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NZ },
-    { EDGE_BCDL_PY, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NX },
-    { EDGE_BCDL_PY, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PZ },
-    { EDGE_BCDL_PY, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PX },
-    // -y side
-    { EDGE_BCDL_NY, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NZ },
-    { EDGE_BCDL_NY, EDGE_BCDL_NXNYNZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PX },
-    { EDGE_BCDL_NY, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PZ },
-    { EDGE_BCDL_NY, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NX },
-    // +z side
-    { EDGE_BCDL_PZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NY },
-    { EDGE_BCDL_PZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PX },
-    { EDGE_BCDL_PZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PY },
-    { EDGE_BCDL_PZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NX },
-    // -z side
-    { EDGE_BCDL_NZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PY },
-    { EDGE_BCDL_NZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PX },
-    { EDGE_BCDL_NZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NY },
-    { EDGE_BCDL_NZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NX }
-};
+// - completely rewrite the geometry pass
+// - rewrite tetrahedron tables
 
-// look up table for the geometry patterns for different tetrahedra configurations
-// edge indices range from 0-5, but each one could refer to the inverted-direction version
-// from the sample point at the other end of the edge, and this is checked at each step.
-// these sequences combine the per-edge vertex references into triangles.
-// the last values may be -1 (aka 255) if there is only one triangle
-static constexpr int8_t tetrahedral_edge_address_patterns[16][4] =
-{
-    { -1, -1, -1, -1 }, // no bits set
-    {  0,  1,  2, -1 }, // 0b0001
-    {  0,  4,  3, -1 }, // 0b0010
-    {  2,  4,  1,  3 }, // 0b0011
-    {  3,  5,  1, -1 }, // 0b0100
-    {  5,  2,  3,  0 }, // 0b0101
-    {  0,  4,  1,  5 }, // 0b0110
-    {  5,  2,  4, -1 }, // 0b0111
-    {  5,  4,  2, -1 }, // 0b1000
-    {  5,  4,  1,  0 }, // 0b1001
-    {  0,  2,  3,  5 }, // 0b1010
-    {  1,  5,  3, -1 }, // 0b1011
-    {  4,  2,  3,  1 }, // 0b1100
-    {  0,  3,  4, -1 }, // 0b1101
-    {  1,  0,  2, -1 }, // 0b1110
-    { -1, -1, -1, -1 }, // all bits set
-};
 
-// this macro simply turns an edge address into the edge address pointing in the 
-// opposite direction
-#define INVERT_EDGE_INDEX(i) (EdgeAddr)((i < 6) ? (i + 1 - ((i % 2) * 2)) : (19 - i))
+static constexpr struct TetrahedraTablesBCDL
+{
+    // each entry defines a collection of indices into the list of neighbouring sample points.
+    // the 24 entries represent the 24 tetrahedra embedded in each cube.
+    // the cube center is always assumed to be treated as the first sample point
+    EdgeAddr sample_index_templates[24][3] =
+    {
+        // +x side
+        { EDGE_BCDL_PX, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXNYNZ },
+        { EDGE_BCDL_PX, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXPYNZ },
+        { EDGE_BCDL_PX, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXPYPZ },
+        { EDGE_BCDL_PX, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXNYPZ },
+        // -x side
+        { EDGE_BCDL_NX, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXPYNZ },
+        { EDGE_BCDL_NX, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXNYNZ },
+        { EDGE_BCDL_NX, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXNYPZ },
+        { EDGE_BCDL_NX, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXPYPZ },
+        // +y side
+        { EDGE_BCDL_PY, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXPYNZ },
+        { EDGE_BCDL_PY, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NXPYNZ },
+        { EDGE_BCDL_PY, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXPYPZ },
+        { EDGE_BCDL_PY, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PXPYPZ },
+        // -y side
+        { EDGE_BCDL_NY, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXNYNZ },
+        { EDGE_BCDL_NY, EDGE_BCDL_NXNYNZ, EDGE_BCDL_PXNYNZ },
+        { EDGE_BCDL_NY, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXNYPZ },
+        { EDGE_BCDL_NY, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NXNYPZ },
+        // +z side
+        { EDGE_BCDL_PZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXNYPZ },
+        { EDGE_BCDL_PZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PXNYPZ },
+        { EDGE_BCDL_PZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXPYPZ },
+        { EDGE_BCDL_PZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_NXPYPZ },
+        // -z side
+        { EDGE_BCDL_NZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXPYNZ },
+        { EDGE_BCDL_NZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PXPYNZ },
+        { EDGE_BCDL_NZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXNYNZ },
+        { EDGE_BCDL_NZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NXNYNZ },
+    };
+
+    // each pair of entries defines which of the four sample points involved with a tetrahedron
+    // make up a particular generic edge. order matters! these are generic indices
+    // into the array of sample point indices relevant to the current tetrahedron.
+    uint8_t edge_sample_point_indices[12] =
+    {
+        0, 1,   // edge 0 = center -> pyramid   (CP)
+        0, 2,   // edge 1 = center -> upper     (CU)
+        0, 3,   // edge 2 = center -> lower     (CL)
+        1, 2,   // edge 3 = pyramid -> upper    (PU)
+        1, 3,   // edge 4 = pyramid -> lower    (PL)
+        2, 3    // edge 5 = upper -> lower      (UL)
+    };
+
+
+    // each entry defines a collection of generic edge indices relative to a sample point.
+    // the table above relates the sample points involved for each of the generic edges
+    // described in this list. each element in an entry can be inverted using the macro,
+    // and applied relative to the other end of the edge (for example, instead of PX of sp0,
+    // you would have NX of sp1) in order to find the alternate storage location for the relevant
+    // data.
+    // hence, entries represent the 6 edges in the tetrahedron and are ordered
+    //     CP, CU, CL, PU, PL, UL
+    EdgeAddr edge_address_templates[24][6] =
+    {
+        // +x side
+        { EDGE_BCDL_PX, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NZ },
+        { EDGE_BCDL_PX, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PY },
+        { EDGE_BCDL_PX, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PZ },
+        { EDGE_BCDL_PX, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NY },
+        // -x side
+        { EDGE_BCDL_NX, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NZ },
+        { EDGE_BCDL_NX, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NY },
+        { EDGE_BCDL_NX, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PZ },
+        { EDGE_BCDL_NX, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PY },
+        // +y side
+        { EDGE_BCDL_PY, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NZ },
+        { EDGE_BCDL_PY, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NX },
+        { EDGE_BCDL_PY, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PZ },
+        { EDGE_BCDL_PY, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PX },
+        // -y side
+        { EDGE_BCDL_NY, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NZ },
+        { EDGE_BCDL_NY, EDGE_BCDL_NXNYNZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PX },
+        { EDGE_BCDL_NY, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PZ },
+        { EDGE_BCDL_NY, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NX },
+        // +z side
+        { EDGE_BCDL_PZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NY },
+        { EDGE_BCDL_PZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PX },
+        { EDGE_BCDL_PZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PY },
+        { EDGE_BCDL_PZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NX },
+        // -z side
+        { EDGE_BCDL_NZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PY },
+        { EDGE_BCDL_NZ, EDGE_BCDL_NXPYNZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_NXPYPZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PX },
+        { EDGE_BCDL_NZ, EDGE_BCDL_PXPYNZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_PXPYPZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NY },
+        { EDGE_BCDL_NZ, EDGE_BCDL_PXNYNZ, EDGE_BCDL_NXNYNZ, EDGE_BCDL_PXNYPZ, EDGE_BCDL_NXNYPZ, EDGE_BCDL_NX }
+    };
+
+    // look up table for the geometry patterns for different tetrahedra configurations
+    // edge indices range from 0-5, but each one could refer to the inverted-direction version
+    // from the sample point at the other end of the edge, and this is checked at each step.
+    // these sequences combine the per-edge vertex references into triangles.
+    // the last values may be -1 (aka 255) if there is only one triangle
+    int8_t edge_address_patterns[16][4] =
+    {
+        { -1, -1, -1, -1 }, // no bits set
+        {  0,  1,  2, -1 }, // 0b0001
+        {  0,  4,  3, -1 }, // 0b0010
+        {  2,  4,  1,  3 }, // 0b0011
+        {  3,  5,  1, -1 }, // 0b0100
+        {  5,  2,  3,  0 }, // 0b0101
+        {  0,  4,  1,  5 }, // 0b0110
+        {  5,  2,  4, -1 }, // 0b0111
+        {  5,  4,  2, -1 }, // 0b1000
+        {  5,  4,  1,  0 }, // 0b1001
+        {  0,  2,  3,  5 }, // 0b1010
+        {  1,  5,  3, -1 }, // 0b1011
+        {  4,  2,  3,  1 }, // 0b1100
+        {  0,  3,  4, -1 }, // 0b1101
+        {  1,  0,  2, -1 }, // 0b1110
+        { -1, -1, -1, -1 }, // all bits set
+    };
+
+    // this function simply turns an edge address into the edge address pointing in the 
+    // opposite direction
+    static inline EdgeAddr invertEdgeIndex(EdgeAddr i) { return (i < 6) ? (i + 1 - ((i % 2) * 2)) : (19 - i); }
+
+} tetrahedra_bcdl;
+
+static constexpr struct TetrahedraTablesSIMP
+{
+    static inline EdgeAddr invertEdgeIndex(EdgeAddr i) { return i + 1 - ((i % 2) * 2); }
+} tetrahedra_simp;
 
 void Builder::geometryPass()
 {
@@ -1141,16 +1160,16 @@ void Builder::geometryPass()
                     const Index tetrahedra_sample_indices[4] =
                     {
                         central_sample_index,                                         // C = center
-                        connected_indices[(tetrahedra_sample_index_templates[t])[0]], // P = pyramid
-                        connected_indices[(tetrahedra_sample_index_templates[t])[1]], // U = upper
-                        connected_indices[(tetrahedra_sample_index_templates[t])[2]]  // L = lower
+                        connected_indices[(tetrahedra_bcdl.sample_index_templates[t])[0]], // P = pyramid
+                        connected_indices[(tetrahedra_bcdl.sample_index_templates[t])[1]], // U = upper
+                        connected_indices[(tetrahedra_bcdl.sample_index_templates[t])[2]]  // L = lower
                     };
 
                     const bool sample_neighbours_crossing_flags[3] =
                     {
-                        static_cast<bool>(central_sample_crossing_flags & (1 << (tetrahedra_sample_index_templates[t])[0])),
-                        static_cast<bool>(central_sample_crossing_flags & (1 << (tetrahedra_sample_index_templates[t])[1])),
-                        static_cast<bool>(central_sample_crossing_flags & (1 << (tetrahedra_sample_index_templates[t])[2]))
+                        static_cast<bool>(central_sample_crossing_flags & (1 << (tetrahedra_bcdl.sample_index_templates[t])[0])),
+                        static_cast<bool>(central_sample_crossing_flags & (1 << (tetrahedra_bcdl.sample_index_templates[t])[1])),
+                        static_cast<bool>(central_sample_crossing_flags & (1 << (tetrahedra_bcdl.sample_index_templates[t])[2]))
                     };
 
                     // check which SPs are inside/outside and use that to build a pattern
@@ -1170,22 +1189,22 @@ void Builder::geometryPass()
                     // of the sample points for this tetrahedron
                     const EdgeAddr tetrahedra_edge_addresses[12] =
                     {
-                                          tetrahedra_edge_address_templates[t][0],  // relative to C
-                        INVERT_EDGE_INDEX(tetrahedra_edge_address_templates[t][0]), // relative to P
-                                          tetrahedra_edge_address_templates[t][1],  // relative to C
-                        INVERT_EDGE_INDEX(tetrahedra_edge_address_templates[t][1]), // relative to U
-                                          tetrahedra_edge_address_templates[t][2],  // relative to C
-                        INVERT_EDGE_INDEX(tetrahedra_edge_address_templates[t][2]), // relative to L
-                                          tetrahedra_edge_address_templates[t][3],  // relative to P
-                        INVERT_EDGE_INDEX(tetrahedra_edge_address_templates[t][3]), // relative to U
-                                          tetrahedra_edge_address_templates[t][4],  // relative to P
-                        INVERT_EDGE_INDEX(tetrahedra_edge_address_templates[t][4]), // relative to L
-                                          tetrahedra_edge_address_templates[t][5],  // relative to U
-                        INVERT_EDGE_INDEX(tetrahedra_edge_address_templates[t][5]), // relative to L
+                                          tetrahedra_bcdl.edge_address_templates[t][0],  // relative to C
+                        TetrahedraTablesBCDL::invertEdgeIndex(tetrahedra_bcdl.edge_address_templates[t][0]), // relative to P
+                                          tetrahedra_bcdl.edge_address_templates[t][1],  // relative to C
+                        TetrahedraTablesBCDL::invertEdgeIndex(tetrahedra_bcdl.edge_address_templates[t][1]), // relative to U
+                                          tetrahedra_bcdl.edge_address_templates[t][2],  // relative to C
+                        TetrahedraTablesBCDL::invertEdgeIndex(tetrahedra_bcdl.edge_address_templates[t][2]), // relative to L
+                                          tetrahedra_bcdl.edge_address_templates[t][3],  // relative to P
+                        TetrahedraTablesBCDL::invertEdgeIndex(tetrahedra_bcdl.edge_address_templates[t][3]), // relative to U
+                                          tetrahedra_bcdl.edge_address_templates[t][4],  // relative to P
+                        TetrahedraTablesBCDL::invertEdgeIndex(tetrahedra_bcdl.edge_address_templates[t][4]), // relative to L
+                                          tetrahedra_bcdl.edge_address_templates[t][5],  // relative to U
+                        TetrahedraTablesBCDL::invertEdgeIndex(tetrahedra_bcdl.edge_address_templates[t][5]), // relative to L
                     };
 
                     // find the edge usage sequence (and thus index sequence) based on the pattern
-                    auto pattern = tetrahedral_edge_address_patterns[pattern_ident];
+                    auto pattern = tetrahedra_bcdl.edge_address_patterns[pattern_ident];
                     // build one or two triangles
                     VertexRef triangle_indices[4] = { VERTEX_NULL, VERTEX_NULL, VERTEX_NULL, VERTEX_NULL };
                     const bool two_triangles = pattern[3] != -1;
@@ -1201,8 +1220,8 @@ void Builder::geometryPass()
                         const EdgeAddr edge_address_b = tetrahedra_edge_addresses[(edge_address_index * 2) + 1];
                         // these find the two sample points which are at 
                         // either end of the given edge index
-                        const Index sample_point_index_a = tetrahedra_sample_indices[tetrahedra_edge_sample_point_indices[edge_address_index * 2]];
-                        const Index sample_point_index_b = tetrahedra_sample_indices[tetrahedra_edge_sample_point_indices[(edge_address_index * 2) + 1]];
+                        const Index sample_point_index_a = tetrahedra_sample_indices[tetrahedra_bcdl.edge_sample_point_indices[edge_address_index * 2]];
+                        const Index sample_point_index_b = tetrahedra_sample_indices[tetrahedra_bcdl.edge_sample_point_indices[(edge_address_index * 2) + 1]];
 
                         // assume initial interpretation, but if there is no data on 
                         // that edge, use the alternative interpretation
@@ -1257,14 +1276,6 @@ void Builder::geometryPass()
         }
     }
 }
-
-struct MeshEdge
-{
-    VertexRef a;
-    VertexRef b;
-    size_t triangle_a;
-    size_t triangle_b;
-};
 
 inline uint64_t makeEdge(VertexRef a, VertexRef b)
 {

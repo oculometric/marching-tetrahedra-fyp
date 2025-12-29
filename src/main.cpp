@@ -17,7 +17,8 @@ MappedMesh bunny_mesh;
 
 int main()
 {
-    bool start_gui = true;
+    // TODO: command line options
+    bool start_gui = false;
 
     if (start_gui)
     {
@@ -36,9 +37,10 @@ int main()
     {
         auto result = runBenchmark("fbm", 50, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
         printBenchmarkSummary(result.first);
-        result = runBenchmark("sphere", 50, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, sphereFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
+        result = runBenchmark("sphere", 50, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, sphereFunc, 0.0f, Builder::SIMPLE_CUBIC, Builder::INTEGRATED, 8);
         printBenchmarkSummary(result.first);
     }
+
     
 
     //csv_file += runBenchmark("sphere", 10, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f, Builder::BODY_CENTERED_DIAMOND, Builder::NONE, 8);
