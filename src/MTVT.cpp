@@ -265,8 +265,6 @@ static constexpr EdgeAddr EDGE_MAX = 14;
 static constexpr EdgeFlags FLAG_ALL = 0b0011111111111111;
 
 // TODO: alternative lattice structure requirements:
-// - modify vertex pass to not care about odd/even layers and NOT to do any skipping of 'ignored' points
-// - vertex pass 'unconnected' outer-facing edge needs alternative method
 // - rewrite tetrahedron tables
 // - change iteration method (and really most of) geometry pass to operate on 2x2 blocks of cubes, to keep
 // the midpoint-based discarding thing
@@ -635,9 +633,9 @@ void Builder::vertexPass()
     // flagging pass - check all of the edges around each sample point, and set the edge flag bits
     // vertex pass - generate vertices for edges with flags set, and merge them where possible, assigning vertex references to these edges
 
-    // our position in the array, saves recomputing this all the time
     float step = resolution / 2.0f;
     Vector3 position;
+    // our position in the array, saves recomputing this all the time
     Index index = 0;
     Index connected_indices[EDGE_MAX] = { 0 };
     EdgeReferences edges;
@@ -646,47 +644,67 @@ void Builder::vertexPass()
         ? edge_neighbour_masks.body_centered : edge_neighbour_masks.simple_cubic;
 
     bool is_odd_z = true;
+    bool is_min_z = false;
+    bool is_max_z = false;
+    bool is_min_y = false;
+    bool is_max_y = false;
+    bool is_min_x = false;
+    bool is_max_x = false;
     for (int zi = 0; zi < samples_z; ++zi)
     {
-        position.z = (zi * step) + (min_extent.z - step);
-        is_odd_z = !is_odd_z;
-        bool is_min_z = zi <= 1;
-        bool is_max_z = zi >= samples_z - 2;
+        is_min_z = zi <= 1;
+        if (structure == BODY_CENTERED_DIAMOND)
+        {
+            is_max_z = zi >= samples_z - 2;
+            is_odd_z = !is_odd_z;
+            position.z = (zi * step) + (min_extent.z - step);
+        }
+        else
+        {
+            is_max_z = zi >= samples_z - 1;
+            position.z = (zi * resolution) + min_extent.z;
+        }
         for (int yi = 0; yi < samples_y; ++yi)
         {
-            position.y = (yi * resolution) + (is_odd_z ? min_extent.y : (min_extent.y - step));
-            bool is_max_y = yi >= samples_y - 1;
-            bool is_min_y = yi <= 0;
+            is_min_y = yi <= 0;
+            is_max_y = yi >= samples_y - 1;
+            if (structure == BODY_CENTERED_DIAMOND)
+                position.y = (yi * resolution) + (is_odd_z ? min_extent.y : (min_extent.y - step));
+            else
+                position.y = (yi * resolution) + min_extent.y;
             for (int xi = 0; xi < samples_x; ++xi)
             {
-                bool is_max_x = xi >= samples_x - 1;
-                // check flags for where this sample is within the sample space
-                if (is_odd_z && (is_max_x || is_max_y))
+                is_min_x = xi <= 0;
+                is_max_x = xi >= samples_x - 1;
+                if (structure == BODY_CENTERED_DIAMOND)
                 {
-                    // early reject if this is just an extra filler point
-                    ++index;
-                    continue;
-                }
-                bool is_min_x = xi <= 0;
-                if (!is_odd_z)
-                {
-                    int num_edges = 0;
-                    if (is_min_x) ++num_edges;
-                    if (is_max_x) ++num_edges;
-                    if (is_min_y) ++num_edges;
-                    if (is_max_y) ++num_edges;
-                    if (is_min_z) ++num_edges;
-                    if (is_max_z) ++num_edges;
-                    if (num_edges >= 2)
+                    // check flags for where this sample is within the sample space
+                    if (is_odd_z && (is_max_x || is_max_y))
                     {
-                        // early reject if this is an edge point
+                        // early reject if this is just an extra filler point
                         ++index;
                         continue;
+                    }
+                    if (!is_odd_z)
+                    {
+                        int num_edges = 0;
+                        if (is_min_x) ++num_edges;
+                        if (is_max_x) ++num_edges;
+                        if (is_min_y) ++num_edges;
+                        if (is_max_y) ++num_edges;
+                        if (is_min_z) ++num_edges;
+                        if (is_max_z) ++num_edges;
+                        if (num_edges >= 2)
+                        {
+                            // early reject if this is an edge point
+                            ++index;
+                            continue;
+                        }
                     }
                 }
 
                 // populate the list of neighbouring indices
-                if (!is_odd_z)
+                if (structure == SIMPLE_CUBIC || !is_odd_z)
                 {
                     for (int t = 0; t < EDGE_MAX; ++t)
                         connected_indices[t] = index + index_offsets_evenz[t];
@@ -701,14 +719,15 @@ void Builder::vertexPass()
                 // on the outer faces of the sample cube as the outermost points
                 // do not have neighbours in that face's direction (i.e. these
                 // indices would be invalid)
-                EdgeFlags checkable_edges = FLAG_ALL;
+                EdgeFlags uncheckable_edges = 0;
+                if (structure == BODY_CENTERED_DIAMOND)
                 {
                     if (is_min_z)
                     {
-                        checkable_edges ^= FLAG_BCDL_NZ;
+                        uncheckable_edges |= FLAG_BCDL_NZ;
                         if (!is_odd_z)
                         {
-                            checkable_edges ^= (FLAG_BCDL_PX | FLAG_BCDL_NX |
+                            uncheckable_edges |= (FLAG_BCDL_PX | FLAG_BCDL_NX |
                                 FLAG_BCDL_PY | FLAG_BCDL_NY |
                                 FLAG_BCDL_PXPYNZ | FLAG_BCDL_NXPYNZ |
                                 FLAG_BCDL_PXNYNZ | FLAG_BCDL_NXNYNZ);
@@ -716,10 +735,10 @@ void Builder::vertexPass()
                     }
                     if (is_min_y)
                     {
-                        checkable_edges ^= FLAG_BCDL_NY;
+                        uncheckable_edges |= FLAG_BCDL_NY;
                         if (!is_odd_z)
                         {
-                            checkable_edges ^= (FLAG_BCDL_PX | FLAG_BCDL_NX |
+                            uncheckable_edges |= (FLAG_BCDL_PX | FLAG_BCDL_NX |
                                 FLAG_BCDL_PZ | FLAG_BCDL_NZ |
                                 FLAG_BCDL_PXNYPZ | FLAG_BCDL_NXNYPZ |
                                 FLAG_BCDL_PXNYNZ | FLAG_BCDL_NXNYNZ);
@@ -727,10 +746,10 @@ void Builder::vertexPass()
                     }
                     if (is_min_x)
                     {
-                        checkable_edges ^= FLAG_BCDL_NX;
+                        uncheckable_edges |= FLAG_BCDL_NX;
                         if (!is_odd_z)
                         {
-                            checkable_edges ^= (FLAG_BCDL_PY | FLAG_BCDL_NY |
+                            uncheckable_edges |= (FLAG_BCDL_PY | FLAG_BCDL_NY |
                                 FLAG_BCDL_PZ | FLAG_BCDL_NZ |
                                 FLAG_BCDL_NXPYPZ | FLAG_BCDL_NXNYPZ |
                                 FLAG_BCDL_NXPYNZ | FLAG_BCDL_NXNYNZ);
@@ -738,10 +757,10 @@ void Builder::vertexPass()
                     }
                     if (is_max_z)
                     {
-                        checkable_edges ^= FLAG_BCDL_PZ;
+                        uncheckable_edges |= FLAG_BCDL_PZ;
                         if (!is_odd_z)
                         {
-                            checkable_edges ^= (FLAG_BCDL_PX | FLAG_BCDL_NX |
+                            uncheckable_edges |= (FLAG_BCDL_PX | FLAG_BCDL_NX |
                                 FLAG_BCDL_PY | FLAG_BCDL_NY |
                                 FLAG_BCDL_PXPYPZ | FLAG_BCDL_NXPYPZ |
                                 FLAG_BCDL_PXNYPZ | FLAG_BCDL_NXNYPZ);
@@ -749,10 +768,10 @@ void Builder::vertexPass()
                     }
                     if (is_max_y)
                     {
-                        checkable_edges ^= FLAG_BCDL_PY;
+                        uncheckable_edges |= FLAG_BCDL_PY;
                         if (!is_odd_z)
                         {
-                            checkable_edges ^= (FLAG_BCDL_PX | FLAG_BCDL_NX |
+                            uncheckable_edges |= (FLAG_BCDL_PX | FLAG_BCDL_NX |
                                 FLAG_BCDL_PZ | FLAG_BCDL_NZ |
                                 FLAG_BCDL_PXPYPZ | FLAG_BCDL_NXPYPZ |
                                 FLAG_BCDL_PXPYNZ | FLAG_BCDL_NXPYNZ);
@@ -760,16 +779,32 @@ void Builder::vertexPass()
                     }
                     if (is_max_x)
                     {
-                        checkable_edges ^= FLAG_BCDL_PX;
+                        uncheckable_edges |= FLAG_BCDL_PX;
                         if (!is_odd_z)
                         {
-                            checkable_edges ^= (FLAG_BCDL_PY | FLAG_BCDL_NY |
+                            uncheckable_edges |= (FLAG_BCDL_PY | FLAG_BCDL_NY |
                                 FLAG_BCDL_PZ | FLAG_BCDL_NZ |
                                 FLAG_BCDL_PXPYPZ | FLAG_BCDL_PXNYPZ |
                                 FLAG_BCDL_PXPYNZ | FLAG_BCDL_PXNYNZ);
                         }
                     }
                 }
+                else
+                {
+                    if (is_min_z)
+                        uncheckable_edges |= (FLAG_SIMP_NZ | FLAG_SIMP_NXNYNZ | FLAG_SIMP_NXNZ | FLAG_SIMP_NYNZ);
+                    if (is_min_y)
+                        uncheckable_edges |= (FLAG_SIMP_NY | FLAG_SIMP_NXNYNZ | FLAG_SIMP_NXNY | FLAG_SIMP_NYNZ);
+                    if (is_min_x)
+                        uncheckable_edges |= (FLAG_SIMP_NX | FLAG_SIMP_NXNYNZ | FLAG_SIMP_NXNY | FLAG_SIMP_NXNZ);
+                    if (is_max_z)
+                        uncheckable_edges |= (FLAG_SIMP_PZ | FLAG_SIMP_PXPYPZ | FLAG_SIMP_PXPZ | FLAG_SIMP_PYPZ);
+                    if (is_max_y)
+                        uncheckable_edges |= (FLAG_SIMP_PY | FLAG_SIMP_PXPYPZ | FLAG_SIMP_PXPY | FLAG_SIMP_PYPZ);
+                    if (is_max_x)
+                        uncheckable_edges |= (FLAG_SIMP_PX | FLAG_SIMP_PXPYPZ | FLAG_SIMP_PXPY | FLAG_SIMP_PXPZ);
+                }
+                EdgeFlags checkable_edges = FLAG_ALL ^ uncheckable_edges;
 
                 // grab useful data about ourself
                 EdgeFlags edge_proximity_flags = 0;
