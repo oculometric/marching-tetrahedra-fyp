@@ -163,22 +163,22 @@ void Builder::prepareBuffers()
     if ((grid_data_length / static_cast<size_t>(samples_x)) / static_cast<size_t>(samples_y) != static_cast<size_t>(samples_z))
         throw exception("mesh builder: sample volume dimensions too big");
 
-    sample_values = new SampleValue[grid_data_length];
+    sample_values.resize(grid_data_length);
 #if defined DEBUG_GRID
     sample_positions = new Vector3[grid_data_length];
 #endif
-    sample_crossing_flags = new EdgeFlags[grid_data_length];
-    sample_edge_indices = new EdgeReferences[grid_data_length];
+    sample_crossing_flags.resize(grid_data_length);
+    sample_edge_indices.resize(grid_data_length);
 }
 
 void Builder::destroyBuffers()
 {
-    delete[] sample_values; sample_values = nullptr;
+    sample_values.clear();
 #if defined DEBUG_GRID
     delete[] sample_positions; sample_positions = nullptr;
 #endif
-    delete[] sample_crossing_flags; sample_crossing_flags = nullptr;
-    delete[] sample_edge_indices; sample_edge_indices = nullptr;
+    sample_crossing_flags.clear();
+    sample_edge_indices.clear();
 }
 
 // these are all the possible EdgeAddr values, the defines give them
@@ -1357,7 +1357,7 @@ void Builder::performSimpleClustering()
             else
             {
                 new_vertices.push_back(vertices[tmp]);
-                old_ref_to_new_ref[tmp] = new_vertices.size() - 1;
+                old_ref_to_new_ref[tmp] = static_cast<VertexRef>(new_vertices.size() - 1);
                 tmp = old_ref_to_new_ref[tmp];
                 old_ref_to_new_ref[v0] = tmp;
             }
@@ -1377,7 +1377,7 @@ void Builder::performSimpleClustering()
             else
             {
                 new_vertices.push_back(vertices[tmp]);
-                old_ref_to_new_ref[tmp] = new_vertices.size() - 1;
+                old_ref_to_new_ref[tmp] = static_cast<VertexRef>(new_vertices.size() - 1);
                 tmp = old_ref_to_new_ref[tmp];
                 old_ref_to_new_ref[v1] = tmp;
             }
@@ -1397,7 +1397,7 @@ void Builder::performSimpleClustering()
             else
             {
                 new_vertices.push_back(vertices[tmp]);
-                old_ref_to_new_ref[tmp] = new_vertices.size() - 1;
+                old_ref_to_new_ref[tmp] = static_cast<VertexRef>(new_vertices.size() - 1);
                 tmp = old_ref_to_new_ref[tmp];
                 old_ref_to_new_ref[v2] = tmp;
             }

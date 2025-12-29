@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <array>
 #include <cstdint>
 
 #include "Vector3.h"
@@ -90,16 +91,16 @@ private:
     LatticeType structure;
     ClusteringMode clustering;
 
-    int index_offsets_evenz[14];
-    int index_offsets_oddz[14];
-    Vector3 vector_offsets[14];
+    std::array<int, 14> index_offsets_evenz;
+    std::array<int, 14> index_offsets_oddz;
+    std::array<Vector3, 14> vector_offsets;
 
-    SampleValue* sample_values = nullptr;
+    std::vector<SampleValue> sample_values;
 #if defined DEBUG_GRID
     Vector3* sample_positions = nullptr;
 #endif
-    EdgeFlags* sample_crossing_flags = nullptr;
-    EdgeReferences* sample_edge_indices = nullptr;
+    std::vector<EdgeFlags> sample_crossing_flags;
+    std::vector<EdgeReferences> sample_edge_indices;
     std::vector<Vector3> vertices;
     std::vector<Vector3> normals;
     std::vector<VertexRef> indices;
