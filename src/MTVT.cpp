@@ -90,13 +90,13 @@ Mesh Builder::generate(DebugStats& stats)
     }
 
     auto geometry_start = chrono::high_resolution_clock::now();
-    geometryPass();
-    if (clustering == POST_PROCESED)
-        performSimpleClustering();
+    //geometryPass();
+    //if (clustering == POST_PROCESED)
+    //    performSimpleClustering();
     float geometry = ((chrono::duration<float>)(chrono::high_resolution_clock::now() - geometry_start)).count();
 
     auto normaling_start = chrono::high_resolution_clock::now();
-    computeVertexNormals();
+    //computeVertexNormals();
     float normaling = ((chrono::duration<float>)(chrono::high_resolution_clock::now() - normaling_start)).count();
 
     stats.allocation_time          += allocation;
@@ -476,7 +476,7 @@ static constexpr struct EdgeNeighbourMasks
         FLAG_SIMP_PXPY | FLAG_SIMP_PYPZ | FLAG_SIMP_PXPYPZ | FLAG_SIMP_NX | FLAG_SIMP_NZ | FLAG_SIMP_NXNZ, // PY
         FLAG_SIMP_PX | FLAG_SIMP_PZ | FLAG_SIMP_PXPZ | FLAG_SIMP_NXNYNZ | FLAG_SIMP_NXNY | FLAG_SIMP_NYNZ, // NY
         FLAG_SIMP_PXPZ | FLAG_SIMP_PYPZ | FLAG_SIMP_PXPYPZ | FLAG_SIMP_NX | FLAG_SIMP_NY | FLAG_SIMP_NXNY, // PZ
-        FLAG_SIMP_PX | FLAG_SIMP_PX | FLAG_SIMP_PXPY | FLAG_SIMP_NXNYNZ | FLAG_SIMP_NXNZ | FLAG_SIMP_NYNZ, // NZ
+        FLAG_SIMP_PX | FLAG_SIMP_PY | FLAG_SIMP_PXPY | FLAG_SIMP_NXNYNZ | FLAG_SIMP_NXNZ | FLAG_SIMP_NYNZ, // NZ
         FLAG_SIMP_PXPYPZ | FLAG_SIMP_PX | FLAG_SIMP_PY | FLAG_SIMP_NZ, // PXPY
         FLAG_SIMP_NXNYNZ | FLAG_SIMP_PZ | FLAG_SIMP_NX | FLAG_SIMP_NY, // NXNY
         FLAG_SIMP_PXPYPZ | FLAG_SIMP_PX | FLAG_SIMP_PZ | FLAG_SIMP_NY, // PXPZ
@@ -654,15 +654,16 @@ void Builder::vertexPass()
     bool is_max_x = false;
     for (int zi = 0; zi < samples_z; ++zi)
     {
-        is_min_z = zi <= 1;
         if (structure == BODY_CENTERED_DIAMOND)
         {
+            is_min_z = zi <= 1;
             is_max_z = zi >= samples_z - 2;
             is_odd_z = !is_odd_z;
             position.z = (zi * step) + (min_extent.z - step);
         }
         else
         {
+            is_min_z = zi <= 0;
             is_max_z = zi >= samples_z - 1;
             position.z = (zi * resolution) + min_extent.z;
         }

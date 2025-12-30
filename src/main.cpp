@@ -35,9 +35,10 @@ int main()
     }
     else
     {
-        auto result = runBenchmark("fbm", 50, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
-        printBenchmarkSummary(result.first);
-        result = runBenchmark("sphere", 50, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, sphereFunc, 0.0f, Builder::SIMPLE_CUBIC, Builder::INTEGRATED, 8);
+        //auto result = runBenchmark("fbm", 50, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
+        //printBenchmarkSummary(result.first);
+        auto result = runBenchmark("sphere", 1, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, sphereFunc, 0.0f, Builder::SIMPLE_CUBIC, Builder::INTEGRATED, 8);
+        dumpMeshToOBJ(result.second, "sphere_simple.obj");
         printBenchmarkSummary(result.first);
     }
 
