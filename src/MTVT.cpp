@@ -13,8 +13,6 @@
 using namespace std;
 using namespace MTVT;
 
-// TODO: keep resources around from configure to destruct (or clear()) in case you want to re-generate stuff
-
 static inline size_t computeCubicFunction(size_t x, size_t y, size_t z, int a, int b, int c, int d)
 {
     return (a * x * y * z) + (b * ((x * y) + (x * z) + (y * z))) + (c * (x + y + z)) + d;

@@ -7,7 +7,6 @@ kanban-plugin: board
 ## todo
 
 - [ ] fix bunny benchmark
-- [ ] keep resources around to speed up recomputation
 - [ ] save OBJs in UI
 - [ ] parallelise vertex pass
 
