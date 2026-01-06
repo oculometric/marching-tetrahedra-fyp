@@ -17,8 +17,7 @@ MappedMesh bunny_mesh;
 
 int main()
 {
-    // TODO: command line options
-    bool start_gui = false;
+    bool start_gui = true;
 
     if (start_gui)
     {

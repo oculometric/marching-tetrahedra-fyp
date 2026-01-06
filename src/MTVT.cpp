@@ -90,13 +90,16 @@ Mesh Builder::generate(DebugStats& stats)
     }
 
     auto geometry_start = chrono::high_resolution_clock::now();
-    //geometryPass();
-    //if (clustering == POST_PROCESED)
-    //    performSimpleClustering();
+    if (structure == BODY_CENTERED_DIAMOND)
+        geometryPassBCDL();
+    else if (structure == SIMPLE_CUBIC)
+        geometryPassSIMP();
+    if (clustering == POST_PROCESED)
+        performSimpleClustering();
     float geometry = ((chrono::duration<float>)(chrono::high_resolution_clock::now() - geometry_start)).count();
 
     auto normaling_start = chrono::high_resolution_clock::now();
-    //computeVertexNormals();
+    computeVertexNormals();
     float normaling = ((chrono::duration<float>)(chrono::high_resolution_clock::now() - normaling_start)).count();
 
     stats.allocation_time          += allocation;
@@ -964,13 +967,6 @@ void Builder::vertexPass()
     }
 }
 
-
-// TODO: alternative lattice structure requirements:
-
-// - completely rewrite the geometry pass
-// - rewrite tetrahedron tables
-
-
 static constexpr struct TetrahedraTablesBCDL
 {
     // each entry defines a collection of indices into the list of neighbouring sample points.
@@ -1099,10 +1095,60 @@ static constexpr struct TetrahedraTablesBCDL
 
 static constexpr struct TetrahedraTablesSIMP
 {
+    EdgeAddr sample_index_templates[6][2] =
+    {   // a            b                (base and far are always the same)
+        { EDGE_SIMP_PZ, EDGE_SIMP_PXPZ },
+        { EDGE_SIMP_PYPZ, EDGE_SIMP_PZ },
+        { EDGE_SIMP_PY, EDGE_SIMP_PYPZ },
+        { EDGE_SIMP_PXPZ, EDGE_SIMP_PX },
+        { EDGE_SIMP_PX, EDGE_SIMP_PXPY },
+        { EDGE_SIMP_PXPY, EDGE_SIMP_PY },
+    };
+
+    uint8_t edge_sample_point_indices[12] =
+    {
+        0, 1,   // edge 0 = base -> far
+        0, 2,   // edge 1 = base -> a
+        0, 3,   // edge 2 = base -> b 
+        1, 2,   // edge 3 = far -> a
+        1, 3,   // edge 4 = far -> b
+        2, 3    // edge 5 = a -> b  
+    };
+
+    EdgeAddr edge_address_templates[6][6] =
+    {//   base - far        base - a      base - b        far - a         far - b       a - b
+        { EDGE_SIMP_PXPYPZ, EDGE_SIMP_PZ, EDGE_SIMP_PXPZ, EDGE_SIMP_NXNY, EDGE_SIMP_NY, EDGE_SIMP_PX },
+        { EDGE_SIMP_PXPYPZ, EDGE_SIMP_PYPZ, EDGE_SIMP_PZ, EDGE_SIMP_NX, EDGE_SIMP_NXNY, EDGE_SIMP_NY },
+        { EDGE_SIMP_PXPYPZ, EDGE_SIMP_PY, EDGE_SIMP_PYPZ, EDGE_SIMP_NXNZ, EDGE_SIMP_NX, EDGE_SIMP_PZ },
+        { EDGE_SIMP_PXPYPZ, EDGE_SIMP_PXPZ, EDGE_SIMP_PX, EDGE_SIMP_NY, EDGE_SIMP_NYNZ, EDGE_SIMP_NZ },
+        { EDGE_SIMP_PXPYPZ, EDGE_SIMP_PX, EDGE_SIMP_PXPY, EDGE_SIMP_NYNZ, EDGE_SIMP_NZ, EDGE_SIMP_PY },
+        { EDGE_SIMP_PXPYPZ, EDGE_SIMP_PXPY, EDGE_SIMP_PY, EDGE_SIMP_NZ, EDGE_SIMP_NXNZ, EDGE_SIMP_NX }
+    };
+
+    int8_t edge_address_patterns[16][4] =
+    {
+        { -1, -1, -1, -1 }, // no bits set
+        {  0,  1,  2, -1 }, // 0b0001
+        {  0,  4,  3, -1 }, // 0b0010
+        {  2,  4,  1,  3 }, // 0b0011
+        {  3,  5,  1, -1 }, // 0b0100
+        {  5,  2,  3,  0 }, // 0b0101
+        {  0,  4,  1,  5 }, // 0b0110
+        {  5,  2,  4, -1 }, // 0b0111
+        {  5,  4,  2, -1 }, // 0b1000
+        {  5,  4,  1,  0 }, // 0b1001
+        {  0,  2,  3,  5 }, // 0b1010
+        {  1,  5,  3, -1 }, // 0b1011
+        {  4,  2,  3,  1 }, // 0b1100
+        {  0,  3,  4, -1 }, // 0b1101
+        {  1,  0,  2, -1 }, // 0b1110
+        { -1, -1, -1, -1 }, // all bits set
+    };
+
     static inline EdgeAddr invertEdgeIndex(EdgeAddr i) { return i + 1 - ((i % 2) * 2); }
 } tetrahedra_simp;
 
-void Builder::geometryPass()
+void Builder::geometryPassBCDL()
 {
     // geometry pass - generate per-tetrahedron geometry from the 
     // edge/sample point info, discard triangles with zero size, 
@@ -1147,7 +1193,7 @@ void Builder::geometryPass()
                     if (tflags & (1 << t))
                         continue;
 
-                    tetrahedra_evaluated++;
+                    ++tetrahedra_evaluated;
                     
                     // collect the four sample point indices involved with this tetrahedron,
                     // specific to this orientation of tetrahedron (i.e. the first 4 are on
@@ -1236,6 +1282,135 @@ void Builder::geometryPass()
                     // add the generated triangles to the index buffer, checking
                     // for degenerate triangles (i.e. where two or more vertices
                     // are the same)
+                    if (triangle_indices[1] == triangle_indices[2])
+                    {
+                        degenerate_triangles = degenerate_triangles + 2;
+                        continue;
+                    }
+
+                    if (triangle_indices[0] == triangle_indices[1]
+                        || triangle_indices[0] == triangle_indices[2])
+                        ++degenerate_triangles;
+                    else if (triangle_indices[0] == VERTEX_NULL
+                        || triangle_indices[1] == VERTEX_NULL
+                        || triangle_indices[2] == VERTEX_NULL)
+                        ++invalid_triangles;
+                    else
+                    {
+                        indices.push_back(triangle_indices[0]);
+                        indices.push_back(triangle_indices[1]);
+                        indices.push_back(triangle_indices[2]);
+                    }
+
+                    if (two_triangles)
+                    {
+                        if (triangle_indices[3] == triangle_indices[1]
+                            || triangle_indices[3] == triangle_indices[2])
+                            ++degenerate_triangles;
+                        else if (triangle_indices[3] == VERTEX_NULL
+                            || triangle_indices[1] == VERTEX_NULL
+                            || triangle_indices[2] == VERTEX_NULL)
+                            ++invalid_triangles;
+                        else
+                        {
+                            indices.push_back(triangle_indices[3]);
+                            indices.push_back(triangle_indices[2]);
+                            indices.push_back(triangle_indices[1]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void Builder::geometryPassSIMP()
+{
+    Index consisting_indices[EDGE_MAX] = { 0 };
+    for (int zi = 0; zi < cubes_z; ++zi)
+    {
+        for (int yi = 0; yi < cubes_y; ++yi)
+        {
+            for (int xi = 0; xi < cubes_x; ++xi)
+            {
+                // compute central sample point index
+                const Index base_sample_index = (zi * samples_x * samples_y) + (static_cast<size_t>(yi) * samples_x) + (xi);
+
+                for (int e = 0; e < EDGE_MAX; ++e)
+                    consisting_indices[e] = base_sample_index + index_offsets_evenz[e];
+
+                const EdgeFlags base_sample_crossing_flags = sample_crossing_flags[base_sample_index];
+                if ((base_sample_crossing_flags &
+                    (FLAG_SIMP_PX | FLAG_SIMP_PXPY | FLAG_SIMP_PXPYPZ
+                   | FLAG_SIMP_PY | FLAG_SIMP_PYPZ
+                   | FLAG_SIMP_PZ | FLAG_SIMP_PXPZ))
+                    == 0)
+                    continue;
+                const bool base_greater_thresh = (sample_values[base_sample_index].value > threshold);
+
+                for (int t = 0; t < 6; ++t)
+                {
+                    ++tetrahedra_evaluated;
+
+                    const Index tetrahedra_sample_indices[4] =
+                    {
+                        base_sample_index,
+                        consisting_indices[EDGE_SIMP_PXPYPZ],
+                        consisting_indices[(tetrahedra_simp.sample_index_templates[t])[0]],
+                        consisting_indices[(tetrahedra_simp.sample_index_templates[t])[1]],
+                    };
+
+                    const bool sample_neighbours_crossing_flags[3] =
+                    {
+                        static_cast<bool>(base_sample_crossing_flags & (FLAG_SIMP_PXPYPZ)),
+                        static_cast<bool>(base_sample_crossing_flags & (1 << (tetrahedra_simp.sample_index_templates[t])[0])),
+                        static_cast<bool>(base_sample_crossing_flags & (1 << (tetrahedra_simp.sample_index_templates[t])[1]))
+                    };
+
+                    const uint8_t pattern_ident =
+                        (base_greater_thresh ? 1 : 0) +
+                        ((sample_neighbours_crossing_flags[0] != base_greater_thresh) ? 2 : 0) +
+                        ((sample_neighbours_crossing_flags[1] != base_greater_thresh) ? 4 : 0) +
+                        ((sample_neighbours_crossing_flags[2] != base_greater_thresh) ? 8 : 0);
+                    if (pattern_ident == 0 || pattern_ident == 0b1111)
+                        continue;
+
+                    const EdgeAddr tetrahedra_edge_addresses[12] =
+                    {
+                                          tetrahedra_simp.edge_address_templates[t][0], // relative to base
+                        TetrahedraTablesSIMP::invertEdgeIndex(tetrahedra_simp.edge_address_templates[t][0]), // relative to far
+                                          tetrahedra_simp.edge_address_templates[t][1], // relative to base
+                        TetrahedraTablesSIMP::invertEdgeIndex(tetrahedra_simp.edge_address_templates[t][1]), // relative to a
+                                          tetrahedra_simp.edge_address_templates[t][2], // relative to base
+                        TetrahedraTablesSIMP::invertEdgeIndex(tetrahedra_simp.edge_address_templates[t][2]), // relative to b
+                                          tetrahedra_simp.edge_address_templates[t][3], // relative to far
+                        TetrahedraTablesSIMP::invertEdgeIndex(tetrahedra_simp.edge_address_templates[t][3]), // relative to a
+                                          tetrahedra_simp.edge_address_templates[t][4], // relative to far
+                        TetrahedraTablesSIMP::invertEdgeIndex(tetrahedra_simp.edge_address_templates[t][4]), // relative to b
+                                          tetrahedra_simp.edge_address_templates[t][5], // relative to a
+                        TetrahedraTablesSIMP::invertEdgeIndex(tetrahedra_simp.edge_address_templates[t][5]), // relative to b
+                    };
+
+                    auto pattern = tetrahedra_simp.edge_address_patterns[pattern_ident];
+
+                    VertexRef triangle_indices[4] = { VERTEX_NULL, VERTEX_NULL, VERTEX_NULL, VERTEX_NULL };
+                    const bool two_triangles = pattern[3] != -1;
+                    const int imax = (two_triangles ? 4 : 3);
+                    for (int i = 0; i < imax; ++i)
+                    {
+                        const uint8_t edge_address_index = pattern[i];
+                        const EdgeAddr edge_address_a = tetrahedra_edge_addresses[edge_address_index * 2];
+                        const EdgeAddr edge_address_b = tetrahedra_edge_addresses[(edge_address_index * 2) + 1];
+                        const Index sample_point_index_a = tetrahedra_sample_indices[tetrahedra_simp.edge_sample_point_indices[edge_address_index * 2]];
+                        const Index sample_point_index_b = tetrahedra_sample_indices[tetrahedra_simp.edge_sample_point_indices[(edge_address_index * 2) + 1]];
+
+                        VertexRef vertex_ref = sample_edge_indices[sample_point_index_a].references[edge_address_a];
+                        if (vertex_ref == VERTEX_NULL)
+                            vertex_ref = sample_edge_indices[sample_point_index_b].references[edge_address_b];
+
+                        triangle_indices[i] = vertex_ref;
+                    }
+
                     if (triangle_indices[1] == triangle_indices[2])
                     {
                         degenerate_triangles = degenerate_triangles + 2;
