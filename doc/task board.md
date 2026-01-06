@@ -8,7 +8,6 @@ kanban-plugin: board
 
 - [ ] implement vertex clustering [600 -> 720...] #development
 - [ ] research questionnaire and data processing methodology [120] #research
-- [ ] implement alternate tetrahedron arrangement (BCDL/simple cubic) [240 -> 200...] #development
 - [ ] make another fake gantt chart [10] #management
 
 
@@ -34,6 +33,7 @@ kanban-plugin: board
 - [x] draft literature review #research [180 -> 220]
 - [x] mesh normal generation [120 -> 120] #development
 - [x] vertex clustering research [1440 -> 800] #literature
+- [x] implement alternate tetrahedron arrangement (BCDL/simple cubic) [240 -> 300] #development
 
 
 
