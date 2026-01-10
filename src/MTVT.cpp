@@ -359,7 +359,8 @@ void Builder::populateIndexOffsets()
         index_offsets_evenz[EDGE_SIMP_NXNYNZ] = -s_z - s_y - 1;
 
         float step = resolution;
-        float diag = step / 2;
+        float diag = step;
+        float hdiag = step;
 
         vector_offsets[EDGE_SIMP_PX] = { step, 0, 0 };
         vector_offsets[EDGE_SIMP_NX] = { -step, 0, 0 };
@@ -368,12 +369,12 @@ void Builder::populateIndexOffsets()
         vector_offsets[EDGE_SIMP_PZ] = { 0, 0,  step };
         vector_offsets[EDGE_SIMP_NZ] = { 0, 0, -step };
 
-        vector_offsets[EDGE_SIMP_PXPY] = {  diag,  diag,     0 };
-        vector_offsets[EDGE_SIMP_NXNY] = { -diag, -diag,     0 };
-        vector_offsets[EDGE_SIMP_PXPZ] = {  diag,     0,  diag };
-        vector_offsets[EDGE_SIMP_NXNZ] = { -diag,     0, -diag };
-        vector_offsets[EDGE_SIMP_PYPZ] = {     0,  diag,  diag };
-        vector_offsets[EDGE_SIMP_NYNZ] = {     0, -diag, -diag };
+        vector_offsets[EDGE_SIMP_PXPY] = {  hdiag,  hdiag,     0 };
+        vector_offsets[EDGE_SIMP_NXNY] = { -hdiag, -hdiag,     0 };
+        vector_offsets[EDGE_SIMP_PXPZ] = {  hdiag,     0,  hdiag };
+        vector_offsets[EDGE_SIMP_NXNZ] = { -hdiag,     0, -hdiag };
+        vector_offsets[EDGE_SIMP_PYPZ] = {     0,  hdiag,  hdiag };
+        vector_offsets[EDGE_SIMP_NYNZ] = {     0, -hdiag, -hdiag };
 
         vector_offsets[EDGE_SIMP_PXPYPZ] = {  diag,  diag,  diag };
         vector_offsets[EDGE_BCDL_NXNYNZ] = { -diag, -diag, -diag };

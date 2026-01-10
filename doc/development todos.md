@@ -7,14 +7,14 @@ kanban-plugin: board
 ## todo
 
 - [ ] fix bunny benchmark
-- [ ] save OBJs in UI
+- [ ] clean up simple cubic
 - [ ] parallelise vertex pass
 
 
 ## backlog
 
 - [ ] improve merging algo - checks for degeration (concave merging) and edge-of-sample-cube merging
-- [ ] clean up simple cubic
+- [ ] save OBJs in UI
 
 
 ## done

@@ -83,7 +83,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -229,11 +229,11 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "b8e0584456b83d7d",
+  "active": "b62eb480f45f403a",
   "lastOpenFiles": [
-    "doc/task board.md",
     "doc/development todos.md",
     "doc/dissertation outline.md",
+    "doc/task board.md",
     "doc/research notes/simplification notes.md",
     "res/tesselations.blend@",
     "doc/research kanban.md",
