@@ -5,7 +5,6 @@
 #include <chrono>
 
 #include "MTVT.h"
-#include "mesh_closest.h"
 #include "benchmark.h"
 #include "graphics.h"
 #include "demo_functions.h"
@@ -13,20 +12,15 @@
 using namespace std;
 using namespace MTVT;
 
-MappedMesh bunny_mesh;
-
 int main()
 {
     bool start_gui = true;
+    bunnyInit();
 
     if (start_gui)
     {
         GraphicsEnv graphics;
         graphics.create(1024, 1024);
-
-        auto result = runBenchmark("realtime test", 1, { -1, -1, -1 }, { 1, 1, 1 }, 0.05f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
-        graphics.setSummary(result.first);
-        graphics.setMesh(result.second, { 0, 0, 0 });
 
         while (graphics.draw());
 
@@ -36,8 +30,8 @@ int main()
     {
         //auto result = runBenchmark("fbm", 50, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
         //printBenchmarkSummary(result.first);
-        auto result = runBenchmark("sphere", 1, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, sphereFunc, 0.0f, Builder::SIMPLE_CUBIC, Builder::INTEGRATED, 8);
-        dumpMeshToOBJ(result.second, "sphere_simple.obj");
+        auto result = runBenchmark("bunny", 1, { -0.1f, -0.06f, -0.01f }, { 0.1f, 0.08f, 0.16f }, 0.02f, bunnyFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
+        dumpMeshToOBJ(result.second, "bunny.obj");
         printBenchmarkSummary(result.first);
     }
 
@@ -50,7 +44,7 @@ int main()
     //csv_file += runBenchmark("bump", 10, { -4, -4, -4 }, { 4, 4, 4 }, 0.08f, [](Vector3 v) { return (1.0f / ((v.x * v.x) + (v.y * v.y) + 1)) - v.z; }, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::NONE, 8);
     //csv_file += runBenchmark("bump", 10, { -4, -4, -4 }, { 4, 4, 4 }, 0.08f, [](Vector3 v) { return (1.0f / ((v.x * v.x) + (v.y * v.y) + 1)) - v.z; }, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
     //
-    /*bunny_mesh.load("res/stanford_bunny/bunny_touchup.obj");
+    /*
 
     runBenchmark("bunny", 1, { -0.1f, -0.06f, -0.01f }, { 0.1f, 0.08f, 0.16f }, 0.04f, [](Vector3 v) { return bunny_mesh.closestPointSDF(v); }, 0.0F, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
     */

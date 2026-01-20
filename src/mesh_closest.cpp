@@ -5,6 +5,10 @@
 using namespace std;
 using namespace MTVT;
 
+
+// find the 9 vertices which the point is closest to
+// find the closest distance to each of the triangles which use any of those vertices
+
 void MappedMesh::buildReverseIndexBuffer()
 {
     vertex_uses.resize(vertices.size());
@@ -43,6 +47,8 @@ void MappedMesh::closestPointOnTri(size_t triangle_ind, Vector3 test_point, floa
     const Vector3 vs[3] = { v0, v1, v2 };
 
     const Vector3 norm = normals[triangle_ind];
+    if (sq_mag(norm) < 0.0001f)
+        return;
     const Vector3 proj = norm * ((v0 - test_point) ^ norm);
     const float sq_dist = sq_mag(proj);
     if (sq_dist >= best_sq_dist)

@@ -40,7 +40,7 @@ inline Vector3 operator%(const Vector3& a, const Vector3& b) { return Vector3{ (
 
 inline float sq_mag(const Vector3& a) { return a ^ a; }
 inline float mag(const Vector3& a) { return sqrt(sq_mag(a)); }
-inline Vector3 norm(const Vector3& a) { return a / mag(a); }
+inline Vector3 norm(const Vector3& a) { return (mag(a) < 0.00000000001f) ? Vector3{ 0, 0, 0 } : (a / mag(a)); }
 inline Vector3 abs(const Vector3& a) { return Vector3{ fabs(a.x), fabs(a.y), fabs(a.z) }; }
 inline Vector3 min(const Vector3& a, const Vector3& b) { return Vector3{ std::min(a.x, b.x), std::min(a.y, b.y), std::min(a.z, b.z) }; }
 inline Vector3 max(const Vector3& a, const Vector3& b) { return Vector3{ std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z) }; }

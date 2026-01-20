@@ -1,5 +1,6 @@
 #include "demo_functions.h"
 
+#include "mesh_closest.h"
 #include "fbm.h"
 
 using namespace MTVT;
@@ -24,4 +25,17 @@ float cubeFunc(Vector3 v)
 {
     Vector3 q = abs(v) - Vector3{ 1.0f, 1.0f, 1.0f };
     return -(mag(max(q, Vector3{ 0.0f, 0.0f, 0.0f })) + min(max(q.x, max(q.y, q.z)), 0.0f));
+}
+
+
+MappedMesh bunny_mesh;
+
+void bunnyInit()
+{
+    bunny_mesh.load("res/stanford_bunny/bunny_touchup.obj");
+}
+
+float bunnyFunc(Vector3 v)
+{
+    return bunny_mesh.closestPointSDF(v);
 }

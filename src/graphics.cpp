@@ -598,7 +598,7 @@ void GraphicsEnv::drawImGui()
         if (ImGui::Button("generate!") || (update_live && clicked))
         {
             // run the generator!
-            static float(*funcs[5])(MTVT::Vector3) = { sphereFunc, bumpFunc, fbmFunc, cubeFunc, sphereFunc };
+            static float(*funcs[5])(MTVT::Vector3) = { sphereFunc, bumpFunc, fbmFunc, cubeFunc, bunnyFunc };
             auto result = MTVT::runBenchmark("-", 1, param_min + param_off, param_max + param_off, param_resolution, funcs[param_function], param_threshold, (MTVT::Builder::LatticeType)param_lattice, (MTVT::Builder::ClusteringMode)param_merging, 8);
             setSummary(result.first);
             setMesh(result.second, param_off);
