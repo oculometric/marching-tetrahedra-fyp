@@ -57,7 +57,7 @@ private:
 	MTVT::Vector3 param_min = { -0.1f, -0.06f, -0.01f }; //{ -1, -1, -1 };
 	MTVT::Vector3 param_max = { 0.1f, 0.08f, 0.16f }; //{ 1, 1, 1 };
 	MTVT::Vector3 param_off = { 0, 0, 0 };
-	float param_resolution = 0.03f;//0.1f;
+	float param_resolution = 0.02f;//0.1f;
 	int param_function = 4;//2;
 	float param_threshold = 0.0f;
 	int param_lattice = 0;

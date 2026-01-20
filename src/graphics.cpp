@@ -155,7 +155,7 @@ bool GraphicsEnv::create(int width, int height)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    window = glfwCreateWindow(width, height, "MTVT visualiser", nullptr, nullptr);
+    window = glfwCreateWindow(width, height, "MTVT GUI", nullptr, nullptr);
     if (!window)
     {
         cout << "could not create window" << endl;
@@ -599,7 +599,9 @@ void GraphicsEnv::drawImGui()
         {
             // run the generator!
             static float(*funcs[5])(MTVT::Vector3) = { sphereFunc, bumpFunc, fbmFunc, cubeFunc, bunnyFunc };
+            glfwSetWindowTitle(window, "MTVT GUI (working...)");
             auto result = MTVT::runBenchmark("-", 1, param_min + param_off, param_max + param_off, param_resolution, funcs[param_function], param_threshold, (MTVT::Builder::LatticeType)param_lattice, (MTVT::Builder::ClusteringMode)param_merging, 8);
+            glfwSetWindowTitle(window, "MTVT GUI");
             setSummary(result.first);
             setMesh(result.second, param_off);
         }
