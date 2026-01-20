@@ -8,3 +8,4 @@ float bumpFunc(MTVT::Vector3 v);
 float cubeFunc(MTVT::Vector3 v);
 void bunnyInit();
 float bunnyFunc(MTVT::Vector3 v);
+float suzanneFunc(MTVT::Vector3 v);

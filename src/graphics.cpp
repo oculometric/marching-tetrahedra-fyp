@@ -11,6 +11,7 @@
 #define GIF_FLIP_VERT
 #include <gif.h>
 #include <Windows.h>
+#include <thread>
 
 #include "../res/resource.h"
 
@@ -19,6 +20,7 @@
 #include "imgui_impl_opengl3.h"
 
 #include "demo_functions.h"
+#include "benchmark.h"
 #include "backface_image_raw.h"
 
 using namespace std;
@@ -309,6 +311,12 @@ bool GraphicsEnv::create(int width, int height)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img_width, img_height, 0, GL_RGB, GL_FLOAT, data);
     stbi_image_free(data);
 
+    auto available_threads = thread::hardware_concurrency();
+    if (available_threads == 0)
+        thread_count = 1;
+    else
+        thread_count = available_threads;
+
     graphics_env = this;
 
     return true;
@@ -570,8 +578,8 @@ void GraphicsEnv::drawImGui()
         clicked |= ImGui::SliderFloat3("max", (float*)(&param_max), -5, 5);
         clicked |= ImGui::SliderFloat3("offset", (float*)(&param_off), -5, 5);
         clicked |= ImGui::SliderFloat("resolution", &param_resolution, 0.002f, 2);
-        const char* options[5] = { "sphere", "bump", "fbm", "cube", "bunny" };
-        clicked |= ImGui::Combo("function", &param_function, options, 5);
+        const char* options[6] = { "sphere", "bump", "fbm", "cube", "bunny", "suzanne" };
+        clicked |= ImGui::Combo("function", &param_function, options, 6);
         clicked |= ImGui::SliderFloat("threshold", &param_threshold, -2, 2);
         ImGui::LabelText("lattice type", "");
         ImGui::BeginTable("lattice type tbl", 1, ImGuiTableFlags_BordersOuter);
@@ -598,9 +606,9 @@ void GraphicsEnv::drawImGui()
         if (ImGui::Button("generate!") || (update_live && clicked))
         {
             // run the generator!
-            static float(*funcs[5])(MTVT::Vector3) = { sphereFunc, bumpFunc, fbmFunc, cubeFunc, bunnyFunc };
+            static float(*funcs[6])(MTVT::Vector3) = { sphereFunc, bumpFunc, fbmFunc, cubeFunc, bunnyFunc, suzanneFunc };
             glfwSetWindowTitle(window, "MTVT GUI (working...)");
-            auto result = MTVT::runBenchmark("-", 1, param_min + param_off, param_max + param_off, param_resolution, funcs[param_function], param_threshold, (MTVT::Builder::LatticeType)param_lattice, (MTVT::Builder::ClusteringMode)param_merging, 8);
+            auto result = MTVT::runBenchmark("-", 1, param_min + param_off, param_max + param_off, param_resolution, funcs[param_function], param_threshold, (MTVT::Builder::LatticeType)param_lattice, (MTVT::Builder::ClusteringMode)param_merging, thread_count);
             glfwSetWindowTitle(window, "MTVT GUI");
             setSummary(result.first);
             setMesh(result.second, param_off);
@@ -710,10 +718,9 @@ void GraphicsEnv::drawImGui()
         generation_window_height += ImGui::GetWindowHeight();
     }
     ImGui::End();
-    if (ImGui::Begin("script controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    if (ImGui::Begin("tools", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        // TODO: batch and benchmarking config, including gif generator, csv export, etc
-        if (ImGui::CollapsingHeader("image tool", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+        if (ImGui::CollapsingHeader("image generator", ImGuiTreeNodeFlags_Framed))
         {
             int size[2] = { rtt_width, rtt_height };
             image_name.resize(128);
@@ -731,14 +738,20 @@ void GraphicsEnv::drawImGui()
                 renderGIF();
         }
 
-        if (ImGui::CollapsingHeader("OBJ exporter", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+        if (ImGui::CollapsingHeader("OBJ exporter", ImGuiTreeNodeFlags_Framed))
         {
-
+            obj_name.resize(128);
+            ImGui::InputText("name", obj_name.data(), obj_name.size(), ImGuiInputTextFlags_CharsNoBlank);
+            if (ImGui::Button("save OBJ file"))
+            {
+                string name = obj_name.c_str();
+                MTVT::dumpMeshToOBJ(mesh_data, name);
+            }
         }
 
-        if (ImGui::CollapsingHeader("benchmarker", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+        if (ImGui::CollapsingHeader("benchmarker", ImGuiTreeNodeFlags_Framed))
         {
-
+            // TODO: batch benchmarking config with csv export
         }
 
         if (!is_first_run)

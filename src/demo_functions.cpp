@@ -29,13 +29,20 @@ float cubeFunc(Vector3 v)
 
 
 MappedMesh bunny_mesh;
+MappedMesh suzanne_mesh;
 
 void bunnyInit()
 {
     bunny_mesh.load("res/stanford_bunny/bunny_touchup.obj");
+    suzanne_mesh.load("res/suzanne.obj");
 }
 
 float bunnyFunc(Vector3 v)
 {
     return bunny_mesh.closestPointSDF(v);
+}
+
+float suzanneFunc(Vector3 v)
+{
+    return suzanne_mesh.closestPointSDF(v);
 }

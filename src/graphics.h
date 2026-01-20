@@ -54,14 +54,15 @@ private:
 
 	// generation parameters
 	bool update_live = true;
-	MTVT::Vector3 param_min = { -0.1f, -0.06f, -0.01f }; //{ -1, -1, -1 };
-	MTVT::Vector3 param_max = { 0.1f, 0.08f, 0.16f }; //{ 1, 1, 1 };
+	MTVT::Vector3 param_min = { -1, -1, -1 };
+	MTVT::Vector3 param_max = { 1, 1, 1 };
 	MTVT::Vector3 param_off = { 0, 0, 0 };
-	float param_resolution = 0.02f;//0.1f;
+	float param_resolution = 0.1f;
 	int param_function = 4;//2;
 	float param_threshold = 0.0f;
 	int param_lattice = 0;
 	int param_merging = 1;
+	unsigned int thread_count = 8;
 
 	// view parameters
 	float camera_fov = 1.57f;
@@ -87,6 +88,8 @@ private:
 	float gif_up_angle = 30.0f;
 	std::string image_name = "output";
 	glm::mat4 rtt_transform;
+
+	std::string obj_name = "mesh";
 
 public:
 	bool create(int width, int height);
