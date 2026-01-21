@@ -5,6 +5,18 @@
 
 #include "Vector3.h"
 
+struct OctreeNode
+{
+	MTVT::Vector3 center;
+	MTVT::Vector3 half_extent;
+	MTVT::Vector3 min;
+	MTVT::Vector3 max;
+	bool is_leaf = true;
+	std::vector<OctreeNode> children;
+	OctreeNode* parent = nullptr;
+	std::vector<size_t> triangles;
+};
+
 class MappedMesh
 {
 private:
@@ -17,8 +29,11 @@ private:
 	std::vector<MTVT::Vector3> normals;
 	std::vector<MTVT::Vector3> centers;
 	std::vector<std::pair<MTVT::Vector3, MTVT::Vector3>> edge_vectors;
+	OctreeNode octree;
 
 	void buildReverseIndexBuffer();
+	void buildOctree();
+	void sortTriangles(OctreeNode& node);
 	void closestPointOnTri(size_t triangle_ind, MTVT::Vector3 test_point, float& best_sq_dist, MTVT::Vector3& closest_point, float& best_sdf);
 
 public:

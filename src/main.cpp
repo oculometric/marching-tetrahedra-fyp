@@ -30,12 +30,10 @@ int main()
     {
         //auto result = runBenchmark("fbm", 50, { -1, -1, -1 }, { 1, 1, 1 }, 0.02f, fbmFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
         //printBenchmarkSummary(result.first);
-        auto result = runBenchmark("bunny", 1, { -0.1f, -0.06f, -0.01f }, { 0.1f, 0.08f, 0.16f }, 0.02f, bunnyFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
-        dumpMeshToOBJ(result.second, "bunny.obj");
+        auto result = runBenchmark("bunny", 1, { -1, -1, -1 }, { 1, 1, 1 }, 0.05f, bunnyFunc, 0.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);
+        dumpMeshToOBJ(result.second, "bunny_new.obj");
         printBenchmarkSummary(result.first);
     }
-
-    // TODO: remesh (bunny) benchmark
 
     //csv_file += runBenchmark("sphere", 10, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f, Builder::BODY_CENTERED_DIAMOND, Builder::NONE, 8);
     //csv_file += runBenchmark("sphere", 10, { -2, -2, -2 }, { 2, 2, 2 }, 0.04f, sphereFunc, 1.0f, Builder::BODY_CENTERED_DIAMOND, Builder::INTEGRATED, 8);

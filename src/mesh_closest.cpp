@@ -5,15 +5,100 @@
 using namespace std;
 using namespace MTVT;
 
-
-// find the 9 vertices which the point is closest to
-// find the closest distance to each of the triangles which use any of those vertices
-
 void MappedMesh::buildReverseIndexBuffer()
 {
     vertex_uses.resize(vertices.size());
     for (size_t i = 0; i < indices.size(); ++i)
         vertex_uses[indices[i]].push_back(i / 3);
+}
+
+void prepareOctree(OctreeNode& parent, int levels)
+{
+    if (levels <= 0)
+        return;
+
+    parent.is_leaf = false;
+    parent.children.resize(8);
+
+    int i = 0;
+    for (auto& child : parent.children)
+    {
+        child.is_leaf = true;
+        child.parent = &parent;
+        child.half_extent = parent.half_extent / 2;
+        switch (i)
+        {
+        case 0: child.center = child.parent->center + (child.half_extent * Vector3{ 1, 1, 1 }); break; // PXPYPZ = 0b000
+        case 1: child.center = child.parent->center + (child.half_extent * Vector3{ -1, 1, 1 }); break; // NXPYPZ = 0b001
+        case 2: child.center = child.parent->center + (child.half_extent * Vector3{ 1, -1, 1 }); break; // PXNYPZ = 0b010
+        case 3: child.center = child.parent->center + (child.half_extent * Vector3{ -1, -1, 1 }); break; // NXNYPZ = 0b011
+        case 4: child.center = child.parent->center + (child.half_extent * Vector3{ 1, 1, -1 }); break; // PXPYNZ = 0b100
+        case 5: child.center = child.parent->center + (child.half_extent * Vector3{ -1, 1, -1 }); break; // NXPYNZ = 0b101
+        case 6: child.center = child.parent->center + (child.half_extent * Vector3{ 1, -1, -1 }); break; // PXNYNZ = 0b110
+        case 7: child.center = child.parent->center + (child.half_extent * Vector3{ -1, -1, -1 }); break; // NXNYNZ = 0b111
+        }
+        child.max = child.center + child.half_extent;
+        child.min = child.center - child.half_extent;
+        ++i;
+        prepareOctree(child, levels - 1);
+    }
+}
+
+void MappedMesh::buildOctree()
+{
+    Vector3 bmin = { INFINITY, INFINITY, INFINITY };
+    Vector3 bmax = -bmin;
+
+    for (const Vector3& v : vertices)
+    {
+        bmin = min(bmin, v);
+        bmax = max(bmax, v);
+    }
+
+    octree.center = (bmin + bmax) / 2;
+    octree.half_extent = (bmax - bmin) / 2;
+    octree.max = bmax;
+    octree.min = bmin;
+    prepareOctree(octree, 2);
+
+    octree.triangles.reserve(indices.size() / 3);
+    for (size_t i = 0; i < indices.size() / 3; ++i)
+        octree.triangles.push_back(i);
+    sortTriangles(octree);
+}
+
+bool withinBounds(Vector3 point, Vector3 min, Vector3 max)
+{
+    if (point.x > max.x || point.y > max.y || point.z > max.z)
+        return false;
+    if (point.x < min.x || point.y < min.y || point.z < min.z)
+        return false;
+    return true;
+}
+
+void MappedMesh::sortTriangles(OctreeNode& node)
+{
+    if (node.is_leaf)
+        return;
+
+    while (!node.triangles.empty())
+    {
+        size_t triangle = node.triangles[node.triangles.size() - 1];
+        node.triangles.pop_back();
+        
+        for (auto& child : node.children)
+        {
+            float best_sq_dist = INFINITY;
+            Vector3 closest_point = Vector3{ 0, 0, 0 };
+            float best_sdf = 0;
+            closestPointOnTri(triangle, child.center, best_sq_dist, closest_point, best_sdf);
+            if (withinBounds(closest_point, child.min, child.max))
+                child.triangles.push_back(triangle);
+        }
+    }
+
+    for (auto& child : node.children)
+        sortTriangles(child);
 }
 
 void MappedMesh::load(string file)
@@ -33,6 +118,7 @@ void MappedMesh::load(string file)
     }
 
     buildReverseIndexBuffer();
+    buildOctree();
 }
 
 // based on this https://github.com/ranjeethmahankali/galproject/blob/main/galcore/Mesh.cpp
@@ -87,16 +173,50 @@ void MappedMesh::closestPointOnTri(size_t triangle_ind, Vector3 test_point, floa
     }
 }
 
+void getLocator(const OctreeNode& node, Vector3 position, vector<int>& locator)
+{
+    if (node.is_leaf)
+        return;
+
+    int this_cell = 0;
+    bool gx = position.x > node.center.x;
+    bool gy = position.y > node.center.y;
+    bool gz = position.z > node.center.z;
+    this_cell = (gx ? 0b000 : 0b001)
+        | (gy ? 0b000 : 0b010)
+        | (gz ? 0b000 : 0b100);
+
+    locator.push_back(this_cell);
+
+    getLocator(node.children[this_cell], position, locator);
+}
+
+pair<vector<size_t>::iterator, vector<size_t>::iterator> getIterators(OctreeNode& octree, const vector<int>& locator)
+{
+    OctreeNode* node = &octree;
+    for (int i : locator)
+        node = &(node->children[i]);
+    return { node->triangles.begin(), node->triangles.end() };
+}
+
 float MappedMesh::closestPointSDF(MTVT::Vector3 vec)
 {
     float best_sq_dist = INFINITY;
     Vector3 closest_point = Vector3{ 0, 0, 0 };
     float best_sdf = 0;
 
-    for (size_t i = 0; i < indices.size() / 3; ++i)
+    vector<int> locator;
+    getLocator(octree, vec, locator);
+    auto its = getIterators(octree, locator);
+
+    // TODO: if no triangles are found, expand to search the 26 quadrants around it
+    // TODO: actually search the 8 nearest quadrants i think.... for integrity
+    for (auto it = its.first; it != its.second; ++it)
     {
-        closestPointOnTri(i, vec, best_sq_dist, closest_point, best_sdf);
+        closestPointOnTri(*it, vec, best_sq_dist, closest_point, best_sdf);
     }
+    //for (size_t i = 0; i < indices.size() / 3; ++i)
+    //    closestPointOnTri(i, vec, best_sq_dist, closest_point, best_sdf);
 
     return best_sdf;
 }
