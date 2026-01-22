@@ -35,6 +35,8 @@ private:
 	void buildOctree();
 	void sortTriangles(OctreeNode& node);
 	void closestPointOnTri(size_t triangle_ind, MTVT::Vector3 test_point, float& best_sq_dist, MTVT::Vector3& closest_point, float& best_sdf);
+	void closestPointInNode(const MTVT::Vector3& vec, const std::vector<int>& locator, float& best_sq_dist, MTVT::Vector3& closest_point, float& best_sdf);
+	bool moveLocator(int direction, std::vector<int>& old_locator);
 
 public:
 	void load(std::string file);

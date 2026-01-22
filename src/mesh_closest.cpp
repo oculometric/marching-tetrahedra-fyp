@@ -173,10 +173,10 @@ void MappedMesh::closestPointOnTri(size_t triangle_ind, Vector3 test_point, floa
     }
 }
 
-void getLocator(const OctreeNode& node, Vector3 position, vector<int>& locator)
+Vector3 getLocator(const OctreeNode& node, Vector3 position, vector<int>& locator)
 {
     if (node.is_leaf)
-        return;
+        return position - node.center;
 
     int this_cell = 0;
     bool gx = position.x > node.center.x;
@@ -188,7 +188,7 @@ void getLocator(const OctreeNode& node, Vector3 position, vector<int>& locator)
 
     locator.push_back(this_cell);
 
-    getLocator(node.children[this_cell], position, locator);
+    return getLocator(node.children[this_cell], position, locator);
 }
 
 pair<vector<size_t>::iterator, vector<size_t>::iterator> getIterators(OctreeNode& octree, const vector<int>& locator)
@@ -199,6 +199,62 @@ pair<vector<size_t>::iterator, vector<size_t>::iterator> getIterators(OctreeNode
     return { node->triangles.begin(), node->triangles.end() };
 }
 
+void MappedMesh::closestPointInNode(const Vector3& vec, const vector<int>& locator, float& best_sq_dist, Vector3& closest_point, float& best_sdf)
+{
+    auto its = getIterators(octree, locator);
+    for (auto it = its.first; it != its.second; ++it)
+        closestPointOnTri(*it, vec, best_sq_dist, closest_point, best_sdf);
+}
+
+bool MappedMesh::moveLocator(int direction, vector<int>& locator)
+{
+    if (locator.empty())
+        return true;
+
+    int locator_last = locator[locator.size() - 1];
+    locator.pop_back();
+    int selector = 0;
+    bool invert = false;
+    switch (direction)
+    {
+    case 0: // positive x move
+        selector = 0b001;
+        invert = true;
+        break;
+    case 1: // negative x
+        selector = 0b001;
+        invert = false;
+        break;
+    case 2: // positive y
+        selector = 0b010;
+        invert = true;
+        break;
+    case 3: // negative y
+        selector = 0b010;
+        invert = false;
+        break;
+    case 4: // positive z
+        selector = 0b100;
+        invert = true;
+        break;
+    case 5: // negative z
+        selector = 0b100;
+        invert = false;
+        break;
+    }
+
+    bool up_cond = locator_last & selector;
+    if (invert)
+        up_cond = !up_cond;
+    bool error_cond = false;
+    if (up_cond)
+        error_cond = moveLocator(direction, locator);
+    if (!error_cond)
+        locator_last ^= selector;
+    locator.push_back(locator_last);
+    return error_cond;
+}
+
 float MappedMesh::closestPointSDF(MTVT::Vector3 vec)
 {
     float best_sq_dist = INFINITY;
@@ -206,17 +262,19 @@ float MappedMesh::closestPointSDF(MTVT::Vector3 vec)
     float best_sdf = 0;
 
     vector<int> locator;
-    getLocator(octree, vec, locator);
-    auto its = getIterators(octree, locator);
+    Vector3 position_within_locator = getLocator(octree, vec, locator);
+    closestPointInNode(vec, locator, best_sq_dist, closest_point, best_sdf);
+    vector<int> locator_copy = locator;
+    moveLocator((position_within_locator.x > 0) ? 0 : 1, locator_copy);
+    closestPointInNode(vec, locator_copy, best_sq_dist, closest_point, best_sdf);
+    locator_copy = locator;
+    moveLocator((position_within_locator.y > 0) ? 2 : 3, locator_copy);
+    closestPointInNode(vec, locator_copy, best_sq_dist, closest_point, best_sdf);
+    locator_copy = locator;
+    moveLocator((position_within_locator.z > 0) ? 4 : 5, locator_copy);
+    closestPointInNode(vec, locator_copy, best_sq_dist, closest_point, best_sdf);
 
     // TODO: if no triangles are found, expand to search the 26 quadrants around it
-    // TODO: actually search the 8 nearest quadrants i think.... for integrity
-    for (auto it = its.first; it != its.second; ++it)
-    {
-        closestPointOnTri(*it, vec, best_sq_dist, closest_point, best_sdf);
-    }
-    //for (size_t i = 0; i < indices.size() / 3; ++i)
-    //    closestPointOnTri(i, vec, best_sq_dist, closest_point, best_sdf);
 
     return best_sdf;
 }
