@@ -6,7 +6,6 @@ kanban-plugin: board
 
 ## todo
 
-- [ ] fix bunny benchmark
 - [ ] parallelise vertex pass
 
 
@@ -40,6 +39,7 @@ kanban-plugin: board
 - [x] implement alternative merging algorithm
 - [x] implement simple cubic lattice structure
 - [ ] clean up simple cubic
+- [x] fix bunny benchmark
 
 
 

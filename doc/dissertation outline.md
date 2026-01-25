@@ -16,7 +16,7 @@
 		- time too variable, not regular enough potentially
 	- simplification methods
 - methodology (40% 4800-6000)
-	- algorithms - specifically the new graph-based merging algorithm
+	- algorithms - specifically the new graph-based merging algorithm, optimisation to skip geometry generation for large areas, specific tetrahedral arrangement for simple!
 	- considerations - chunk-ability, accuracy vs speed, rearranging passes
 	- issues which were encountered and solved
 	- parameters to be varied

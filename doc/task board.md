@@ -6,16 +6,14 @@ kanban-plugin: board
 
 ## current
 
-- [ ] implement vertex clustering [600 -> 720...] #development
 - [ ] research questionnaire and data processing methodology [120] #research
+- [ ] perform user & performance testing [600] #research
 - [ ] make another fake gantt chart [10] #management
 
 
 ## backlog
 
 - [ ] optimisation research [300] #literature
-- [ ] build demos for user testing [240] #development
-- [ ] perform user & performance testing [600] #research
 - [ ] testing result analysis [240] #research
 - [ ] finalise dissertation [600] #research
 
@@ -34,6 +32,8 @@ kanban-plugin: board
 - [x] mesh normal generation [120 -> 120] #development
 - [x] vertex clustering research [1440 -> 800] #literature
 - [x] implement alternate tetrahedron arrangement (BCDL/simple cubic) [240 -> 300] #development
+- [x] implement vertex clustering [600 -> 800] #development
+- [x] build demos for user testing [240] #development
 
 
 
