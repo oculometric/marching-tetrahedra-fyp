@@ -578,8 +578,8 @@ void GraphicsEnv::drawImGui()
         clicked |= ImGui::SliderFloat3("max", (float*)(&param_max), -5, 5);
         clicked |= ImGui::SliderFloat3("offset", (float*)(&param_off), -5, 5);
         clicked |= ImGui::SliderFloat("resolution", &param_resolution, 0.002f, 2);
-        const char* options[6] = { "sphere", "bump", "fbm", "cube", "bunny", "suzanne" };
-        clicked |= ImGui::Combo("function", &param_function, options, 6);
+        const char* options[7] = { "sphere", "bump", "fbm", "asteroid", "cube", "bunny", "suzanne"};
+        clicked |= ImGui::Combo("function", &param_function, options, 7);
         clicked |= ImGui::SliderFloat("threshold", &param_threshold, -2, 2);
         ImGui::LabelText("lattice type", "");
         ImGui::BeginTable("lattice type tbl", 1, ImGuiTableFlags_BordersOuter);
@@ -606,7 +606,7 @@ void GraphicsEnv::drawImGui()
         if (ImGui::Button("generate!") || (update_live && clicked))
         {
             // run the generator!
-            static float(*funcs[6])(MTVT::Vector3) = { sphereFunc, bumpFunc, fbmFunc, cubeFunc, bunnyFunc, suzanneFunc };
+            static float(*funcs[7])(MTVT::Vector3) = { sphereFunc, bumpFunc, fbmFunc, asteroidFunc, cubeFunc, bunnyFunc, suzanneFunc };
             glfwSetWindowTitle(window, "MTVT GUI (working...)");
             auto result = MTVT::runBenchmark("-", 1, param_min + param_off, param_max + param_off, param_resolution, funcs[param_function], param_threshold, (MTVT::Builder::LatticeType)param_lattice, (MTVT::Builder::ClusteringMode)param_merging, thread_count);
             glfwSetWindowTitle(window, "MTVT GUI");
@@ -865,7 +865,10 @@ void GraphicsEnv::drawRTTScene()
     glUseProgram(shader_program);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, backface_image);
-    glBindVertexArray(vertex_array_object);
+    if (smooth_shading)
+        glBindVertexArray(vertex_array_object);
+    else
+        glBindVertexArray(flat_vertex_array_object);
 
     glUniformMatrix4fv(shvar_transform, 1, GL_FALSE, glm::value_ptr(rtt_transform));
     glUniform3f(shvar_shading_colour_a, shading_colour_a.r, shading_colour_a.g, shading_colour_a.b);
@@ -881,7 +884,10 @@ void GraphicsEnv::drawRTTScene()
         glEnable(GL_CULL_FACE);
         glCullFace(backface_mode == 1 ? GL_BACK : GL_FRONT);
     }
-    glDrawElements(GL_TRIANGLES, static_cast<int>(mesh_data.indices.size()), GL_UNSIGNED_INT, 0);
+    if (smooth_shading)
+        glDrawElements(GL_TRIANGLES, static_cast<int>(mesh_data.indices.size()), GL_UNSIGNED_INT, 0);
+    else
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(flat_shaded_data.size()));
 
     if (wireframe_mode)
     {

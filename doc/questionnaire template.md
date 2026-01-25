@@ -13,3 +13,52 @@ _The data controller for this project will be University of Staffordshire. The u
 _You have the right to access information held about you. Your right of access can be exercised in accordance with the GDPR. You also have other rights including rights of correction, erasure, objection, and data portability. Questions, comments and requests about your personal data can also be sent to the University of Staffordshire Data Protection Officer. If you wish to lodge a complaint with the Information Commissioner’s Office, please visit [www.ico.org.uk](http://www.ico.org.uk/)._
 ```
 ![[Pasted image 20251009125842.png]]
+
+
+# all test configurations
+
+a_ - asteroid
+s_ - sphere
+b_ - bunny
+_ s - smooth
+_ f - flat
+b_ - BCDL
+s_ - simple
+_ u - unmerged
+_ i - integrated
+_ p - postprocessed
+_ _ w - wireframe 
+
+- [x] asteroid - gif distance=1.6, fov=60
+	- [x] BCDL, unmerged
+	- [x] simple, unmerged
+	- [x] BCDL, integrated
+	- [x] simple, integrated
+	- [x] BCDL, postprocessed
+	- [x] simple, postprocessed
+	- [x] BCDL, integrated, wireframe
+- [x] asteroid flat - as above
+	- [x] BCDL, unmerged
+	- [x] BCDL, integrated
+	- [x] BCDL, postprocessed
+- [x] sphere - defaults
+	- [x] BCDL, unmerged
+	- [x] simple, unmerged
+	- [x] BCDL, integrated
+	- [x] simple, integrated
+	- [x] BCDL, postprocessed
+	- [x] simple, postprocessed
+	- [x] BCDL, integrated, wireframe
+- [x] sphere flat - res=0.4
+	- [x] BCDL, unmerged
+	- [x] BCDL, integrated
+	- [x] BCDL, postprocessed
+	- [x] BCDL, integrated, wireframe
+- [x] bunny - res=0.03, fov=50
+	- [x] BCDL, unmerged
+	- [x] simple, unmerged
+	- [x] BCDL, integrated
+	- [x] simple, integrated
+	- [x] BCDL, postprocessed
+	- [x] simple, postprocessed
+	- [x] BCDL, integrated, wireframe

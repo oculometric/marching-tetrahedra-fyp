@@ -57,8 +57,8 @@ private:
 	MTVT::Vector3 param_min = { -1, -1, -1 };
 	MTVT::Vector3 param_max = { 1, 1, 1 };
 	MTVT::Vector3 param_off = { 0, 0, 0 };
-	float param_resolution = 0.1f;
-	int param_function = 4;//2;
+	float param_resolution = 0.08f;
+	int param_function = 3;
 	float param_threshold = 0.0f;
 	int param_lattice = 0;
 	int param_merging = 1;
