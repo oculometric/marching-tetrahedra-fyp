@@ -62,3 +62,20 @@ _ _ w - wireframe
 	- [x] BCDL, postprocessed
 	- [x] simple, postprocessed
 	- [x] BCDL, integrated, wireframe
+
+# all test pairs
+bunny-BCDL-unmerged vs bunny-BCDL-integrated
+bunny-BCDL-unmerged vs bunny-BCDL-postprocessed
+bunny-BCDL-postprocessed vs bunny-BCDL-integrated
+bunny-simple-unmerged vs bunny-simple-integrated
+bunny-simple-unmerged vs bunny-simple-postprocessed
+bunny-simple-postprocessed vs bunny-simple-integrated
+bunny-BCDL-unmerged vs bunny-simple-unmerged
+bunny-BCDL-integrated vs bunny-simple-integrated
+bunny-BCDL-postprocessed vs bunny-simple-postprocessed
+
+etc for asteroid, asteroid flat, sphere, sphere flat
+
+
+order is maintained from the form design, even when shuffled!
+thus all sections of the form will be laid out as above

@@ -6,7 +6,7 @@
       {
         "id": "6281611512a61882",
         "type": "tabs",
-        "dimension": 50,
+        "dimension": 59.25925925925925,
         "children": [
           {
             "id": "d0c216cf2759b6ab",
@@ -62,13 +62,12 @@
               "title": "questionnaire template"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       },
       {
         "id": "c3393b1bdea32544",
         "type": "split",
-        "dimension": 50,
+        "dimension": 40.74074074074074,
         "children": [
           {
             "id": "8b16bd58f8350bb0",
@@ -311,8 +310,20 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "60e8ac5952277439",
+  "active": "d0c216cf2759b6ab",
   "lastOpenFiles": [
+    "doc/questionnaire template.md",
+    "doc/renders/pairs/ss_su_ss_sp.mp4",
+    "doc/renders/pairs/ss_su_ss_si.mp4",
+    "doc/renders/pairs/ss_sp_ss_si.mp4",
+    "doc/renders/pairs/ss_bu_ss_su.mp4",
+    "doc/renders/pairs/ss_bu_ss_bp.mp4",
+    "doc/renders/pairs/ss_bu_ss_bi.mp4",
+    "doc/renders/pairs/ss_bp_ss_sp.mp4",
+    "doc/renders/pairs/ss_bp_ss_bi.mp4",
+    "doc/renders/pairs/ss_bi_ss_si.mp4",
+    "doc/renders/pairs/sf_bu_sf_bp.mp4",
+    "doc/dissertation.md",
     "doc/renders/as_su.gif",
     "doc/renders/as_bi.gif",
     "doc/renders/as_si.gif",
@@ -323,20 +334,7 @@
     "doc/renders/af_bi.gif",
     "doc/renders/af_bp.gif",
     "doc/renders/ss_bu.gif",
-    "doc/renders/ss_su.gif",
-    "doc/renders/bunny.obj",
-    "doc/renders",
-    "x64/Release/mtvt.tlog/link.read.33.tlog",
-    "x64/Release/mtvt.tlog/link-cvtres.write.1.tlog",
-    "x64/Release/mtvt.tlog/link-cvtres.read.1.tlog",
-    "x64/Release/mtvt.tlog/link-rc.write.1.tlog",
-    "x64/Release/mtvt.tlog/link-rc.read.1.tlog",
-    "x64/Release/graphics.obj",
-    "x64/Release/mtvt.tlog/unsuccessfulbuild",
-    "x64/Release/mtvt.tlog/link.read.32.tlog",
-    "doc/dissertation.md",
     "doc/research notes/Adaptive marching cubes 1995.md",
-    "doc/questionnaire template.md",
     "doc/dissertation outline.md",
     "doc/research notes/miscellaneous notes.md",
     "doc/development todos.md",
