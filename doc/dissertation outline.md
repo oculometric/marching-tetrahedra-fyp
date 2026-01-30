@@ -16,8 +16,9 @@
 		- time too variable, not regular enough potentially
 	- simplification methods
 - methodology (40% 4800-6000)
-	- algorithms - specifically the new graph-based merging algorithm, optimisation to skip geometry generation for large areas, specific tetrahedral arrangement for simple!
+	- algorithms - specifically the new graph-based merging algorithm, optimisation to skip geometry generation for large areas, specific tetrahedral arrangement for simple (eliminates symmetry problem at the cost of directional bias)!
 	- considerations - chunk-ability, accuracy vs speed, rearranging passes
+	- sample point/edge/tetrahedron counting
 	- issues which were encountered and solved
 	- parameters to be varied
 		- test object (fbm, sphere, bunny, teapot)
