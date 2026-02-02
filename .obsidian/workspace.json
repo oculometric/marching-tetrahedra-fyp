@@ -307,8 +307,9 @@
   "active": "d0c216cf2759b6ab",
   "lastOpenFiles": [
     "doc/research notes/miscellaneous notes.md",
-    "doc/papers/delaunay tetrahedral grids 2025.pdf",
     "doc/dissertation.md",
+    "doc/renders/af_bi.gif",
+    "doc/papers/delaunay tetrahedral grids 2025.pdf",
     "doc/dissertation outline.md",
     "doc/dissertation.tex",
     "doc/fig1.1.png",
@@ -332,7 +333,6 @@
     "doc/renders/pairs/ss_bu_ss_bp.mp4",
     "doc/renders/pairs/ss_bu_ss_bi.mp4",
     "doc/renders/as_su.gif",
-    "doc/renders/as_bi.gif",
     "doc/development todos.md",
     "doc/research notes/Regularised marching tetrahedra (1999).md",
     "doc/research notes/A new tetrahedral tessellation scheme for isosurface generation (1998).md",
