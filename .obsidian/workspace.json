@@ -21,18 +21,6 @@
               "icon": "lucide-file",
               "title": "dissertation"
             }
-          },
-          {
-            "id": "8a8e3c7c7b4a5027",
-            "type": "leaf",
-            "state": {
-              "type": "pdf",
-              "state": {
-                "file": "doc/papers/Tetrahedral grid refinement 1995.pdf"
-              },
-              "icon": "lucide-file-text",
-              "title": "Tetrahedral grid refinement 1995"
-            }
           }
         ]
       },
@@ -74,19 +62,21 @@
                 }
               },
               {
-                "id": "7e4a343af88f16c1",
+                "id": "5b0d5fdf8af2bc97",
                 "type": "leaf",
                 "state": {
-                  "type": "pdf",
+                  "type": "markdown",
                   "state": {
-                    "file": "doc/papers/delaunay tetrahedral grids 2025.pdf"
+                    "file": "doc/research notes/simplification notes.md",
+                    "mode": "source",
+                    "source": false
                   },
-                  "icon": "lucide-file-text",
-                  "title": "delaunay tetrahedral grids 2025"
+                  "icon": "lucide-file",
+                  "title": "simplification notes"
                 }
               }
             ],
-            "currentTab": 1
+            "currentTab": 2
           },
           {
             "id": "68b5b1153b5047a7",
@@ -316,16 +306,21 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "04c581b2073057fd",
+  "active": "d0c216cf2759b6ab",
   "lastOpenFiles": [
+    "doc/research notes/simplification notes.md",
     "doc/dissertation.md",
+    "doc/research notes/me when i relax my nodes.png",
+    "doc/research notes/annoyingly fast simplification.png",
+    "doc/dissertation outline.md",
+    "fig2.4.png",
     "doc/research notes/miscellaneous notes.md",
-    "doc/fig2.2.svg",
+    "doc/research notes/Adaptive marching cubes 1995.md",
     "doc/papers/Tetrahedral grid refinement 1995.pdf",
+    "doc/fig2.2.svg",
     "doc/fig2.3.png",
     "doc/renders/af_bi.gif",
     "doc/papers/delaunay tetrahedral grids 2025.pdf",
-    "doc/dissertation outline.md",
     "doc/dissertation.tex",
     "doc/fig1.1.png",
     "doc/fig1.2.png",
@@ -334,12 +329,8 @@
     "doc/papers/regularised marching tetrahedra 1999.pdf",
     "doc/research kanban.md",
     "doc/task board.md",
-    "doc/research notes/Adaptive marching cubes 1995.md",
-    "doc/fig2.png",
-    "doc/fig1.png",
     "doc/questionnaire template.md",
     "doc/papers/fast isosurface contouring 1996.pdf",
-    "doc/loose gantt.png",
     "doc/renders/pairs/ss_su_ss_sp.mp4",
     "doc/renders/pairs/ss_su_ss_si.mp4",
     "doc/renders/pairs/ss_sp_ss_si.mp4",
@@ -349,7 +340,6 @@
     "doc/research notes/Regularised marching tetrahedra (1999).md",
     "doc/research notes/A new tetrahedral tessellation scheme for isosurface generation (1998).md",
     "doc/research notes/Marching Cubes (1987).md",
-    "doc/research notes/simplification notes.md",
     "doc/misc shit.md",
     "doc/lit review template.md",
     "lib/glm-1.0.2/readme.md",

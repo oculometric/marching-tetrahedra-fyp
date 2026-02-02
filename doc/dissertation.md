@@ -38,7 +38,7 @@ When tessellating 3-dimensional space with tetrahedra, the arrangement of those 
 
 However, marching tetrahedra generally produces worse meshes than marching cubes (Treece, Prager, and Gee, 1999) with a larger number of tiny or elongated triangles, which are undesirable. As such, both algorithms demand a simplification or regularisation mechanism to improve the final mesh. Simplification methods are discussed in more detail below.
 ## Regularised Marching Tetrahedra
-RMT, presented by Treece, Prager, and Gee, 1999, improves the marching tetrahedra algorithm by integrating the simplification process with the geometry generation process itself. RMT performs an intermediate vertex clustering procedure, eliminating the need for an expensive edge-collapse algorithm to be applied afterwards, and taking advantage of the topological context which is only available during geometry generation itself.
+RMT, presented by Treece, Prager, and Gee, 1999, improves the marching tetrahedra algorithm by integrating the simplification process with the geometry generation process itself. RMT performs an intermediate vertex clustering procedure, eliminating the need for an expensive edge-collapse algorithm to be applied afterwards, and taking advantage of the topological context which is only available during geometry generation itself. !EXPAND ON WHY THIS IS IMPORTANT!
 
 Each sample point is first determined to be either inside or outside the isosurface, and candidate vertices are positioned along edges which connect sample points, using interpolation to align them with the isosurface, as with marching cubes. Then, candidate vertices are grouped according to which sample point they are closest to. The connectivity of these vertices are considered, and a subset of them may be merged together into a single vertex. Consideration of the connectivity allows the merging process to preserve topological features, such as closed surfaces, loops, or disconnected pieces. The triangle mesh is then constructed in a later step using the vertices computed previously, using the same per-tetrahedron table of possible geometries as the existing marching tetrahedra algorithm. At this step, triangles which contain more than one copy of the same vertex - and thus would be 'degenerate', having zero area - are discarded. !DIAGRAM FOR THE RMT MERGING ALGORITHM; PSEUDOCODE?!
 
@@ -56,6 +56,8 @@ In addition to iterative smoothing, another useful concept for mesh generation i
 ![[fig2.2.svg]]
 > Fig 2.2 - a) regular subdivision of a tetrahedra cell; b) four possible irregular subdivisions
 
+!ADAPTIVE MARCHING CUBES!
+
 While this technique has excellent applicability for modelling smooth, mathematically defined surfaces, the variable subdivision approach results in areas of varying topology density, which re-introduces poor quality triangles and thus shading problems. In addition, the time taken to produce the mesh may be too unpredictable to be useful in a real-time application, mandating strict limits on the maximum subdivision depth and potentially limiting the algorithm's usefulness overall. Thus, this technique is not directly applicable to the current problem, although it may be useful for optimisation of computational work and adjustment of global voxel resolution according to surface complexity.
 ![[fig2.3.png]]
 > Fig 2.3 - illustration of inconsistent surface tessellation density (Bey, 1995)
@@ -66,8 +68,17 @@ While this technique has excellent applicability for modelling smooth, mathemati
 !OCTREE DUAL CONTOURING!
 
 ## Mesh Simplification Techniques
-!RETILING POLYGONAL SURFACES!
-!ADAPTIVE MARCHING CUBES!
+As has been discussed in the introduction, because isosurface extraction involves generating a mesh at runtime, the process of simplifying an existing mesh represents an additional computational step which should ideally be integrated into the mesh generation process itself. However, it is useful to consider existing simplification techniques since they are an important point of comparison and may inform an integrated approach. This paper considers simplification methods specifically with regard to their ability to produce regularised results - meshes with near-equilateral, similar-area triangles - as well as preserve topology in the process.
+
+One such technique is presented by Turk (1992). The algorithm is somewhat analogous to the constrained elastic surface nets extraction algorithm detailed above - points are distributed on the existing mesh surface, then repeatedly smoothed to produce an even distribution of new points while constraining them to lie on the original mesh. These new points are then combined with the original mesh in a "mutual tessellation", and this mesh is incrementally re-triangulated in localised patches to eliminate old vertices while preserving local surface topology. The result is an entirely re-tessellated, highly regularised mesh.
+![[fig2.4.png]]
+> Fig 2.4 - example of a local re-triangulation to eliminate the vertex R (Turk, 1992)
+
+This technique could potentially be adapted to distribute points on an arbitrary mathematical surface - and in fact, this could be beneficial, providing a smooth surface defined at all points in space as well as curvature information by the use of derivatives - however, the problems of how to produce candidate points on the isosurface, and preserve topology without a guide mesh may present sufficient difficulty to discourage use of this approach.
+
+One of the most efficient and trivial to implement simplification technique is vertex clustering. Naiive vertex clustering simply groups vertices according to their proximity to their neighbours, and merges them together according to a distance threshold. However, this efficiency is gained by ignoring topological information, often resulting in topologically invalid (Cignoni et al., 1998) meshes - leading to holes and non-manifold surfaces. In addition, clustering often requires acceleration structures in order to efficiently search for nearby candidates for clustering, which also require computation to build and increase implementation complexity. The process of rebuilding the mesh at each step also becomes costly with large meshes, without topological information and additional complexity.
+
+A more advanced method for simplification is edge collapse. This approach begins by considering topology: a list of edges is first built using the list of triangles which define the mesh. These edges - pairs of vertices - are then checked individually, and are merged together if the edge length is less than a distance threshold. Finally, the mesh is reconstructed using the new vertex positions, discarding triangles which contain merged edges. Compared to vertex clustering, this technique eliminates a large number of wasted distance computations without the need for additional acceleration structures to be built. It also is more successful at preserving topology, although non-local topology - such as multi-edge loops covering a small area - is not always preserved. The edge collapse method also has a simple process for reconstructing the mesh, and does not require topology modifications between iterations of the edge length test. Because edges are merged one-by-one, this technique also produces highly regular meshes - this is demonstrated below - without additional vertex smoothing such as that used by the constrained elastic surface nets algorithm.
 
 # Methodologies
 
@@ -91,3 +102,5 @@ Payne, B.A. and Toga, A.W. (1990) ‘Surface mapping brain function on 3D models
 Binninger, A. _et al._ (2025) ‘Tetweave: Isosurface extraction using on-the-fly Delaunay tetrahedral grids for gradient-based mesh optimization’, _ACM Transactions on Graphics_, 44(4), pp. 1–19. doi:10.1145/3730851.
 Qiu, Z. _et al._ (2024) ‘Deformable Nerf using recursively subdivided tetrahedra’, _Proceedings of the 32nd ACM International Conference on Multimedia_, pp. 6424–6432. doi:10.1145/3664647.3681019.
 Bey, J. (1995) ‘Tetrahedral grid refinement’, _Computing_, 55(4), pp. 355–378. doi:10.1007/bf02238487.
+Turk, G. (1992) ‘Re-tiling polygonal surfaces’, _Proceedings of the 19th annual conference on Computer graphics and interactive techniques_, pp. 55–64. doi:10.1145/133994.134008.
+Cignoni, P., Montani, C. and Scopigno, R. (1998) ‘A comparison of mesh simplification algorithms’, _Computers &amp; Graphics_, 22(1), pp. 37–54. doi:10.1016/s0097-8493(97)00082-4.
