@@ -85,13 +85,82 @@ This technique could potentially be adapted to distribute points on an arbitrary
 
 One of the most efficient and trivial to implement simplification technique is vertex clustering. Naiive vertex clustering simply groups vertices according to their proximity to their neighbours, and merges them together according to a distance threshold. However, this efficiency is gained by ignoring topological information, often resulting in topologically invalid (Cignoni et al., 1998) meshes - leading to holes and non-manifold surfaces. In addition, clustering often requires acceleration structures in order to efficiently search for nearby candidates for clustering, which also require computation to build and increase implementation complexity. The process of rebuilding the mesh at each step also becomes costly with large meshes, without topological information and additional complexity.
 
-A similar technique is coplanarisation, which focuses on simplifying flat areas of a mesh. While this can be highly effective in some situations, it is not effective for organic, smoothly curved meshes and tends to produce highly irregular meshes (Cignoni et al., 1998).
+A similar technique is coplanarisation, which focuses on simplifying flat areas of a mesh. While this can be highly effective in some situations, it is not effective for organic, smoothly curved meshes and tends to produce highly irregular meshes (Cignoni et al., 1998), and thus is not applicable to the present use case.
 
 A more advanced method for simplification is edge collapse. This approach begins by considering topology: a list of edges is first built using the list of triangles which define the mesh. These edges - pairs of vertices - are then checked individually, and are merged together if the edge length is less than a distance threshold. Finally, the mesh is reconstructed using the new vertex positions, discarding triangles which contain merged edges. Compared to vertex clustering, this technique eliminates a large number of wasted distance computations without the need for additional acceleration structures to be built. It also is more successful at preserving topology, although non-local topology - such as multi-edge loops covering a small area - is not always preserved. The edge collapse method also has a simple process for reconstructing the mesh, and does not require topology modifications between iterations of the edge length test. Because edges are merged one-by-one, this technique also produces highly regular meshes - demonstrated in the results section - without additional vertex smoothing such as that used by the constrained elastic surface nets algorithm.
 
 Another technique which may be of interest is octree hierarchical remeshing. This is a costly approach which works by representing the subject mesh as an octree - a three-dimensional, recursively subdivided structure, where each cell may be subdivided into eight half-sized cells. This octree is then un-subdivided by collapsing highly recursive octree cells, simplifying the representation of the mesh as a result. Finally, the octree can be used to construct a new mesh with a lower - potentially more consistent and regular - geometry density (Andújar et al., 1996).
 
 # Methodologies
+
+## Algorithm
+The implementation produced was based closely on the regularised marching tetrahedra algorithm (Treece, Prager, and Gee, 1999). However, several adaptations were made in order to produce ideal results for videogame terrain. The specific details of the algorithm developed are detailed below, beginning with the outline of the algorithm in pseudocode (Fig 3.1).
+```
+Let F be a smoothly defined scalar function on x,y,z
+Let T be the threshold value for which the isosurface is being computed
+
+For each sample point in the lattice:
+	Let P be the position in space of the sample point
+	Evaluate F for the given point P, storing the result at the sample point
+
+For each sample point:
+	Let C equal the value of F at the current sample point
+	Let [S1 - S14] equal the values of F at the neighbouring sample points in the lattice
+	Let I be a series of Boolean flags
+	For each neighbouring sample point:
+		The corresponding flag in I is set If:
+			The value (C - T) has opposite sign of (Sn - T) And
+			The value (C - T) has lower magnitude than (Sn - T)
+	Store the value of I at the current sample point
+	Considering the state of I, create vertices
+	// TODO HERE
+	
+For each cube in the sample lattice:
+	Retrieve I from the sample point at the center of the cube
+	If I has no flags set:
+		Skip to the next sample cube
+	// TODO HERE
+```
+> *Fig 3.1* - pseudocode outlining the algorithm. The three `For` loops represent the three computation passes - sampling, vertex, and geometry generation.
+
+### Integrated Vertex Clustering Strategy
+!GRAPH THEORY!
+!DIAGRAMS!
+!EXPLAIN!
+!MENTION LIMITATIONS!
+
+### Optimisation Considerations
+The arrangement of computation passes was reorganised in order for the benefit of performance. A major challenge when implementing the algorithm was efficient data access. In order to reduce the number of memory accesses required, the process of identifying isosurface intersections with lattice edges and the process of merging and computing vertex positions were merged into a single 'vertex' pass. This eliminates a large amount of storing and retrieving of information which is only required locally, as well as reducing the overall memory usage of the algorithm.
+
+During the vertex and geometry passes, access to neighbouring sample points is required. Access to these is accelerated by keeping a table of offsets which, when added to the array index of the current sample point, give the index of the neighbour point corresponding to a given direction. This is also performed for the spatial vectors between sample points to avoid recomputation many times over. !DIAGRAM!
+
+Another key optimisation is taking advantage of heuristics on the proximity flags value. For example, in the case where there are one or fewer nearby intersections, the clustering process is skipped entirely. Similarly, when the geometry pass encounters a cube where the intersection flags value is zero, the entire cube - consisting of 24 tetrahedra - is skipped, since this indicates that no geometry is present in the relevant tetrahedra; this massively reduces the processing cost of this step. This mirrors the work of Bajaja et al. (1996) - discussed earlier - to reduce the amount of computation required for a given sample volume by filtering out cells which have no isosurface intersections.
+
+### Tetrahedral Arrangements
+!DETAIL ON BCDL!
+!SIMPLE CUBIC, EXPLAIN MODIFICATIONS AND DIRECTIONAL BIAS!
+
+### Speed and Accuracy Considerations
+
+
+### Parallelisation Approach
+The original RMT algorithm does not take advantage of CPU parallelisation. However, modern CPUs have a great capacity for multithreading, which can be taken advantage of. The implementation provides parallelisation capability for the sampling pass only, where the number of worker threads is specified by the user. The decision to limit the parallelisation was taken based on measurements taken for the duration of different areas of the algorithm. It was found that the vast majority of the computation time for the algorithm was spent evaluating the user-provided sample function; this is reflected in the results section.
+
+Another candidate for multithreading support was the vertex generation pass, which involves most of the remaining computation work for the algorithm, due to the clustering procedure. However, since this process involves appending vertices to a shared list - and more importantly, maintaining a unique index referencing each - difficulties arise when refactoring the algorithm for parallel processing. Avoiding extensive use of synchronisation primitives (mutices) requires a non-trivial process of merging the outputs from multiple threads, which itself can be extremely costly, especially when combined with the startup cost of worker threads in the first place. As such the decision was made not to parallelise this aspect of the algorithm. !DIAGRAM OF AN EXAMPLE PARALLELISATION METHOD, THE GOOD ONE I CAME UP WITH!
+
+In addition, the consideration is made below that the user may wish to divide the sample volume into chunks, and that these chunks may be processed in parallel. Thus, it may be beneficial to limit the resource usage of a single instance of the algorithm in order to facilitate user-controlled forms of parallelisation without exhausting CPU parallelisation capacity.
+
+### Dividing the Sample Volume
+
+### Sample Storage Approach
+
+## Data Collection
+
+### Comparisons of Interest
+
+### Benchmarking
+
+### Questionnaire
 
 # Results and Conclusions
 

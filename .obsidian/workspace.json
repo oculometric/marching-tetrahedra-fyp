@@ -6,7 +6,7 @@
       {
         "id": "6281611512a61882",
         "type": "tabs",
-        "dimension": 53.90492359932089,
+        "dimension": 56.759176365264096,
         "children": [
           {
             "id": "d0c216cf2759b6ab",
@@ -41,7 +41,7 @@
       {
         "id": "c3393b1bdea32544",
         "type": "split",
-        "dimension": 46.09507640067912,
+        "dimension": 43.2408236347359,
         "children": [
           {
             "id": "8b16bd58f8350bb0",
@@ -63,7 +63,7 @@
                 }
               },
               {
-                "id": "9883f7b4b33672d1",
+                "id": "244e6a4247d2ed25",
                 "type": "leaf",
                 "state": {
                   "type": "pdf",
@@ -74,7 +74,8 @@
                   "title": "triangulated surface extraction using tetrahedral decomposition 1995"
                 }
               }
-            ]
+            ],
+            "currentTab": 1
           },
           {
             "id": "68b5b1153b5047a7",
@@ -307,9 +308,10 @@
   },
   "active": "d0c216cf2759b6ab",
   "lastOpenFiles": [
-    "doc/research notes/miscellaneous notes.md",
-    "doc/papers/triangulated surface extraction using tetrahedral decomposition 1995.pdf",
+    "doc/dissertation outline.md",
     "doc/dissertation.md",
+    "doc/papers/triangulated surface extraction using tetrahedral decomposition 1995.pdf",
+    "doc/research notes/miscellaneous notes.md",
     "doc/papers/octree dual contouring 2013.pdf",
     "doc/questionnaire template.md",
     "doc/papers/isosurface stuffing 2007.pdf",
@@ -319,7 +321,6 @@
     "doc/papers/mesh simplification comparison.pdf",
     "doc/research notes/me when i relax my nodes.png",
     "doc/research notes/annoyingly fast simplification.png",
-    "doc/dissertation outline.md",
     "fig2.5.png",
     "doc/papers/Tetrahedral grid refinement 1995.pdf",
     "doc/fig2.3.svg",
