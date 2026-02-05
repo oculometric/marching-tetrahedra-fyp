@@ -6,7 +6,7 @@
       {
         "id": "6281611512a61882",
         "type": "tabs",
-        "dimension": 55.63874590547496,
+        "dimension": 53.90492359932089,
         "children": [
           {
             "id": "d0c216cf2759b6ab",
@@ -21,17 +21,32 @@
               "icon": "lucide-file",
               "title": "dissertation"
             }
+          },
+          {
+            "id": "68eb96a9bce7c23e",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "doc/questionnaire template.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "questionnaire template"
+            }
           }
         ]
       },
       {
         "id": "c3393b1bdea32544",
         "type": "split",
-        "dimension": 44.36125409452504,
+        "dimension": 46.09507640067912,
         "children": [
           {
             "id": "8b16bd58f8350bb0",
             "type": "tabs",
+            "dimension": 64.41908713692946,
             "children": [
               {
                 "id": "04c581b2073057fd",
@@ -46,12 +61,25 @@
                   "icon": "lucide-file",
                   "title": "miscellaneous notes"
                 }
+              },
+              {
+                "id": "9883f7b4b33672d1",
+                "type": "leaf",
+                "state": {
+                  "type": "pdf",
+                  "state": {
+                    "file": "doc/papers/triangulated surface extraction using tetrahedral decomposition 1995.pdf"
+                  },
+                  "icon": "lucide-file-text",
+                  "title": "triangulated surface extraction using tetrahedral decomposition 1995"
+                }
               }
             ]
           },
           {
             "id": "68b5b1153b5047a7",
             "type": "tabs",
+            "dimension": 35.58091286307054,
             "children": [
               {
                 "id": "b62eb480f45f403a",
@@ -188,7 +216,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 379.5
+    "width": 343.5
   },
   "right": {
     "id": "f9232ef4b6037c5b",
@@ -280,7 +308,10 @@
   "active": "d0c216cf2759b6ab",
   "lastOpenFiles": [
     "doc/research notes/miscellaneous notes.md",
+    "doc/papers/triangulated surface extraction using tetrahedral decomposition 1995.pdf",
     "doc/dissertation.md",
+    "doc/papers/octree dual contouring 2013.pdf",
+    "doc/questionnaire template.md",
     "doc/papers/isosurface stuffing 2007.pdf",
     "doc/research notes/simplification notes.md",
     "doc/research notes/Adaptive marching cubes 1995.md",
@@ -302,11 +333,8 @@
     "doc/papers/regularised marching tetrahedra 1999.pdf",
     "doc/research kanban.md",
     "doc/task board.md",
-    "doc/questionnaire template.md",
     "doc/papers/fast isosurface contouring 1996.pdf",
     "doc/renders/pairs/ss_su_ss_sp.mp4",
-    "doc/renders/pairs/ss_su_ss_si.mp4",
-    "doc/renders/pairs/ss_sp_ss_si.mp4",
     "doc/development todos.md",
     "doc/research notes/Regularised marching tetrahedra (1999).md",
     "doc/research notes/A new tetrahedral tessellation scheme for isosurface generation (1998).md",
