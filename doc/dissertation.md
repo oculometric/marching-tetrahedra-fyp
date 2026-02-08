@@ -46,6 +46,7 @@ However, marching tetrahedra generally produces worse meshes than marching cubes
 RMT, presented by Treece, Prager, and Gee, 1999, improves the marching tetrahedra algorithm by integrating the simplification process with the geometry generation process itself. RMT performs an intermediate vertex clustering procedure, eliminating the need for an expensive edge-collapse algorithm to be applied afterwards, and taking advantage of the topological context which is only available during geometry generation itself. !EXPAND ON WHY THIS IS IMPORTANT!
 
 Each sample point is first determined to be either inside or outside the isosurface, and candidate vertices are positioned along edges which connect sample points, using interpolation to align them with the isosurface, as with marching cubes. Then, candidate vertices are grouped according to which sample point they are closest to. The connectivity of these vertices are considered, and a subset of them may be merged together into a single vertex. Consideration of the connectivity allows the merging process to preserve topological features, such as closed surfaces, loops, or disconnected pieces. The triangle mesh is then constructed in a later step using the vertices computed previously, using the same per-tetrahedron table of possible geometries as the existing marching tetrahedra algorithm. At this step, triangles which contain more than one copy of the same vertex - and thus would be 'degenerate', having zero area - are discarded. !DIAGRAM FOR THE RMT MERGING ALGORITHM; PSEUDOCODE?!
+!EXPLAIN WHY MERGING HERE IS BETTER THAN JUST APPLYING EDGE COLLAPSE!
 
 This approach massively reduces the total number of vertices and triangles in the mesh, and eliminates tiny or highly elongated triangles, while preserving topological details and mesh integrity. !EXPAND ON TOPOLOGY PRESERVATION!
 
@@ -71,6 +72,7 @@ A different approach presented by Labelle and Shewchuk (2007) fills the isosurfa
 
 Another approach to isosurface extraction is dual contouring. Dual contouring requires information about the gradient of the function being sampled; a mesh is built by creating a single mesh element - usually a triangle - in each cell, and the joining these surface patches together with those in adjacent cells (Schaefer and Warren, 2004). The position of the mesh element is adapted within its cell to best fit the surface, a process which requires the ability to sample the gradient of the function being examined. One example of this is the octree-based approach presented by Liang and Zhang (2013). This approach uses a similar strategy to Labelle and Shewchuk (2007) and Binninger et al. (2025) where grid points of the octree are adjusted in order to avoid producing small triangles. The octree is constructed with greater density around areas of the surface with higher curvature in order to preserve detail while minimising triangle count. While this approach is able to produce appropriately simplified meshes with good quality triangles, as has been already noted with other adaptive subdivision techniques, it results in an inconsistent level of detail, which is undesirable when applied to videogame terrain meshes.
 
+!ADDITIONAL DUAL CONTOURING!
 !TETRAHEDRAL DECOMPOSITION!
 
 !ADVANCING FRONT!
@@ -106,14 +108,21 @@ For each sample point in the lattice:
 For each sample point:
 	Let C equal the value of F at the current sample point
 	Let [S1 - S14] equal the values of F at the neighbouring sample points in the lattice
-	Let I be a series of Boolean flags
+	Let I be a series of Boolean flags representing isosurface intersections surrounding the current sample point
 	For each neighbouring sample point:
 		The corresponding flag in I is set If:
 			The value (C - T) has opposite sign of (Sn - T) And
 			The value (C - T) has lower magnitude than (Sn - T)
 	Store the value of I at the current sample point
-	Considering the state of I, create vertices
-	// TODO HERE
+	Using I, construct a graph representing which of these intersections can be merged together
+	If the graph contains loops:
+		Skip to the next sample point
+	Otherwise, check for disconnected islands in the graph
+	For each island found:
+		Create a single vertex at the average position of all the isosurface intersections in the island
+		Append the vertex to the vertex array and store its index within the array to V
+		For each intersection in the island:
+			Store the value of V on the edge
 	
 For each cube in the sample lattice:
 	Retrieve I from the sample point at the center of the cube
@@ -124,10 +133,26 @@ For each cube in the sample lattice:
 > *Fig 3.1* - pseudocode outlining the algorithm. The three `For` loops represent the three computation passes - sampling, vertex, and geometry generation.
 
 ### Integrated Vertex Clustering Strategy
+A novel approach to clustering vertices was developed. As discussed, the topology of the mesh should be preserved during merging, and thus the merging algorithm must behave differently depending on the topology. Based on the work of Treece, Prager, and Gee (1999), the only clustering considered is that of isosurface intersections which occur near a given sample point; sample points are processed one at a time. !DIAGRAM! This approach guarantees the algorithm to scale linearly on the number of sample points, and also prevents isosurface intersections from being involved in multiple merging operations, making the process order-independent and thus producing more consistent results. The topology is determined via a graph theory process, and isosurface intersections are merged into vertices accordingly.
+
+In this description, each sample point is surrounded by 14 neighbours, connected by edges. Each of these edges may have an isosurface intersection present, as indicated by the sample points at either end being in opposite states (one inside the isosurface, the other outside). In this case, the position of the isosurface intersection can be calculated by linear interpolation along the edge; this is considered a 'candidate vertex', since it may or may not represent a vertex in the final mesh. !DIAGRAM! If the candidate vertex is closer to the currently examined sample point than the neighbour, it is considered to be a 'nearby intersection' from the perspective of the currently examined sample point. The clustering and vertex creation processes operate on these nearby intersections only, with the understanding that distant intersections will be handled by the sample point to which they are nearest.
+
+Hence, around each sample point, we have a set of nearby candidate vertices which may be able to be merged. The topology of this set must be considered, otherwise merging operations may be performed which compromise the topology of the resulting mesh. Several cases are demonstrated below: !DIAGRAM!
+
+In each of these cases, the merging behaviour must be adjusted to preserve topology. Topology analysis is performed using an undirected graph !CITATION!, represented using an adjacency matrix. This adjacency matrix is stored in the form of bitflags, since each nearby candidate vertex is either connected or unconnected to a given neighbour, and - since each sample point has 14 neighbours - at most 14 candidate vertices may be considered at a time. The use of bitflags both compacts the graph and makes it extremely fast to perform operations on, which is of great concern in this application. Connections within the graph represent which pairs of edges between sample points (which may contain nearby candidate vertices) can be merged, which depends on two conditions: first, the edges must be adjacent to one another !DIAGRAM!; second, both the edges must have nearby candidate vertices.
+
+Several topological features are then searched for using the graph. Before this stage begins, topologies where more than 10 nearby candidate vertices are present, merging is skipped, as this likely represents a complex, concave case. Next, the algorithm checks for the presence of loops. This is necessary to prevent unwanted collapsing of loops and preserve features like small tubes, which would otherwise fundamentally alter the topology of the mesh. Loops are detected by constructing a graph of all non-mergeable regions - the inverse of the graph described in the previous paragraph - and then searching for the presence of multiple islands. !DIAGRAM! If multiple islands are present in the inverted graph, then the un-inverted graph must therefore contain a loop, and thus merging is skipped for this sample point.
+After this, the graph is used to identify disconnected regions or islands within the graph. These must be identified to prevent separate, disconnected regions of the output mesh from being collapsed into one another. Islands are detected by .....
+
+!WHY PRESERVE TOPOLOGY - BACKFACING!
+
 !GRAPH THEORY!
 !DIAGRAMS!
 !EXPLAIN!
 !MENTION LIMITATIONS!
+!WHY NO LOOKUP TABLE!
+!EDGE LENGTHS IN THE FINAL MESH CONSISTENT DUE TO LOCAL MERGING!
+!FAST DUE TO O(n)!
 
 ### Optimisation Considerations
 The arrangement of computation passes was reorganised in order for the benefit of performance. A major challenge when implementing the algorithm was efficient data access. In order to reduce the number of memory accesses required, the process of identifying isosurface intersections with lattice edges and the process of merging and computing vertex positions were merged into a single 'vertex' pass. This eliminates a large amount of storing and retrieving of information which is only required locally, as well as reducing the overall memory usage of the algorithm.
@@ -135,6 +160,8 @@ The arrangement of computation passes was reorganised in order for the benefit o
 During the vertex and geometry passes, access to neighbouring sample points is required. Access to these is accelerated by keeping a table of offsets which, when added to the array index of the current sample point, give the index of the neighbour point corresponding to a given direction. This is also performed for the spatial vectors between sample points to avoid recomputation many times over. !DIAGRAM!
 
 Another key optimisation is taking advantage of heuristics on the proximity flags value. For example, in the case where there are one or fewer nearby intersections, the clustering process is skipped entirely. Similarly, when the geometry pass encounters a cube where the intersection flags value is zero, the entire cube - consisting of 24 tetrahedra - is skipped, since this indicates that no geometry is present in the relevant tetrahedra; this massively reduces the processing cost of this step. This mirrors the work of Bajaja et al. (1996) - discussed earlier - to reduce the amount of computation required for a given sample volume by filtering out cells which have no isosurface intersections.
+
+!NO CURVATURE CALCULATION, NORMALS CALCULATED BY INTERPOLATION!
 
 ### Tetrahedral Arrangements
 !DETAIL ON BCDL!
