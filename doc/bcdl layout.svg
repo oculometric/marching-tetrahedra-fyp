@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generator: Blender, SVG Export for Grease Pencil - v2.0 -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" x="0px" y="0px" xmlns="http://www.w3.org/2000/svg" width="512.000000px" height="512.000000px" viewBox="0 0 512.000000 512.000000">
+	<clipPath id="clip-path.1">
+		<rect x="0" y="0" width="512" height="512" fill="none" />
+	</clipPath>
+	<g id="blender_frame.1" clip-path="url(#clip-path.1)">
+		<g id="blender_object.Cube.1.uuid_0x0">
+			<g id="layer.Lines.uuid_0x1">
+				<polyline stroke-width="1.92699718" points="415.543274,131.602325 256.000061,256.000122" stroke="#000000" stroke-opacity="1" fill="none" stroke-linecap="round" />
+				<polyline stroke-width="1.90416527" points="411.736755,360.126526 256.000061,256.000122" stroke="#000000" stroke-opacity="1" fill="none" stroke-linecap="round" />
+				<polyline stroke-width="2.04785681" points="309.082458,159.668396 256.000061,256.000122" stroke="#000000" stroke-opacity="1" fill="none" stroke-linecap="round" />
+				<polyline stroke-width="2.01898098" points="307.660095,415.527130 256.000061,256.000122" stroke="#000000" stroke-opacity="1" fill="none" stroke-linecap="round" />
+				<polyline stroke-width="1.87198591" points="211.579010,118.827301 256.000061,256.000122" stroke="#000000" stroke-opacity="1" fill="none" stroke-linecap="round" />
+				<polyline stroke-width="1.85167563" points="212.578934,334.798950 256.000061,256.000122" stroke="#000000" stroke-opacity="1" fill="none" stroke-linecap="round" />
+				<polyline stroke-width="1.97857654" points="87.858475,143.579742 256.000061,256.000122" stroke="#000000" stroke-opacity="1" fill="none" stroke-linecap="round" />
+				<polyline stroke-width="1.95324981" points="92.080338,383.810333 256.000061,256.000122" stroke="#000000" stroke-opacity="1" fill="none" stroke-linecap="round" />
+				<polyline stroke-width="1.96456397" points="256.000366,16.045441 256.000061,256.000122" stroke="#000000" stroke-opacity="1" fill="none" stroke-linecap="round" />
+				<polyline stroke-width="2.06420231" points="127.569893,300.405640 256.000061,256.000122" stroke="#000000" stroke-opacity="1" fill="none" stroke-linecap="round" />
+				<polyline stroke-width="1.88352072" points="58.867325,235.835175 256.000061,256.000122" stroke="#000000" stroke-opacity="1" fill="none" stroke-linecap="round" />
+				<polyline stroke-width="1.91651702" points="255.999756,484.363068 256.000061,256.000122" stroke="#000000" stroke-opacity="1" fill="none" stroke-linecap="round" />
+				<polyline stroke-width="2.00380015" points="479.087616,278.820068 256.000061,256.000122" stroke="#000000" stroke-opacity="1" fill="none" stroke-linecap="round" />
+				<polyline stroke-width="1.84103167" points="358.236542,220.651245 256.000061,256.000122" stroke="#000000" stroke-opacity="1" fill="none" stroke-linecap="round" />
+			</g>
+		</g>
+	</g>
+</svg>
