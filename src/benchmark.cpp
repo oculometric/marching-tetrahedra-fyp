@@ -37,6 +37,8 @@ TriangleStats MTVT::computeTriangleQualityStats(const Mesh& mesh)
 
         double area = mag(v01 % v02) * 0.5f;
         double aspect = ::max(l01, l02) / ::min(l01, l02);
+        if (::min(l01, l02) == 0.0)
+            aspect = 0;
         area_sum += area;
         areas.push_back(area);
         if (area > stats.area_max) stats.area_max = area;
