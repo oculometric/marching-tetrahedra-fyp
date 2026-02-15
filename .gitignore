@@ -4,3 +4,9 @@
 /x64
 out/*.obj
 imgui.ini
+*_svg-raw.pdf
+*.aux
+*.fdb_latemk
+*.fls
+*.log
+*.synctex.gs

@@ -8,7 +8,7 @@
 \usepackage[section]{placeins}
 \usepackage{amsmath}
 \usepackage[ruled]{algorithm2e}
-\usepackage[a4paper, portrait, margin=1in]{geometry}
+\usepackage[a4paper, portrait, margin=1.5in]{geometry}
 \makeatother
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
@@ -16,18 +16,14 @@
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
-\hypersetup{
-  pdftitle={dissertation},
-  hidelinks,
-  pdfcreator={cassette :)}}
+\hypersetup{pdftitle={dissertation}, hidelinks, pdfcreator={cassette :)}}
 
-\title{An Examination of Isosurface Extraction for Terrain in Videogames}
+\title{An Examination of Isosurface Extraction for 3D Terrain Generation in Videogames}
 \author{Cassette Costen}
 \date{2026}
 
 \begin{document}
 \maketitle
-
 
 \begin{center}
     \includegraphics[width=\textwidth]{header.png}
@@ -414,128 +410,45 @@ The results are analysed using a system of preference points, which are weighted
 
 \section{Bibliography}\label{bibliography}
 
-Che, L. \emph{et al.} (1985) `Surface shading in the Cuberille
-environment', \emph{IEEE Computer Graphics and Applications}, 5(12), pp.
-33--43. doi:10.1109/mcg.1985.276275.\\
-Lorensen, W.E. and Cline, H.E. (1998) `Marching cubes', \emph{Seminal
-graphics}, pp. 347--353. doi:10.1145/280811.281026.\\
-Chan, S.L. and Purisima, E.O. (1998) `A new tetrahedral tesselation
-scheme for isosurface generation', \emph{Computers \& Graphics}, 22(1),
-pp. 83--90. doi:10.1016/s0097-8493(97)00085-x.\\
-Chan, S.L. and Purisima, E.O. (1998) \textquotesingle Molecular surface
-generation using marching tetrahedra\textquotesingle, \emph{Journal of
-Computational Chemistry}, 19(11) pp. 1268-1277.
-doi:10.1002/(SICI)1096-987X(199808)19:11\%3C1268::AID-JCC6\%3E3.0.CO;2-I\\
-Treece, G.M., Prager, R.W. and Gee, A.H. (1999) `Regularised marching
-tetrahedra: Improved iso-surface extraction', \emph{Computers \&
-Graphics}, 23(4), pp. 583--598. doi:10.1016/s0097-8493(99)00076-x.\\
-Zhou, Y., Chen, W. and Tang, Z. (1995) `An elaborate ambiguity detection
-method for constructing isosurfaces within tetrahedral meshes',
-\emph{Computers \& Graphics}, 19(3), pp. 355--364.
-doi:10.1016/0097-8493(95)00006-x.\\
-Gallagher, R.S. and Nagtegaal, J.C. (1989) `An efficient 3-D
-visualization technique for finite element models and other coarse
-volumes', \emph{ACM SIGGRAPH Computer Graphics}, 23(3), pp. 185--194.
-doi:10.1145/74334.74352.\\
-Nielson, G.M. and Hamann, B. (1991) `The asymptotic decider: Resolving
-the ambiguity in Marching Cubes', \emph{Proceeding Visualization '91}
-{[}Preprint{]}. doi:10.1109/visual.1991.175782.\\
-Sun, H. \emph{et al.} (2023) `Multi-labeled regularized marching
-tetrahedra method for implicit geological modeling', \emph{Mathematical
-Geosciences}, 56(2), pp. 219--248. doi:10.1007/s11004-023-10075-9.\\
-Bajaj, C.L., Pascucci, V. and Schikore, D.R. (1996) `Fast isocontouring
-for improved interactivity', in \emph{Proceedings of the 1996 Symposium
-on Volume Visualization}. San Francisco, California, USA: IEEE Press
-(VVS '96), pp. 39-ff.
-\url{https://dl.acm.org/doi/10.5555/236226.236231}\\
-Gibson, S.F. (1998) `Constrained elastic surface nets: Generating smooth
-surfaces from binary segmented data', \emph{Lecture Notes in Computer
-Science}, pp. 888--898. doi:10.1007/bfb0056277.\\
-Lee, J.M. (2012) `Smooth Manifolds', in \emph{Introduction to smooth
-manifolds}. Springer Nature, pp. 1--31.\\
-Penner, E. (2011) `VI, 2.3 Pixel Derivatives and Pixel Quads', in W.
-Engel (ed.) \emph{GPU pro 2: Advanced rendering techniques}. New York:
-Taylor \& Francis, pp. 350--352.\\
-Payne, B.A. and Toga, A.W. (1990) `Surface mapping brain function on 3D
-models', \emph{IEEE Computer Graphics and Applications}, 10(5), pp.
-33--41. doi:10.1109/38.59034.\\
-Binninger, A. \emph{et al.} (2025) `Tetweave: Isosurface extraction
-using on-the-fly Delaunay tetrahedral grids for gradient-based mesh
-optimization', \emph{ACM Transactions on Graphics}, 44(4), pp. 1--19.
-doi:10.1145/3730851.\\
-Qiu, Z. \emph{et al.} (2024) `Deformable Nerf using recursively
-subdivided tetrahedra', \emph{Proceedings of the 32nd ACM International
-Conference on Multimedia}, pp. 6424--6432.
-doi:10.1145/3664647.3681019.\\
-Bey, J. (1995) `Tetrahedral grid refinement', \emph{Computing}, 55(4),
-pp. 355--378. doi:10.1007/bf02238487.\\
-Turk, G. (1992) `Re-tiling polygonal surfaces', \emph{Proceedings of the
-19th annual conference on Computer graphics and interactive techniques},
-pp. 55--64. doi:10.1145/133994.134008.\\
-Cignoni, P., Montani, C. and Scopigno, R. (1998) `A comparison of mesh
-simplification algorithms', \emph{Computers \& Graphics}, 22(1), pp.
-37--54. doi:10.1016/s0097-8493(97)00082-4.\\
-Andújar, C. \emph{et al.} (1996) `Automatic generation of
-multiresolution boundary representations', \emph{Computer Graphics
-Forum}, 15(3), pp. 87--96. doi:10.1111/1467-8659.1530087.\\
-Shu, R., Zhou, C. and Kankanhalli, M.S. (1995) `Adaptive Marching
-cubes', \emph{The Visual Computer}, 11(4), pp. 202--217.
-doi:10.1007/bf01901516.\\
-Labelle, F. and Shewchuk, J.R. (2007) `Isosurface stuffing', \emph{ACM
-SIGGRAPH 2007 papers}, p. 57. doi:10.1145/1275808.1276448.\\
-Castelo, A. \emph{et al.} (2024) `A generalized combinatorial marching
-hypercube algorithm', \emph{Computational and Applied Mathematics},
-43(3). doi:10.1007/s40314-024-02627-4.\\
-Liang, X. and Zhang, Y. (2013) `An octree-based dual contouring method
-for triangular and tetrahedral mesh generation with guaranteed angle
-range', \emph{Engineering with Computers}, 30(2), pp. 211--222.
-doi:10.1007/s00366-013-0328-8.\\
-Schaefer, S. and Warren, J. (2004) `Dual Marching Cubes: Primal
-contouring of dual grids', \emph{12th Pacific Conference on Computer
-Graphics and Applications, 2004. PG 2004. Proceedings.}, pp. 70--76.
-doi:10.1109/pccga.2004.1348336.\\
-\emph{AMD Ryzen 5 3600 Specs} (no date) \emph{TechPowerUp}. Available
-at: \url{https://www.techpowerup.com/cpu-specs/ryzen-5-3600.c2132}
-(Accessed: 10 February 2026).\\
-Raffe, W.L., Zambetta, F. and Li, X. (2012) `A survey of procedural
-terrain generation techniques using evolutionary algorithms', \emph{2012
-IEEE Congress on Evolutionary Computation}, pp. 1--8.
-doi:10.1109/cec.2012.6256610.\\
-\emph{ASTRONEER}. (2016). PC {[}Game{]}. Seattle, Washington: System Era
-Softworks.\\
-Hwang, J. and Sung, M. (2024) `Occupancy-based dual contouring',
-\emph{SIGGRAPH Asia 2024 Conference Papers}, pp. 1--11.
-doi:10.1145/3680528.3687581.\\
-Ju, T. \emph{et al.} (2002) `Dual contouring of Hermite Data',
-\emph{Proceedings of the 29th annual conference on Computer graphics and
-interactive techniques}, pp. 339--346. doi:10.1145/566570.566586.\\
-Bishop, N. (2011) \emph{Remesh modifier}, \emph{Blender Developers
-Blog}. Available at:
-\url{https://code.blender.org/2011/12/remesh-modifier/} (Accessed: 10
-February 2026).\\
-Mueller, J.-D., Roe, P.L. and Deconinck, H. (eds) (1992) \emph{A frontal
-approach for node generation in Delaunay triangulations}.\\
-Frey, P.J., Borouchaki, H. and George, P.-L. (1998) `3D Delaunay mesh
-generation coupled with an advancing-front approach', \emph{Computer
-Methods in Applied Mechanics and Engineering}, 157(1--2), pp. 115--131.
-doi:10.1016/s0045-7825(97)00222-3.\\
-Yu, K. \emph{et al.} (2022) `On the efficiency of the advancing-front
-surface mesh generation algorithm', \emph{Computer-Aided Design}, 153,
-p. 103403. doi:10.1016/j.cad.2022.103403.\\
-Ito, Y. \emph{et al.} (2007) `Parallel unstructured mesh generation by
-an advancing front method', \emph{Mathematics and Computers in
-Simulation}, 75(5--6), pp. 200--209. doi:10.1016/j.matcom.2006.12.008.\\
-Delaunay, B. (1934) `Sur la sphère vide', \emph{Bulletin de l'Académie
-des Sciences de l'URSS. VII. Série}, 1934(6), pp. 793--800.\\
-\emph{MeshDeformation GPUBatched} (2026) \emph{Unity Documentation}.
-Available at:
-\url{https://docs.unity3d.com/6000.0/Documentation/ScriptReference/MeshDeformation.GPUBatched.html}
-(Accessed: 15 February 2026).\\
-Bondy, J.A. and Murty, U.S.R. (2008) \emph{Graph theory}. New York:
-Springer.\\
-Hill, M.D. and Marty, M.R. (2008) `Amdahl's Law in the Multicore Era',
-\emph{Computer}, 41(7), pp. 33--38. doi:10.1109/mc.2008.209.\\
-Turk, G. and Levoy, M. (1994) `Stanford Bunny'. Stanford University
-Computer Graphics Laboratory.
+Che, L. \emph{et al.} (1985) `Surface shading in the Cuberille environment', \emph{IEEE Computer Graphics and Applications}, 5(12), pp. 33--43. doi:10.1109/mcg.1985.276275.\medskip\\
+Lorensen, W.E. and Cline, H.E. (1998) `Marching cubes', \emph{Seminal graphics}, pp. 347--353. doi:10.1145/280811.281026.\medskip\\
+Chan, S.L. and Purisima, E.O. (1998) `A new tetrahedral tesselation scheme for isosurface generation', \emph{Computers \& Graphics}, 22(1), pp. 83--90. doi:10.1016/s0097-8493(97)00085-x.\medskip\\
+Chan, S.L. and Purisima, E.O. (1998) \textquotesingle Molecular surface generation using marching tetrahedra\textquotesingle, \emph{Journal of Computational Chemistry}, 19(11) pp. 1268-1277. doi:10.1002/(SICI)1096-987X(199808)19:11\%3C1268::AID-JCC6\%3E3.0.CO;2-I\medskip\\
+Treece, G.M., Prager, R.W. and Gee, A.H. (1999) `Regularised marching tetrahedra: Improved iso-surface extraction', \emph{Computers \& Graphics}, 23(4), pp. 583--598. doi:10.1016/s0097-8493(99)00076-x.\medskip\\
+Zhou, Y., Chen, W. and Tang, Z. (1995) `An elaborate ambiguity detection method for constructing isosurfaces within tetrahedral meshes', \emph{Computers \& Graphics}, 19(3), pp. 355--364. doi:10.1016/0097-8493(95)00006-x.\medskip\\
+Gallagher, R.S. and Nagtegaal, J.C. (1989) `An efficient 3-D visualization technique for finite element models and other coarse volumes', \emph{ACM SIGGRAPH Computer Graphics}, 23(3), pp. 185--194. doi:10.1145/74334.74352.\medskip\\
+Nielson, G.M. and Hamann, B. (1991) `The asymptotic decider: Resolving the ambiguity in Marching Cubes', \emph{Proceeding Visualization '91} {[}Preprint{]}. doi:10.1109/visual.1991.175782.\medskip\\
+Sun, H. \emph{et al.} (2023) `Multi-labeled regularized marching tetrahedra method for implicit geological modeling', \emph{Mathematical Geosciences}, 56(2), pp. 219--248. doi:10.1007/s11004-023-10075-9.\medskip\\
+Bajaj, C.L., Pascucci, V. and Schikore, D.R. (1996) `Fast isocontouring for improved interactivity', in \emph{Proceedings of the 1996 Symposium on Volume Visualization}. San Francisco, California, USA: IEEE Press (VVS '96), pp. 39-ff. \url{https://dl.acm.org/doi/10.5555/236226.236231}\medskip\\
+Gibson, S.F. (1998) `Constrained elastic surface nets: Generating smooth surfaces from binary segmented data', \emph{Lecture Notes in Computer Science}, pp. 888--898. doi:10.1007/bfb0056277.\medskip\\
+Lee, J.M. (2012) `Smooth Manifolds', in \emph{Introduction to smooth manifolds}. Springer Nature, pp. 1--31.\medskip\\
+Penner, E. (2011) `VI, 2.3 Pixel Derivatives and Pixel Quads', in W. Engel (ed.) \emph{GPU pro 2: Advanced rendering techniques}. New York: Taylor \& Francis, pp. 350--352.\medskip\\
+Payne, B.A. and Toga, A.W. (1990) `Surface mapping brain function on 3D models', \emph{IEEE Computer Graphics and Applications}, 10(5), pp. 33--41. doi:10.1109/38.59034.\medskip\\
+Binninger, A. \emph{et al.} (2025) `Tetweave: Isosurface extraction using on-the-fly Delaunay tetrahedral grids for gradient-based mesh optimization', \emph{ACM Transactions on Graphics}, 44(4), pp. 1--19. doi:10.1145/3730851.\medskip\\
+Qiu, Z. \emph{et al.} (2024) `Deformable Nerf using recursively subdivided tetrahedra', \emph{Proceedings of the 32nd ACM International Conference on Multimedia}, pp. 6424--6432. doi:10.1145/3664647.3681019.\medskip\\
+Bey, J. (1995) `Tetrahedral grid refinement', \emph{Computing}, 55(4), pp. 355--378. doi:10.1007/bf02238487.\medskip\\
+Turk, G. (1992) `Re-tiling polygonal surfaces', \emph{Proceedings of the 19th annual conference on Computer graphics and interactive techniques}, pp. 55--64. doi:10.1145/133994.134008.\medskip\\
+Cignoni, P., Montani, C. and Scopigno, R. (1998) `A comparison of mesh simplification algorithms', \emph{Computers \& Graphics}, 22(1), pp. 37--54. doi:10.1016/s0097-8493(97)00082-4.\medskip\\
+Andújar, C. \emph{et al.} (1996) `Automatic generation of multiresolution boundary representations', \emph{Computer Graphics Forum}, 15(3), pp. 87--96. doi:10.1111/1467-8659.1530087.\medskip\\
+Shu, R., Zhou, C. and Kankanhalli, M.S. (1995) `Adaptive Marching cubes', \emph{The Visual Computer}, 11(4), pp. 202--217. doi:10.1007/bf01901516.\medskip\\
+Labelle, F. and Shewchuk, J.R. (2007) `Isosurface stuffing', \emph{ACM SIGGRAPH 2007 papers}, p. 57. doi:10.1145/1275808.1276448.\medskip\\
+Castelo, A. \emph{et al.} (2024) `A generalized combinatorial marching hypercube algorithm', \emph{Computational and Applied Mathematics}, 43(3). doi:10.1007/s40314-024-02627-4.\medskip\\
+Liang, X. and Zhang, Y. (2013) `An octree-based dual contouring method for triangular and tetrahedral mesh generation with guaranteed angle range', \emph{Engineering with Computers}, 30(2), pp. 211--222. doi:10.1007/s00366-013-0328-8.\medskip\\
+Schaefer, S. and Warren, J. (2004) `Dual Marching Cubes: Primal contouring of dual grids', \emph{12th Pacific Conference on Computer Graphics and Applications, 2004. PG 2004. Proceedings.}, pp. 70--76. doi:10.1109/pccga.2004.1348336.\medskip\\
+\emph{AMD Ryzen 5 3600 Specs} (no date) \emph{TechPowerUp}. Available at: \url{https://www.techpowerup.com/cpu-specs/ryzen-5-3600.c2132} (Accessed: 10 February 2026).\medskip\\
+Raffe, W.L., Zambetta, F. and Li, X. (2012) `A survey of procedural terrain generation techniques using evolutionary algorithms', \emph{2012 IEEE Congress on Evolutionary Computation}, pp. 1--8. doi:10.1109/cec.2012.6256610.\medskip\\
+\emph{ASTRONEER}. (2016). PC {[}Game{]}. Seattle, Washington: System Era Softworks.\medskip\\
+Hwang, J. and Sung, M. (2024) `Occupancy-based dual contouring', \emph{SIGGRAPH Asia 2024 Conference Papers}, pp. 1--11. doi:10.1145/3680528.3687581.\medskip\\
+Ju, T. \emph{et al.} (2002) `Dual contouring of Hermite Data', \emph{Proceedings of the 29th annual conference on Computer graphics and interactive techniques}, pp. 339--346. doi:10.1145/566570.566586.\medskip\\
+Bishop, N. (2011) \emph{Remesh modifier}, \emph{Blender Developers Blog}. Available at: \url{https://code.blender.org/2011/12/remesh-modifier/} (Accessed: 10 February 2026).\medskip\\
+Mueller, J.-D., Roe, P.L. and Deconinck, H. (eds) (1992) \emph{A frontal approach for node generation in Delaunay triangulations}.\medskip\\
+Frey, P.J., Borouchaki, H. and George, P.-L. (1998) `3D Delaunay mesh generation coupled with an advancing-front approach', \emph{Computer Methods in Applied Mechanics and Engineering}, 157(1--2), pp. 115--131. doi:10.1016/s0045-7825(97)00222-3.\medskip\\
+Yu, K. \emph{et al.} (2022) `On the efficiency of the advancing-front surface mesh generation algorithm', \emph{Computer-Aided Design}, 153, p. 103403. doi:10.1016/j.cad.2022.103403.\medskip\\
+Ito, Y. \emph{et al.} (2007) `Parallel unstructured mesh generation by an advancing front method', \emph{Mathematics and Computers in Simulation}, 75(5--6), pp. 200--209. doi:10.1016/j.matcom.2006.12.008.\medskip\\
+Delaunay, B. (1934) `Sur la sphère vide', \emph{Bulletin de l'Académie des Sciences de l'URSS. VII. Série}, 1934(6), pp. 793--800.\medskip\\
+\emph{MeshDeformation GPUBatched} (2026) \emph{Unity Documentation}. Available at: \url{https://docs.unity3d.com/6000.0/Documentation/ScriptReference/MeshDeformation.GPUBatched.html} (Accessed: 15 February 2026).\medskip\\
+Bondy, J.A. and Murty, U.S.R. (2008) \emph{Graph theory}. New York: Springer.\medskip\\
+Hill, M.D. and Marty, M.R. (2008) `Amdahl's Law in the Multicore Era', \emph{Computer}, 41(7), pp. 33--38. doi:10.1109/mc.2008.209.\medskip\\
+Turk, G. and Levoy, M. (1994) `Stanford Bunny'. Stanford University Computer Graphics Laboratory.\medskip\\
 
 \end{document}
