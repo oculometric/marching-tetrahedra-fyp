@@ -23,143 +23,100 @@
             }
           },
           {
-            "id": "9dbef0c9ed64cacc",
+            "id": "381823681b59c19f",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "pdf",
               "state": {
-                "file": "doc/questionnaire template.md",
-                "mode": "source",
-                "source": false
+                "file": "doc/papers/adaptive marching cubes 1995.pdf"
               },
-              "icon": "lucide-file",
-              "title": "questionnaire template"
+              "icon": "lucide-file-text",
+              "title": "adaptive marching cubes 1995"
             }
           }
         ]
       },
       {
-        "id": "c3393b1bdea32544",
-        "type": "split",
+        "id": "68b5b1153b5047a7",
+        "type": "tabs",
         "dimension": 32.596232596232596,
         "children": [
           {
-            "id": "8b16bd58f8350bb0",
-            "type": "tabs",
-            "children": [
-              {
-                "id": "04c581b2073057fd",
-                "type": "leaf",
-                "state": {
-                  "type": "markdown",
-                  "state": {
-                    "file": "doc/research notes/miscellaneous notes.md",
-                    "mode": "source",
-                    "source": false
-                  },
-                  "icon": "lucide-file",
-                  "title": "miscellaneous notes"
-                }
+            "id": "b62eb480f45f403a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "doc/dissertation outline.md",
+                "mode": "source",
+                "source": false
               },
-              {
-                "id": "5b0d5fdf8af2bc97",
-                "type": "leaf",
-                "state": {
-                  "type": "markdown",
-                  "state": {
-                    "file": "doc/research notes/simplification notes.md",
-                    "mode": "source",
-                    "source": false
-                  },
-                  "icon": "lucide-file",
-                  "title": "simplification notes"
-                }
-              }
-            ]
+              "icon": "lucide-file",
+              "title": "dissertation outline"
+            }
           },
           {
-            "id": "68b5b1153b5047a7",
-            "type": "tabs",
-            "children": [
-              {
-                "id": "b62eb480f45f403a",
-                "type": "leaf",
-                "state": {
-                  "type": "markdown",
-                  "state": {
-                    "file": "doc/dissertation outline.md",
-                    "mode": "source",
-                    "source": false
-                  },
-                  "icon": "lucide-file",
-                  "title": "dissertation outline"
+            "id": "f844a503bb778a26",
+            "type": "leaf",
+            "state": {
+              "type": "kanban",
+              "state": {
+                "file": "doc/task board.md",
+                "kanbanViewState": {
+                  "kanban-plugin": "board",
+                  "list-collapse": [
+                    false,
+                    false,
+                    false
+                  ]
                 }
               },
-              {
-                "id": "f844a503bb778a26",
-                "type": "leaf",
-                "state": {
-                  "type": "kanban",
-                  "state": {
-                    "file": "doc/task board.md",
-                    "kanbanViewState": {
-                      "kanban-plugin": "board",
-                      "list-collapse": [
-                        false,
-                        false,
-                        false
-                      ]
-                    }
-                  },
-                  "icon": "lucide-trello",
-                  "title": "task board"
+              "icon": "lucide-trello",
+              "title": "task board"
+            }
+          },
+          {
+            "id": "c8efd25e1881a8c6",
+            "type": "leaf",
+            "state": {
+              "type": "kanban",
+              "state": {
+                "file": "doc/research kanban.md",
+                "kanbanViewState": {
+                  "kanban-plugin": "board",
+                  "list-collapse": [
+                    false,
+                    false,
+                    false,
+                    false
+                  ]
                 }
               },
-              {
-                "id": "c8efd25e1881a8c6",
-                "type": "leaf",
-                "state": {
-                  "type": "kanban",
-                  "state": {
-                    "file": "doc/research kanban.md",
-                    "kanbanViewState": {
-                      "kanban-plugin": "board",
-                      "list-collapse": [
-                        false,
-                        false,
-                        false,
-                        false
-                      ]
-                    }
-                  },
-                  "icon": "lucide-trello",
-                  "title": "research kanban"
+              "icon": "lucide-trello",
+              "title": "research kanban"
+            }
+          },
+          {
+            "id": "b8e0584456b83d7d",
+            "type": "leaf",
+            "state": {
+              "type": "kanban",
+              "state": {
+                "file": "doc/development todos.md",
+                "kanbanViewState": {
+                  "kanban-plugin": "board",
+                  "list-collapse": [
+                    false,
+                    false,
+                    false
+                  ]
                 }
               },
-              {
-                "id": "b8e0584456b83d7d",
-                "type": "leaf",
-                "state": {
-                  "type": "kanban",
-                  "state": {
-                    "file": "doc/development todos.md",
-                    "kanbanViewState": {
-                      "kanban-plugin": "board",
-                      "list-collapse": [
-                        false,
-                        false,
-                        false
-                      ]
-                    }
-                  },
-                  "icon": "lucide-trello",
-                  "title": "development todos"
-                }
-              }
-            ]
+              "icon": "lucide-trello",
+              "title": "development todos"
+            }
           }
-        ],
-        "direction": "horizontal"
+        ]
       }
     ],
     "direction": "vertical"
@@ -307,34 +264,34 @@
   },
   "active": "d0c216cf2759b6ab",
   "lastOpenFiles": [
-    "~AutoRecover.mtvt.vcxproj",
-    "doc/questionnaire template.md",
-    "doc/papers/a new mt tessellation.pdf",
+    "doc/papers/adaptive marching cubes 1995.pdf",
     "doc/dissertation.md",
+    "doc/marching cubes ambiguity.svg",
+    "doc/fig2.2 - Copy.svg",
+    "marching cubes configurations.png",
+    "doc/questionnaire template.md",
+    "doc/papers/A generalized combinatorial marching hypercubes algorithm 2022.pdf",
+    "doc/papers/a new mt tessellation.pdf",
+    "~AutoRecover.mtvt.vcxproj",
     "doc/research notes/miscellaneous notes.md",
     "doc/bcdl layout.svg",
     "doc/topologies.svg",
     "doc/research notes/Adaptive marching cubes 1995.md",
     "doc/research notes/simplification notes.md",
     "doc/dissertation outline.md",
-    "fig2.5.png",
-    "doc/fig2.4.png",
-    "doc/fig2.3.svg",
+    "local retriangulation.png",
+    "doc/inconsistent tessellation density.png",
+    "doc/tetrahedron subdivision.svg",
     "doc/papers/mesh simplification comparison.pdf",
     "doc/research notes/me when i relax my nodes.png",
     "doc/research notes/annoyingly fast simplification.png",
-    "fig2.4.png",
     "doc/papers/Tetrahedral grid refinement 1995.pdf",
-    "doc/fig2.2.svg",
-    "doc/fig2.3.png",
     "doc/papers/delaunay tetrahedral grids 2025.pdf",
     "doc/dissertation.tex",
     "doc/papers/regularised marching tetrahedra 1999.pdf",
     "doc/research kanban.md",
     "doc/task board.md",
     "doc/papers/fast isosurface contouring 1996.pdf",
-    "doc/renders/pairs/ss_su_ss_sp.mp4",
-    "doc/renders/pairs/ss_su_ss_si.mp4",
     "doc/development todos.md",
     "doc/research notes/Regularised marching tetrahedra (1999).md",
     "doc/research notes/A new tetrahedral tessellation scheme for isosurface generation (1998).md",
