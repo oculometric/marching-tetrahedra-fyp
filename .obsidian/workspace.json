@@ -21,18 +21,6 @@
               "icon": "lucide-file",
               "title": "dissertation"
             }
-          },
-          {
-            "id": "381823681b59c19f",
-            "type": "leaf",
-            "state": {
-              "type": "pdf",
-              "state": {
-                "file": "doc/papers/adaptive marching cubes 1995.pdf"
-              },
-              "icon": "lucide-file-text",
-              "title": "adaptive marching cubes 1995"
-            }
           }
         ]
       },
