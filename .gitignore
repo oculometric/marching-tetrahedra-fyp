@@ -10,3 +10,5 @@ imgui.ini
 *.fls
 *.log
 *.synctex.gz
+*_svg-tex.pdf
+*_svg-tex.pdf_tex

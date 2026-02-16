@@ -358,7 +358,44 @@ An alternative approach to solving the merging problem is a lookup table. This c
 
 The arrangement of computation passes was arranged with intent to minimise execution time. A major challenge when implementing the algorithm was efficient data access. In order to reduce the number of memory accesses performed, the process of identifying isosurface intersections with lattice edges and the process of merging and computing vertex positions were merged into a single \emph{\textquotesingle vertex\textquotesingle{}} pass. This eliminates a large amount of storing and retrieving of information which can instead be made local within the combined vertex pass, as well as reducing the overall memory usage of the algorithm.
 
-During the vertex and geometry passes, access to neighbouring sample points is required. Access to these is accelerated by keeping a table of offsets which, when added to the array index of the current sample point, produce the index of the neighbour point corresponding to a given direction. This is also performed for the spatial vectors between sample points to avoid recomputation many times over. !DIAGRAM!
+During the vertex and geometry passes, access to neighbouring sample points is required. Access to these is accelerated by keeping a table of offsets which, when added to the array index of the current sample point, produce the index of the neighbour point corresponding to a given direction (Fig. \ref{fig:samprel}); this is also performed for the spatial vectors between sample points to avoid recomputation many times over (Fig. \ref{fig:samprelvec}).
+
+\begin{figure}[htb]
+    \centering
+    \includesvg[width=\textwidth]{sample relations.svg}
+    \caption{Visual depiction of the table of sample index offsets, for the body-centered tetrahedron arrangement, on even slices of the $Z$ axis. $S_x$ is defined to be the number of samples present in the array on the $X$ axis, while $S_y$ is defined likewise for the $Y$ axis.}
+    \label{fig:samprel}
+\end{figure}
+
+\begin{figure}[htb]
+    \centering
+    \begin{center}
+\begin{tabular}{ |c|c|c|c| } 
+\hline
+Sample direction & $X$ & $Y$ & $Z$ \\
+\hline
++X & $S\times 2$ & $0$ & $0$ \\
+-X & $-S\times 2$ & $0$ & $0$ \\
++Y & $0$ & $S\times 2$ & $0$ \\
+-Y & $0$ & $-S\times 2$ & $0$ \\
++Z & $0$ & $0$ & $S\times 2$ \\
+-Z & $0$ & $0$ & $-S\times 2$ \\
++X,+Y,+Z & $S$ & $S$ & $S$ \\
+-X,+Y,+Z & $-S$ & $S$ & $S$ \\
++X,-Y,+Z & $S$ & $-S$ & $S$ \\
+-X,-Y,+Z & $-S$ & $-S$ & $S$ \\
++X,+Y,-Z & $S$ & $S$ & $-S$ \\
+-X,+Y,-Z & $-S$ & $S$ & $-S$ \\
++X,-Y,-Z & $S$ & $-S$ & $-S$ \\
+-X,-Y,-Z & $-S$ & $-S$ & $-S$ \\
+ \hline
+\end{tabular}
+\end{center}
+    \caption{Table for sample position offset vectors, for the body-centered tetrahedron arrangement. The $X$, $Y$, and $Z$ columns represent components of the vector which represents moving from the current sample point to its neighbour in the direction specified by the first column.}
+    \label{fig:samprelvec}
+\end{figure}
+
+\FloatBarrier
 
 Further optimisations are made by using the proximity flags to determine where there is one or fewer nearby intersections to skip the clustering process. Similarly, when the geometry pass encounters a cube where the intersection flags value is zero, the entire cube - consisting of 24 tetrahedra - is skipped, since this indicates that no geometry is present in the relevant tetrahedra; this massively reduces the processing cost of this step. This mirrors the work of Bajaja et al. (1996) - discussed earlier - to reduce the amount of computation required for a given sample volume by filtering out cells which have no isosurface intersections.
 
