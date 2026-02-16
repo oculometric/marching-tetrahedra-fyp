@@ -8,7 +8,7 @@
 \usepackage[section]{placeins}
 \usepackage{amsmath}
 \usepackage[ruled]{algorithm2e}
-\usepackage[a4paper, portrait, margin=1.5in]{geometry}
+\usepackage[a4paper, portrait, margin=1.5in, top=0.8in, bottom=0.8in]{geometry}
 \makeatother
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
@@ -227,20 +227,32 @@ Another technique which may be of interest is octree hierarchical remeshing. Thi
 
 \subsection{Algorithm}\label{algorithm}
 
-The implementation produced was based closely on the regularised marching tetrahedra algorithm (Treece, Prager, and Gee, 1999). However, several adaptations were made in order to produce ideal results for videogame terrain. The specific details of the algorithm developed are detailed below, beginning with the outline of the algorithm in pseudocode in Fig. \ref{fig:pseudocode}.
+The implementation produced was based closely on the regularised marching tetrahedra algorithm (Treece, Prager, and Gee, 1999). However, several adaptations were made in order to produce ideal results for videogame terrain. The specifics of our algorithm are detailed in pseudocode in Algorithms \ref{algo:pseudocode1}, \ref{algo:pseudocode2}, and \ref{algo:pseudocode3}. These correspond to the three computation stages - sampling, vertex creation, or geometry generation.
 
-\begin{figure}[htb]
+\bigskip
+
 \begin{algorithm}[H]
+\label{algo:pseudocode1}
 \DontPrintSemicolon
 Let $\mathbf{F}$ be a smoothly defined scalar function on $x,y,z$\;
-Let $\mathbf{T}$ be the threshold value for which the isosurface is being computed\;
 \For{each sample point in the lattice}{
 	Let $\mathbf{P}$ be the position in space of the sample point\;
 	Evaluate $\mathbf{F}$ for the given point $\mathbf{P}$, storing the result at the sample point\;
 }
+\caption{Sampling stage}
+\end{algorithm}
+
+\bigskip
+
+\begin{algorithm}[H]
+\label{algo:pseudocode2}
+\DontPrintSemicolon
+Let $\mathbf{F}$ be a smoothly defined scalar function on $x,y,z$\;
+Let $\mathbf{T}$ be the threshold value for which the isosurface is being computed\;
+Let $\mathbf{A_v}$ be the array of vertices in the generated mesh\;
 \For{each sample point in the lattice}{
-	Let $\mathbf{C}$ equal the value of $\mathbf{F}$ at the current sample point\;
-	Let $\mathbf{S1}\dots\mathbf{S14}$ equal the values of $\mathbf{F}$ at the neighbouring sample points in the lattice\;
+	Let $\mathbf{C}$ equal the value of $\mathbf{F}$ retrieved from the current sample point\;
+	Let $\mathbf{S_1}\dots\mathbf{S_{14}}$ equal the values of $\mathbf{F}$ retrieved from the neighbouring sample points in the lattice\;
 	Let $\mathbf{I}$ be a series of Boolean flags representing isosurface intersections surrounding the current sample point\;
 	\For{each neighbouring sample point}{
 		\If{$sign(\mathbf{C}-\mathbf{T})\neq sign(\mathbf{S}n-\mathbf{T})$  \textbf{and} $\|\mathbf{C} - \mathbf{T}\| < \|\mathbf{S}n - \mathbf{T}\|$}{
@@ -255,35 +267,74 @@ Let $\mathbf{T}$ be the threshold value for which the isosurface is being comput
 		Check for disconnected islands in $\mathbf{G}$\;
 		\For{each island in $\mathbf{G}$}{
 			Create a single vertex $\mathbf{R}$ at the average position of all the isosurface intersections in the island\;
-			Append $\mathbf{R}$ to the vertex array and let $\mathbf{V}$ be its index within the array\;
+			Append $\mathbf{R}$ to the vertex array $\mathbf{A_v}$ and let $\mathbf{V}$ be its index within the array\;
 			\For{each intersection in the island}{
 				Store $\mathbf{V}$ on the corresponding edge\;
 			}
 		}
 	}
 }
+\caption{Vertex creation \& clustering stage}
+\end{algorithm}
+
+\bigskip
+
+\begin{algorithm}[H]
+\label{algo:pseudocode3}
+\DontPrintSemicolon
+Let $\mathbf{A_v}$ be the array of vertices in the generated mesh\;
+Let $\mathbf{A_t}$ be the array of triangles in the generated mesh\;
 \For{each cube in the sample lattice}{
 	Retrieve $\mathbf{I}$ from the sample point at the center of the cube\;
 	\If{$\mathbf{I}$ has no flags set}{
 		Skip to the next sample cube\;
 	}
-	// !TODO HERE!
+	\For{each tetrahedron in the cube}{
+		Let $\mathbf{B_1}\dots\mathbf{B_4}$ be the states (inside or outside the isosurface) of the four corners of the tetrahedron\;
+		Populate $\mathbf{B_1}\dots\mathbf{B_4}$ based on $\mathbf{I}$ and the state of the sample point at the center of the cube\;
+		\If{all of $\mathbf{B_1}\dots\mathbf{B_4}$ are equal to one another}{
+			Skip to the next tetrahedron\;
+		}
+		Use the values of $\mathbf{B_1}\dots\mathbf{B_4}$ to select the triangulation scheme $\mathbf{S}$ from a pre-defined list\;
+		Let $\mathbf{V_1}\dots\mathbf{V_4}$ be the indices into $\mathbf{A_v}$, retrieved from the relevant edges as described by $\mathbf{S}$\;
+		Based on $\mathbf{S}$, construct triangles $\mathbf{R_1}\dots\mathbf{R_k}$, where $k$ may be $1$ or $2$, using $\mathbf{V_1}\dots\mathbf{V_4}$\;
+		\For{each triangle $\mathbf{R_n}$ in $\mathbf{R_1}\dots\mathbf{R_k}$}{
+			\uIf{$\mathbf{R_n}$ contains one or more duplicated index}{
+				Discard $\mathbf{R_n}$
+			}\Else{
+				Append $\mathbf{R_n}$ to the triangle array $\mathbf{A_t}$\;
+			}
+		}
+	}
 }
-\caption{Isosurface extraction}
+\caption{Geometry generation stage}
 \end{algorithm}
-\caption{Pseudocode outlining the algorithm. The three \textbf{for} loops represent the three computation passes - sampling, vertex, and geometry generation.}
-\label{fig:pseudocode}
-\end{figure}
 
 \FloatBarrier
 
-!DIAGRAMS FOR THE WHOLE ALGORITHM 1xSAMPLING, 3xVERTEX, 2xGEOMETRY!
+\pagebreak
 
 \subsubsection{Integrated Vertex Clustering Strategy}\label{integrated-vertex-clustering-strategy}
 
-A novel approach to clustering vertices was developed. As discussed, the topology of the mesh should be preserved during merging, and thus the merging algorithm must behave differently depending on the topology. Based on the work of Treece, Prager, and Gee (1999), the only clustering considered is that of isosurface intersections which occur near a given sample point; sample points are processed one at a time. !DIAGRAM! This approach guarantees the algorithm to scale linearly on the number of sample points, and also prevents isosurface intersections from being involved in multiple merging operations, making the process order-independent and thus producing more consistent results. The topology is determined via a graph representation, and isosurface intersections are merged into vertices accordingly.  In this description, each sample point is surrounded by 14 neighbours, connected by edges. Each of these edges may have an isosurface intersection present, as indicated by the sample points at either end being in opposite states - where one is inside the isosurface, and the other outside. In this case, the position of the isosurface intersection can be calculated by linear interpolation along the edge; this is considered a \emph{\textquotesingle candidate vertex\textquotesingle}, since it may or may not represent a vertex in the final mesh. !DIAGRAM! If the candidate vertex is closer to the currently examined sample point than the neighbour, it is considered to be a \emph{\textquotesingle nearby intersection\textquotesingle{}} from the perspective of the currently examined sample point. The clustering and vertex creation processes operate on these nearby intersections only, with the understanding that distant intersections will be handled by the sample point to which they are nearest.
+A novel approach to clustering vertices was developed. As discussed, the topology of the mesh should be preserved during merging, and thus the merging algorithm must behave differently depending on the topology. Based on the work of Treece, Prager, and Gee (1999), the only clustering considered is that of isosurface intersections which occur near a given sample point; sample points are processed one at a time. This approach guarantees the algorithm to scale linearly on the number of sample points, and also prevents isosurface intersections from being involved in multiple merging operations, making the process order-independent and thus producing more consistent results. The topology is determined via a graph representation, and isosurface intersections are merged into vertices accordingly.  In this description, each sample point is surrounded by 14 neighbours, connected by edges. Each of these edges may have an isosurface intersection present, as indicated by the sample points at either end being in opposite states - where one is inside the isosurface, and the other outside. In this case, the position of the isosurface intersection can be calculated by linear interpolation along the edge; this is considered a \emph{\textquotesingle candidate vertex\textquotesingle}, since it may or may not represent a vertex in the final mesh. !DIAGRAM! If the candidate vertex is closer to the currently examined sample point than the neighbour, it is considered to be a \emph{\textquotesingle nearby intersection\textquotesingle{}} from the perspective of the currently examined sample point. The clustering and vertex creation processes operate on these nearby intersections only, with the understanding that distant intersections will be handled by the sample point to which they are nearest.
 
-Hence, around each sample point, we have a set of nearby candidate vertices which may be able to be merged. The topology of this set must be considered, otherwise merging operations may be performed which compromise the topology of the resulting mesh. Several cases are demonstrated below: !DIAGRAM!
+Hence, around each sample point, we have a set of nearby candidate vertices which may be able to be merged. The topology of this set must be considered, otherwise merging operations may be performed which compromise the topology of the resulting mesh. Several cases are demonstrated in Figs. \ref{fig:topologies1} and \ref{fig:topologies2}.
+
+\begin{figure}[htb]
+    \centering
+    \includesvg[inkscapelatex=false,width=\textwidth]{topologies1.svg}
+    \caption{Two mergeable candidate topologies; note that the multiple patches example must have each patch/island merged individually.}
+    \label{fig:topologies1}
+\end{figure}
+
+\begin{figure}[htb]
+    \centering
+    \includesvg[inkscapelatex=false,width=\textwidth]{topologies2.svg}
+    \caption{Two non-mergeable candidate topologies.}
+    \label{fig:topologies2}
+\end{figure}
+
+\FloatBarrier
 
 In each of these cases, the merging behaviour must be adjusted to preserve topology. Topology analysis is performed using an undirected graph (Bondy and Murty, 2008), represented using an adjacency matrix. This adjacency matrix is stored in the form of bitflags, since each nearby candidate vertex is either connected or unconnected to a given neighbour, and - since each sample point has 14 neighbours - at most 14 candidate vertices may be considered at a time. The use of bitflags both compacts the graph and makes it extremely fast to perform operations on, which is of great concern in this application. \emph{\textquotesingle Connections\textquotesingle{}} within the graph represent which pairs of edges between sample points - which may contain nearby candidate vertices - can be merged, which depends on two conditions: first, the edges must be adjacent to one another !DIAGRAM!; second, both the edges must have nearby candidate vertices.
 
@@ -325,9 +376,9 @@ Both tessellations are structured such that each sample point has 14 connected n
 
 \subsubsection{Parallelisation Approach}\label{parallelisation-approach}
 
-The original RMT algorithm does not take advantage of CPU parallelisation. However, parallelisation capability of CPUs is abundant on modern hardware, which can be taken advantage of. The implementation provides parallelisation capability for the sampling pass only, where the number of worker threads is specified by the user. The decision to limit the parallelisation was taken based on measurements taken for the duration of different areas of the algorithm. It was found that the vast majority of the computation time for the algorithm was spent evaluating the user-provided sample function; this is reflected in the section \ref{results-and-conclusions}.
+The original RMT algorithm does not take advantage of CPU parallelisation. However, parallelisation capability of CPUs is abundant on modern hardware, which can be taken advantage of. The implementation provides parallelisation capability for the sampling pass only, where the number of worker threads is specified by the user. The decision to limit the parallelisation was taken based on measurements of the durations for different sections of the algorithm. It was found that the vast majority of the computation time for the algorithm was spent evaluating the user-provided sample function; this is reflected in the results (section \ref{results-and-conclusions}).
 
-Another candidate for multi-threading support was the vertex generation pass, which involves most of the remaining computation work for the algorithm, due to the clustering procedure. However, since this process involves appending vertices to a shared list - and more importantly, maintaining a unique index referencing each - difficulties arise when refactoring the algorithm for parallel processing. Avoiding extensive use of synchronisation primitives (mutices) requires a non-trivial process of merging the outputs from multiple threads, which itself can be extremely costly in addition to the limitations imposed by Amdahl\textquotesingle s law (Hill and Marty, 2008). As such the decision was made not to parallelise this aspect of the algorithm. !DIAGRAM OF AN EXAMPLE PARALLELISATION METHOD, THE GOOD ONE I CAME UP WITH!
+Another candidate for multi-threading support was the vertex generation pass, which involves most of the remaining computation work for the algorithm, due to the clustering procedure. However, since this process involves appending vertices to a shared list - and more importantly, maintaining a unique index referencing each - difficulties arise when refactoring the algorithm for parallel processing. In order to avoid extensive use of synchronisation primitives (mutices), a non-trivial process of merging the outputs from multiple threads is required, which itself can be extremely costly in addition to the limitations imposed by Amdahl\textquotesingle s law (Hill and Marty, 2008). As such the decision was made not to parallelise this aspect of the algorithm. However, an example of how this could be implemented is shown in !DIAGRAM OF AN EXAMPLE PARALLELISATION METHOD, THE GOOD ONE I CAME UP WITH!
 
 In addition, the consideration is made below that the user may wish to divide the sample volume into chunks, and that these chunks may be processed in parallel. Thus, it may be beneficial to limit the resource usage of a single instance of the algorithm in order to facilitate user-controlled forms of parallelisation without exhausting CPU parallelisation capacity.
 
