@@ -9,6 +9,8 @@
 \usepackage{amsmath}
 \usepackage[ruled]{algorithm2e}
 \usepackage[a4paper, portrait, margin=1.5in, top=0.8in, bottom=0.8in]{geometry}
+\usepackage{fancyvrb,fvextra}
+\usepackage{csvsimple}
 \makeatother
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
@@ -505,30 +507,7 @@ Three variables are tested in the evaluation of the algorithms:
 \item The tetrahedron arrangement; body-centered diamond lattice, or simple cubic
 \item The clustering method; no clustering, integrated clustering, or post-processed merging using edge collapse
 \end{itemize}
-Every configuration of these variables is evaluated in both the benchmark and questionnaire processes, which results in 18 different test cases overall:
-\begin{itemize}
-\tightlist
-\item Sphere object; body-centered arrangement; no clustering
-\item Sphere object; body-centered arrangement; integrated clustering
-\item Sphere object; body-centered arrangement; post-processed clustering
-\item Sphere object; simple arrangement; no clustering
-\item Sphere object; simple arrangement; integrated clustering
-\item Sphere object; simple arrangement; post-processed clustering
-\item Asteroid object; body-centered arrangement; no clustering
-\item Asteroid object; body-centered arrangement; integrated clustering
-\item Asteroid object; body-centered arrangement; post-processed clustering
-\item Asteroid object; simple arrangement; no clustering
-\item Asteroid object; simple arrangement; integrated clustering
-\item Asteroid object; simple arrangement; post-processed clustering
-\item Bunny object; body-centered arrangement; no clustering
-\item Bunny object; body-centered arrangement; integrated clustering
-\item Bunny object; body-centered arrangement; post-processed clustering
-\item Bunny object; simple arrangement; no clustering
-\item Bunny object; simple arrangement; integrated clustering
-\item Bunny object; simple arrangement; post-processed clustering
-\end{itemize}
-
-!SHOULD THESE BE AN APPENDIX INSTEAD?!
+Every configuration of these variables is evaluated in both the benchmark and questionnaire processes, which results in 18 different test cases overall, detailed in Appendix A (section \ref{appendix-a}).
 
 \subsubsection{Benchmarking}\label{benchmarking}
 
@@ -549,7 +528,7 @@ Variables are tested independently to isolate their impact from one another, and
 
 Ideally, each pair of animations (and thus configurations) would be shown in two separate questions, reversed in the second occurrence - for every question showing animations \textbf{A} and \textbf{B}, there would be a corresponding question showing animations \textbf{B} and \textbf{A}. This would reduce the potential bias introduced by participants having an inherent left or right preference; however this would double the length of the questionnaire, potentially increasing the prevalence of issues discussed below.
 
-The questionnaire consists of 27 questions, and the specific comparisons made are shown in !INCLUDE QUESTIONNAIRE AS AN APPENDIX!. The length of the questionnaire is of significance - due to the data collection depending on a volunteer sampling method, and there being no incentive to participate, a questionnaire which takes a long time to complete will likely deter possible  participants, reducing the size of the dataset. In addition, longer completion times may lead to participants developing fatigue during the questionnaire and paying less attention to later questions as a result, in order to reach the end quicker, also reducing the reliability of the resulting data.
+The questionnaire consists of 27 questions, and the specific comparisons made are shown in Appendix C (section \ref{appendix-c}). The length of the questionnaire is of significance - due to the data collection depending on a volunteer sampling method, and there being no incentive to participate, a questionnaire which takes a long time to complete will likely deter possible  participants, reducing the size of the dataset. In addition, longer completion times may lead to participants developing fatigue during the questionnaire and paying less attention to later questions as a result, in order to reach the end quicker, also reducing the reliability of the resulting data.
 
 In order to obscure the configurations involved in any given question - to blind the participants - animation files are named using non-indicative 4-letter names, and questions are simply titled according to their number. In addition, questions are presented in a randomised order to deter participants from identifying and kind of pattern with the animations. This randomisation also helps to reduce the potential effect of fatigue, as participants will not all see the same questions last.
 
@@ -603,5 +582,367 @@ Delaunay, B. (1934) `Sur la sphère vide', \emph{Bulletin de l'Académie des Sci
 Bondy, J.A. and Murty, U.S.R. (2008) \emph{Graph theory}. New York: Springer.\medskip\\
 Hill, M.D. and Marty, M.R. (2008) `Amdahl's Law in the Multicore Era', \emph{Computer}, 41(7), pp. 33--38. doi:10.1109/mc.2008.209.\medskip\\
 Turk, G. and Levoy, M. (1994) `Stanford Bunny'. Stanford University Computer Graphics Laboratory.\medskip\\
+
+\pagebreak
+
+\section{Appendix A - Test Parameter Configurations}\label{appendix-a}
+
+Below is a list of configurations of test parameters used in the benchmark and questionnaire data gathering. Each is accompanied by an 4-letter name used to uniquely and anonymously identify the configuration.
+\begin{itemize}
+\tightlist
+\item Sphere object; body-centered arrangement; no clustering - \verb+ss_bu+
+\item Sphere object; body-centered arrangement; integrated clustering - \verb+ss_bi+
+\item Sphere object; body-centered arrangement; post-processed clustering - \verb+ss_bp+
+\item Sphere object; simple arrangement; no clustering - \verb+ss_su+
+\item Sphere object; simple arrangement; integrated clustering - \verb+ss_si+
+\item Sphere object; simple arrangement; post-processed clustering - \verb+ss_sp+
+\item Asteroid object; body-centered arrangement; no clustering - \verb+as_bu+
+\item Asteroid object; body-centered arrangement; integrated clustering - \verb+as_bi+
+\item Asteroid object; body-centered arrangement; post-processed clustering - \verb+as_bp+
+\item Asteroid object; simple arrangement; no clustering - \verb+as_su+
+\item Asteroid object; simple arrangement; integrated clustering - \verb+as_si+
+\item Asteroid object; simple arrangement; post-processed clustering - \verb+as_sp+
+\item Bunny object; body-centered arrangement; no clustering - \verb+bs_bu+
+\item Bunny object; body-centered arrangement; integrated clustering - \verb+bs_bi+
+\item Bunny object; body-centered arrangement; post-processed clustering - \verb+bs_bp+
+\item Bunny object; simple arrangement; no clustering - \verb+bs_su+
+\item Bunny object; simple arrangement; integrated clustering - \verb+bs_si+
+\item Bunny object; simple arrangement; post-processed clustering - \verb+bs_sp+
+\end{itemize}
+
+\pagebreak
+
+\section{Appendix B - Raw Benchmark Data}\label{appendix-b}
+
+\begin{table}[htb]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|}
+\hline
+ID     & $R_x$ & $R_y$ & $R_z$ & arrangement & clustering    \\ \hline
+ss\_bu & 50    & 50    & 50    & BCDL        & NONE          \\ \hline
+ss\_bi & 50    & 50    & 50    & BCDL        & INTEGRATED    \\ \hline
+ss\_bp & 50    & 50    & 50    & BCDL        & POSTPROCESSED \\ \hline
+ss\_su & 50    & 50    & 50    & SIMPLE      & NONE          \\ \hline
+ss\_si & 50    & 50    & 50    & SIMPLE      & INTEGRATED    \\ \hline
+ss\_sp & 50    & 50    & 50    & SIMPLE      & POSTPROCESSED \\ \hline
+as\_bu & 50    & 50    & 50    & BCDL        & NONE          \\ \hline
+as\_bi & 50    & 50    & 50    & BCDL        & INTEGRATED    \\ \hline
+as\_bp & 50    & 50    & 50    & BCDL        & POSTPROCESSED \\ \hline
+as\_su & 50    & 50    & 50    & SIMPLE      & NONE          \\ \hline
+as\_si & 50    & 50    & 50    & SIMPLE      & INTEGRATED    \\ \hline
+as\_sp & 50    & 50    & 50    & SIMPLE      & POSTPROCESSED \\ \hline
+bs\_bu & 75    & 40    & 56    & BCDL        & NONE          \\ \hline
+bs\_bi & 75    & 40    & 56    & BCDL        & INTEGRATED    \\ \hline
+bs\_bp & 75    & 40    & 56    & BCDL        & POSTPROCESSED \\ \hline
+bs\_su & 75    & 40    & 56    & SIMPLE      & NONE          \\ \hline
+bs\_si & 75    & 40    & 56    & SIMPLE      & INTEGRATED    \\ \hline
+bs\_sp & 75    & 40    & 56    & SIMPLE      & POSTPROCESSED \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[htb]
+\centering
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+ID     & $N_{tetrahedra}$ & $N_{vertices}$ & $N_{triangles}$ & $N_{discarded}$ \\ \hline
+ss\_bu & 160992         & 50865        & 101720        & 0             \\ \hline
+ss\_bi & 160992         & 13605        & 27200         & 105086        \\ \hline
+ss\_bp & 160992         & 13074        & 26144         & 75576         \\ \hline
+ss\_su & 70104          & 35098        & 70192         & 0             \\ \hline
+ss\_si & 70104          & 9296         & 18588         & 72356         \\ \hline
+ss\_sp & 70104          & 10685        & 21366         & 48826         \\ \hline
+as\_bu & 72240          & 22550        & 45096         & 0             \\ \hline
+as\_bi & 72240          & 6012         & 12020         & 46530         \\ \hline
+as\_bp & 72240          & 5665         & 11326         & 33770         \\ \hline
+as\_su & 31572          & 15840        & 31676         & 0             \\ \hline
+as\_si & 31572          & 4172         & 8340          & 32743         \\ \hline
+as\_sp & 31572          & 4697         & 9390          & 22286         \\ \hline
+bs\_bu & 122808         & 37332        & 74660         & 0             \\ \hline
+bs\_bi & 122808         & 10256        & 20508         & 77111         \\ \hline
+bs\_bp & 122808         & 9669         & 19334         & 55326         \\ \hline
+bs\_su & 50910          & 25384        & 50764         & 0             \\ \hline
+bs\_si & 50910          & 6579         & 13154         & 52610         \\ \hline
+bs\_sp & 50910          & 7616         & 15228         & 35536         \\ \hline
+\end{tabular}
+\end{table}
+
+\pagebreak
+
+\begin{table}[htb]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|l|}
+\hline
+ID     & $T_{total}$ & $T_{sampling}$ & $T_{vertex}$ & $T_{geometry}$ & $F_{sampling}$ & $F_{vertex}$ & $F_{geometry}$ \\ \hline
+ss\_bu & 0.0178      & 0.00703        & 0.00696      & 0.00308        & 39.41\%        & 38.99\%      & 17.28\%        \\ \hline
+ss\_bi & 0.0182      & 0.00712        & 0.00748      & 0.00288        & 39.16\%        & 41.15\%      & 15.85\%        \\ \hline
+ss\_bp & 0.0596      & 0.01122        & 0.00637      & 0.0412         & 18.83\%        & 10.69\%      & 69.25\%        \\ \hline
+ss\_su & 0.0118      & 0.0066         & 0.00314      & 0.00179        & 55.95\%        & 26.64\%      & 15.13\%        \\ \hline
+ss\_si & 0.0122      & 0.00657        & 0.00363      & 0.00175        & 53.81\%        & 29.74\%      & 14.29\%        \\ \hline
+ss\_sp & 0.0403      & 0.0108         & 0.0031       & 0.0261         & 26.86\%        & 7.70\%       & 64.63\%        \\ \hline
+as\_bu & 0.0288      & 0.0203         & 0.00625      & 0.00144        & 70.64\%        & 21.71\%      & 5.153\%        \\ \hline
+as\_bi & 0.0294      & 0.0206         & 0.00668      & 0.00142        & 70.12\%        & 22.74\%      & 4.839\%        \\ \hline
+as\_bp & 0.0458      & 0.0215         & 0.00623      & 0.0174         & 46.95\%        & 13.58\%      & 37.99\%        \\ \hline
+as\_su & 0.0166      & 0.0123         & 0.00288      & 0.00113        & 73.93\%        & 17.37\%      & 6.797\%        \\ \hline
+as\_si & 0.0172      & 0.0125         & 0.00323      & 0.00115        & 72.81\%        & 18.72\%      & 6.667\%        \\ \hline
+as\_sp & 0.0306      & 0.0159         & 0.00283      & 0.0115         & 52.04\%        & 9.24\%       & 37.64\%        \\ \hline
+bs\_bu & 10          & 10             & 0.01         & 0.00229        & 99.86\%        & 0.1005\%     & 0.02288\%      \\ \hline
+bs\_bi & 9.9         & 9.89           & 0.0112       & 0.0022         & 99.85\%        & 0.1129\%     & 0.02218\%      \\ \hline
+bs\_bp & 10          & 9.96           & 0.0101       & 0.0297         & 99.59\%        & 0.1010\%     & 0.2969\%       \\ \hline
+bs\_su & 5.96        & 5.95           & 0.00391      & 0.00161        & 99.90\%        & 0.06564\%    & 0.02717\%      \\ \hline
+bs\_si & 5.98        & 5.97           & 0.00467      & 0.00168        & 99.89\%        & 0.07814\%    & 0.02804\%      \\ \hline
+bs\_sp & 5.86        & 5.83           & 0.00404      & 0.0182         & 99.61\%        & 0.06902\%    & 0.3115\%       \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[htb]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|l|l|}
+\hline
+ID     & $B_{lattice}$ & $B_{edges}$ & $B_{vertices}$ & $B_{indices}$ & $F_{tetrahedra}$ & $F_{discard}$ & $AR_{mean}$ & $AR_{SD}$ \\ \hline
+ss\_bu & 1114048             & 16153696    & 1220760        & 1220640       & 10.52\%          & 0.000\%         & 775.93      & 12057.93  \\ \hline
+ss\_bi & 1114048             & 16153696    & 326520         & 326400        & 10.52\%          & 79.44\%         & 2.16        & 58.67     \\ \hline
+ss\_bp & 1114048             & 16153696    & 313776         & 313728        & 10.52\%          & 74.30\%         & 1.23        & 0.21      \\ \hline
+ss\_su & 530604              & 7693758     & 842352         & 842304        & 9.347\%          & 0.000\%         & 1207.37     & 15880.64  \\ \hline
+ss\_si & 530604              & 7693758     & 223104         & 223056        & 9.347\%          & 79.56\%         & 1.34        & 0.28      \\ \hline
+ss\_sp & 530604              & 7693758     & 256440         & 256392        & 9.347\%          & 69.56\%         & 1.38        & 0.32      \\ \hline
+as\_bu & 1114048             & 16153696    & 541200         & 541152        & 4.722\%          & 0.000\%         & 5.81        & 78.56     \\ \hline
+as\_bi & 1114048             & 16153696    & 144288         & 144240        & 4.722\%          & 79.47\%         & 1.16        & 0.15      \\ \hline
+as\_bp & 1114048             & 16153696    & 135960         & 135912        & 4.722\%          & 74.88\%         & 1.23        & 0.21      \\ \hline
+as\_su & 530604              & 7693758     & 380160         & 380112        & 4.210\%          & 0.000\%         & 6.53        & 106.34    \\ \hline
+as\_si & 530604              & 7693758     & 100128         & 100080        & 4.210\%          & 79.70\%         & 1.33        & 0.28      \\ \hline
+as\_sp & 530604              & 7693758     & 112728         & 112680        & 4.210\%          & 70.36\%         & 1.39        & 0.32      \\ \hline
+bs\_bu & 1487640             & 21570780    & 895968         & 895920        & 5.980\%          & 0.000\%         & 9.43        & 522.45    \\ \hline
+bs\_bi & 1487640             & 21570780    & 246144         & 246096        & 5.980\%          & 78.99\%         & 1.17        & 0.16      \\ \hline
+bs\_bp & 1487640             & 21570780    & 232056         & 232008        & 5.980\%          & 74.10\%         & 1.24        & 0.21      \\ \hline
+bs\_su & 710448              & 10301496    & 609216         & 609168        & 5.051\%          & 0.000\%         & 7.89        & 187.63    \\ \hline
+bs\_si & 710448              & 10301496    & 157896         & 157848        & 5.051\%          & 79.99\%         & 1.35        & 0.28      \\ \hline
+bs\_sp & 710448              & 10301496    & 182784         & 182736        & 5.051\%          & 70.00\%         & 1.39        & 0.32      \\ \hline
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\pagebreak
+
+\section{Appendix C - Questionnaire}\label{appendix-c}
+
+\begin{Verbatim}[breaklines]
+Thanks for taking the time to complete my questionnaire. This shouldn't take more than 15 minutes, and there are 28 questions in total. Before you decide whether you want to take part, it is important for you to understand why the research is being done and what your participation will involve. Please take time to read the following information carefully and discuss it with others if you wish. Ask me if there is anything that is not clear or if you would like more information.
+
+The study compares a variety of different techniques for generating and regularising geometry surfaces generated from volumetric data. The project intends to explore the benefits of the different techniques in terms of visual quality and performance.
+
+Your input will be key to developing a metric for relative perceived visual quality between example results generated with different techniques. This will allow me to assess which techniques produce ‘better looking’ results to the average human eye.
+
+For each question, you will watch the attached video (you can watch it as many times as you want, and pause it if you need to), and then choose which of the two side-by-side animations has a smoother, more appealing visual aesthetic, and pick the corresponding option. If you can't see any difference, or neither looks smoother than the other, pick the 'No preference' option instead. That's all you have to do! \textbf{PLEASE MAKE SURE YOU USE THE MAXIMUM AVAILABLE YOUTUBE QUALITY WHEN WATCHING THE VIDEOS}.
+
+Your participation here is entirely voluntary and anonymous. No identifying information is attached to your response, and your results will not be identifiable to you. If you decide you don't want your participation to be recorded, simply close the questionnaire without completing it. Your response cannot be removed after it has been submitted, as no information identifying it as yours is stored.
+
+There are no risks to taking part, and none of the animations shown contain flashing lights or patterns.
+
+If you have any questions, please contact me (c025180n@student.staffs.ac.uk) or Kieran.hicks@staffs.ac.uk.
+
+Your data will be processed in accordance with the General Data Protection Regulation 2016 (GDPR).
+The data controller for this project will be University of Staffordshire. The university will process your personal data for the purpose of the research outlined above. The legal basis for processing your personal data for research purposes under the GDPR is a ‘task in the public interest’.
+You can provide your consent for the use of your personal data in this study by completing the consent form that has been provided to you.
+You have the right to access information held about you. Your right of access can be exercised in accordance with the GDPR. You also have other rights including rights of correction, erasure, objection, and data portability. Questions, comments and requests about your personal data can also be sent to the University of Staffordshire Data Protection Officer. If you wish to lodge a complaint with the Information Commissioner’s Office, please visit http://www.ico.org.uk/
+
+[ ] I understand that my data will be processed securely by the researcher and University of Staffordshire
+[ ] I understand that my participation is voluntary and I can stop completing the questionnaire at any time
+[ ] I understand that no personally indentifying information is stored with my response, and that this means my response cannot be withdrawn after it is submitted
+[ ] I understand that ticking these four boxes and submitting my answers to this questionnaire represents consenting for my answers to be statistically analysed for the purposes detailed above
+
+
+Question 1 - Which of these two animations do you prefer?
+--> animation comparing ss_bu and ss_bi <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 2 - Which of these two animations do you prefer?
+--> animation comparing ss_bu and ss_bp <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 3 - Which of these two animations do you prefer?
+--> animation comparing ss_bp and ss_bi <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 4 - Which of these two animations do you prefer?
+--> animation comparing ss_su and ss_si <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 5 - Which of these two animations do you prefer?
+--> animation comparing ss_su and ss_sp <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 6 - Which of these two animations do you prefer?
+--> animation comparing ss_sp and ss_si <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 7 - Which of these two animations do you prefer?
+--> animation comparing ss_bu and ss_su <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 8 - Which of these two animations do you prefer?
+--> animation comparing ss_bi and ss_si <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 9 - Which of these two animations do you prefer?
+--> animation comparing ss_bp and ss_sp <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 10 - Which of these two animations do you prefer?
+--> animation comparing bs_bu and bs_bi <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 11 - Which of these two animations do you prefer?
+--> animation comparing bs_bu and bs_bp <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 12 - Which of these two animations do you prefer?
+--> animation comparing bs_bp and bs_bi <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 13 - Which of these two animations do you prefer?
+--> animation comparing bs_su and bs_si <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 14 - Which of these two animations do you prefer?
+--> animation comparing bs_su and bs_sp <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 15 - Which of these two animations do you prefer?
+--> animation comparing bs_sp and bs_si <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 16 - Which of these two animations do you prefer?
+--> animation comparing bs_bu and bs_su <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 17 - Which of these two animations do you prefer?
+--> animation comparing bs_bi and bs_si <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 18 - Which of these two animations do you prefer?
+--> animation comparing bs_bp and bs_sp <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 19 - Which of these two animations do you prefer?
+--> animation comparing as_bu and as_bi <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 20 - Which of these two animations do you prefer?
+--> animation comparing as_bu and as_bp <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 21 - Which of these two animations do you prefer?
+--> animation comparing as_bp and as_bi <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 22 - Which of these two animations do you prefer?
+--> animation comparing as_su and as_si <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 23 - Which of these two animations do you prefer?
+--> animation comparing as_su and as_sp <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 24 - Which of these two animations do you prefer?
+--> animation comparing as_sp and as_si <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 25 - Which of these two animations do you prefer?
+--> animation comparing as_bu and as_su <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 26 - Which of these two animations do you prefer?
+--> animation comparing as_bi and as_si <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+
+
+Question 27 - Which of these two animations do you prefer?
+--> animation comparing as_bp and as_sp <--
+[ ] Prefer left
+[ ] No preference
+[ ] Prefer right
+\end{Verbatim}
+
+\pagebreak
+
+\section{Appendix D - Raw Questionnaire Results}\label{appendix-d}
 
 \end{document}
