@@ -14,7 +14,7 @@ using namespace MTVT;
 
 int main()
 {
-    bool start_gui = false;
+    bool start_gui = true;
     bunnyInit();
 
     if (start_gui)
