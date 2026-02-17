@@ -1,0 +1,25 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.0.3 Chrome/140.0.7339.249 Electron/38.7.0 Safari/537.36" version="29.0.3">
+  <diagram name="Page-1" id="0EsF5NYaa7ziNz2Sqte-">
+    <mxGraphModel dx="697" dy="532" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="V1cqLwSlHG8JCfD-GCT5-1" target="V1cqLwSlHG8JCfD-GCT5-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-1" value="Thread 1" style="swimlane;" vertex="1" parent="1">
+          <mxGeometry x="100" y="220" width="200" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="V1cqLwSlHG8JCfD-GCT5-2" target="V1cqLwSlHG8JCfD-GCT5-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-2" value="Thread 2" style="swimlane;" vertex="1" parent="1">
+          <mxGeometry x="320" y="220" width="200" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-3" value="Ammortized integer &lt;br&gt;variable" style="shape=dataStorage;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="110" width="170" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

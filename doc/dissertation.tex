@@ -132,9 +132,20 @@ The marching tetrahedra algorithm is a variation of marching cubes first present
 
 \FloatBarrier
 
-When tessellating 3-dimensional space with tetrahedra, the arrangement of those tetrahedra must be considered. Most tessellations work around an orthogonal cubic grid, in order to integrate well with typical voxel data, such as that from CT scans. The three simplest arrangements are simple cubic (!DIAGRAM!), face-centered (!DIAGRAM!), and body-centered (!DIAGRAM!). It has been demonstrated that the body-centered lattice tessellation contains tetrahedra which have edge length ratios closest to 1, meaning they produce triangles closest to equilateral; this tessellation also has a higher sampling efficiency than other arrangements (Chan and Purisima, 1998; Chan and Purisima, 1998 (2)), hence many MT implementations use this arrangement.
+When tessellating 3-dimensional space with tetrahedra, the arrangement of those tetrahedra must be considered. Most tessellations work around an orthogonal cubic grid, in order to integrate well with typical voxel data, such as that from CT scans. The three simplest arrangements are simple cubic, face-centered, and body-centered; these are illustrated in Fig. \ref{fig:arrangements}. It has been demonstrated that the body-centered lattice tessellation contains tetrahedra which have edge length ratios closest to 1, meaning they produce triangles closest to equilateral; this tessellation also has a higher sampling efficiency than other arrangements (Chan and Purisima, 1998; Chan and Purisima, 1998 (2)), hence many MT implementations use this arrangement.
+
+\begin{figure}[htb]
+    \centering
+    \includesvg[inkscapelatex=false,width=0.9\textwidth]{arrangements.svg}
+    \caption{Left: Simple cubic arrangement, containing 5 tetrahedra in total, with 3 coloured solid.\\
+Center: Face-centered arrangement, containing 24 tetrahedra in total, with 4 coloured solid.\\
+Right: Body-centered arrangement, containing 24 tetrahedra in total, with 5 coloured solid. Note that each tetrahedron is a member of two adjacent cubes, meaning each cube effectively contains 12 tetrahedra. Although this arrangement is complex to depict, it is highly effective for optimising triangle shape and count.}
+    \label{fig:arrangements}
+\end{figure}
 
 However, marching tetrahedra generally produces worse meshes than marching cubes (Treece, Prager, and Gee, 1999) with a larger number of tiny or elongated triangles, which are undesirable. As such, both algorithms demand a simplification or regularisation mechanism to improve the final mesh. Simplification methods are discussed in more detail below.
+
+\FloatBarrier
 
 \subsection{Regularised Marching Tetrahedra}\label{regularised-marching-tetrahedra}
 
@@ -154,7 +165,16 @@ The regularised marching tetrahedra algorithm has been further extended to proce
 
 Research has been conducted with the target of improving interactivity for isosurface extraction techniques. One implementation pre-processes datasets to extract a subset of which all selected cells - which, according to implementation, may be cubes, tetrahedra, or other - intersect the isovalue, eliminating a large volume of computation applied to empty cells. These cells are then sorted into an acceleration structure according to the minimum and maximum data values within the cell, and the isosurface is extracted efficiently by propagating intersection tests to neighbouring cells in the acceleration structure (Bajaj et al., 1996). This technique shows a performance benefit of a factor of 3-8, providing significant value in applications aiming for real-time performance. A similar - although simplified - consideration is made in section \ref{optimisation-considerations}.
 
-Another proposed technique for isosurface extraction is constrained elastic surface nets (Gibson, 1998). Like the marching cubes algorithm, it begins by segmenting the data into voxels to be processed. Each voxel is then evaluated for whether it intersects the isosurface, and if so, initialised with a single vertex, which is joined to vertices in neighbouring cells. A smoothing algorithm is then applied iteratively while constraining vertex positions within their original voxels, which limits the complexity of the resulting mesh compared to marching cubes, while also preserving fine details which may be lost when merging algorithm is applied. The smoothing algorithm described incorporates a weighting factor to promote even distribution of vertices, as well as to account for curvature of the isosurface; this results in a balance between even vertex distribution and preservation of high-frequency details in the underlying data. Unlike marching cubes and marching tetrahedra, this approach accounts for the configuration of surrounding cells, producing fewer triangles as a result. !DIAGRAM!
+Another proposed technique for isosurface extraction is constrained elastic surface nets (Gibson, 1998). Like the marching cubes algorithm, it begins by segmenting the data into voxels to be processed. Each voxel is then evaluated for whether it intersects the isosurface, and if so, initialised with a single vertex, which is joined to vertices in neighbouring cells. A smoothing algorithm is then applied iteratively while constraining vertex positions within their original voxels, which limits the complexity of the resulting mesh compared to marching cubes, while also preserving fine details which may be lost when merging algorithm is applied. The smoothing algorithm described incorporates a weighting factor to promote even distribution of vertices, as well as to account for curvature of the isosurface; this results in a balance between even vertex distribution and preservation of high-frequency details in the underlying data. Unlike marching cubes and marching tetrahedra, this approach accounts for the configuration of surrounding cells, producing fewer triangles as a result.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=0.75\textwidth]{elastic surface nets.jpg}
+    \caption{The elastic surface nets algorithm demonstrated in 2D. From left to right, each image shows a greater degree of relaxation (Gibson, 1998).}
+    \label{fig:elasticsurfacenets}
+\end{figure}
+
+\FloatBarrier
 
 Binninger et al. (2025) proposed a similar algorithm which shares the iterative, grid-smoothed approach to isosurface extraction. This technique guarantees watertight, manifold meshes, with minimal error from the source data, and at very low memory cost. This is achieved by adapting the tetrahedral grid used to generate geometry to the surface itself, where each vertex in the tetrahedral grid represents a sample point. A Delaunay triangulation is then used to connect this cloud of sample points (Delaunay, 1934) to produce a tetrahedral grid. Each sample point carries a directional signed distance field - described using spherical harmonics - allowing iterative adjustment of the sample point cloud - and thus the tetrahedral grid - around the isosurface. Binninger et al. use a \textquotesingle fairness\textquotesingle{} metric to minimise the production of poor quality triangles, while also preserving sharp details and minimising reconstruction error. While this approach has strong applicability in 3D view reconstruction, as well as more generic isosurface extraction, the most valuable aspect is the efficient memory usage which enables cheaper triangulation of large sample volumes - particularly when that volume is sparsely populated with isosurface intersections.
 
@@ -391,7 +411,7 @@ Sample direction & $X$ & $Y$ & $Z$ \\
  \hline
 \end{tabular}
 \end{center}
-    \caption{Table for sample position offset vectors, for the body-centered tetrahedron arrangement. The $X$, $Y$, and $Z$ columns represent components of the vector which represents moving from the current sample point to its neighbour in the direction specified by the first column.}
+    \caption{Table for sample position offset vectors, for the body-centered tetrahedron arrangement. $S$ is defined to be half the size of the spacing of the sampling grid. The $X$, $Y$, and $Z$ columns represent components of the vector which represents moving from the current sample point to its neighbour in the direction specified by the first column.}
     \label{fig:samprelvec}
 \end{figure}
 
@@ -405,17 +425,37 @@ Another alteration made to the Treece, Prager, and Gee (1999) algorithm is that 
 
 Two methods for tessellating space using tetrahedra are tested. The first of which is that recommended by other works, including Treece, Prager, and Gee (1999), the body-centered diamond lattice structure, shown in !DIAGRAM!. This arrangement consists of 24 tetrahedra per lattice cube, although each of these tetrahedra is shared between two cubes, so the effective number per lattice cube is 12. The arrangement is highly desirable, since it is symmetric in many axes and contains near-regular tetrahedra as described in section \ref{marching-tetrahedra}.
 
-The second method is the \emph{\textquotesingle simple cubic\textquotesingle{}} arrangement, similar to that described by Chan and Purisima (1998). The tetrahedra are entirely contained within a cube, which is sliced first along the diagonal axis, then along each of the cube faces. Cuts are made in the same direction for opposing cube faces, which eliminates the need to mirror the layout of each alternating cube in the resulting lattice and thus simplifies the implementation. These cuts are then joined into 6 tetrahedra within the cube, each with two external faces !DIAGRAM!. This modified arrangement has the advantage - against the original simple cubic arrangement presented by Chan and Purisima - that all tetrahedra are geometrically congruent, making the produced triangles more consistent in size.
+The second method is the \emph{\textquotesingle simple cubic\textquotesingle{}} arrangement, similar to that described by Chan and Purisima (1998). The tetrahedra are entirely contained within a cube, which is sliced first along the diagonal axis, then along each of the cube faces. Cuts are made in the same direction for opposing cube faces, which eliminates the need to mirror the layout of each alternating cube in the resulting lattice and thus simplifies the implementation. These cuts are then joined into 6 tetrahedra within the cube, each with two external faces (illustrated in Fig. \ref{fig:simparr}). This modified arrangement has the advantage against the original version presented by Chan and Purisima that all tetrahedra are geometrically congruent, making the produced triangles more consistent in size.
+
+\begin{figure}[htb]
+    \centering
+    \includesvg[inkscapelatex=false,width=0.9\textwidth]{simple arrangements.svg}
+    \caption{Left: Original simple cubic arrangement (shown again for reference), containing 5 tetrahedra in total, with 3 coloured solid.\\
+Center: Our simple cubic arrangement, containing 6 tetrahedra in total, with 2 coloured solid.\\
+Right: Same as center, but with only 1 tetrahedron coloured solid to clarify the structure.}
+    \label{fig:simparr}
+\end{figure}
 
 However, this arrangement suffers from two key issues, which are the irregularity of the tetrahedra - dihedral angles are not consistent between faces, and are far from the 90 degrees of regular tetrahedra, as well as having an overall aspect ratio considerably above 1; and the directional bias - the fact that all tetrahedra share a central axis leads to limited freedom of movement for vertices created using the lattice, resulting in a directional bias sometimes visible in the final mesh.
 
 Both tessellations are structured such that each sample point has 14 connected neighbours - excluding points on the outer faces of the sample volume. This makes implementation of the two approaches simple and enables per-edge Boolean information to be stored in a single 16-bit value per sample point.
 
+\FloatBarrier
+
 \subsubsection{Parallelisation Approach}\label{parallelisation-approach}
 
 The original RMT algorithm does not take advantage of CPU parallelisation. However, parallelisation capability of CPUs is abundant on modern hardware, which can be taken advantage of. The implementation provides parallelisation capability for the sampling pass only, where the number of worker threads is specified by the user. The decision to limit the parallelisation was taken based on measurements of the durations for different sections of the algorithm. It was found that the vast majority of the computation time for the algorithm was spent evaluating the user-provided sample function; this is reflected in the results (section \ref{results-and-conclusions}).
 
-Another candidate for multi-threading support was the vertex generation pass, which involves most of the remaining computation work for the algorithm, due to the clustering procedure. However, since this process involves appending vertices to a shared list - and more importantly, maintaining a unique index referencing each - difficulties arise when refactoring the algorithm for parallel processing. In order to avoid extensive use of synchronisation primitives (mutices), a non-trivial process of merging the outputs from multiple threads is required, which itself can be extremely costly in addition to the limitations imposed by Amdahl\textquotesingle s law (Hill and Marty, 2008). As such the decision was made not to parallelise this aspect of the algorithm. However, an example of how this could be implemented is shown in !DIAGRAM OF AN EXAMPLE PARALLELISATION METHOD, THE GOOD ONE I CAME UP WITH!
+Another candidate for multi-threading support was the vertex generation pass, which involves most of the remaining computation work for the algorithm, due to the clustering procedure. However, since this process involves appending vertices to a shared list - and more importantly, maintaining a unique index referencing each - difficulties arise when refactoring the algorithm for parallel processing. In order to avoid extensive use of synchronisation primitives (mutices), a non-trivial process of merging the outputs from multiple threads is required, which itself can be extremely costly in addition to the limitations imposed by Amdahl\textquotesingle s law (Hill and Marty, 2008). As such the decision was made not to parallelise this aspect of the algorithm. However, an example of how this could be implemented is shown in Fig. \ref{fig:vertparallel}.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=0.7\textwidth]{vertex parallelisation.png}
+    \caption{Example algorithm for how the vertex creation pass could be parallelised. The time spent within critical sections - using the ammortized counter, which is a synchronised, one-at-a-time multi-threaded resource - is minimised, and vertices are merged afterwards at additional cost. The use of an ammortized counter to number vertices guarantees each vertex is uniquely identified by its index, preserving the existing behaviour of the geometry generation pass.}
+    \label{fig:vertparallel}
+\end{figure}
+
+\FloatBarrier
 
 In addition, the consideration is made below that the user may wish to divide the sample volume into chunks, and that these chunks may be processed in parallel. Thus, it may be beneficial to limit the resource usage of a single instance of the algorithm in order to facilitate user-controlled forms of parallelisation without exhausting CPU parallelisation capacity.
 

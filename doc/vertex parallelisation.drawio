@@ -1,0 +1,140 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.0.3 Chrome/140.0.7339.249 Electron/38.7.0 Safari/537.36" version="29.0.3">
+  <diagram name="Page-1" id="0EsF5NYaa7ziNz2Sqte-">
+    <mxGraphModel dx="1443" dy="1103" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="V1cqLwSlHG8JCfD-GCT5-1" target="V1cqLwSlHG8JCfD-GCT5-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="V1cqLwSlHG8JCfD-GCT5-1" target="V1cqLwSlHG8JCfD-GCT5-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-1" value="Thread 1" style="swimlane;" vertex="1" parent="1">
+          <mxGeometry x="100" y="220" width="200" height="270" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.85;entryY=0.05;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryPerimeter=0;" edge="1" parent="V1cqLwSlHG8JCfD-GCT5-1" source="V1cqLwSlHG8JCfD-GCT5-6" target="V1cqLwSlHG8JCfD-GCT5-8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="190" y="70" />
+              <mxPoint x="190" y="120" />
+              <mxPoint x="156" y="120" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-6" value="iterate over sample points, creating vertices" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="V1cqLwSlHG8JCfD-GCT5-1">
+          <mxGeometry x="20" y="40" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="V1cqLwSlHG8JCfD-GCT5-1" source="V1cqLwSlHG8JCfD-GCT5-6" target="V1cqLwSlHG8JCfD-GCT5-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-8" value="list of vertices created,&lt;br&gt;paired with unique index acquired from ammortized counter" style="shape=datastore;whiteSpace=wrap;html=1;" vertex="1" parent="V1cqLwSlHG8JCfD-GCT5-1">
+          <mxGeometry x="20" y="140" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="V1cqLwSlHG8JCfD-GCT5-2" target="V1cqLwSlHG8JCfD-GCT5-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="V1cqLwSlHG8JCfD-GCT5-2" target="V1cqLwSlHG8JCfD-GCT5-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-2" value="Thread n" style="swimlane;" vertex="1" parent="1">
+          <mxGeometry x="380" y="220" width="200" height="270" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.85;entryY=0.05;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryPerimeter=0;" edge="1" source="V1cqLwSlHG8JCfD-GCT5-19" target="V1cqLwSlHG8JCfD-GCT5-21" parent="V1cqLwSlHG8JCfD-GCT5-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="190" y="70" />
+              <mxPoint x="190" y="120" />
+              <mxPoint x="156" y="120" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-19" value="iterate over sample points, creating vertices" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="V1cqLwSlHG8JCfD-GCT5-2">
+          <mxGeometry x="20" y="40" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" edge="1" source="V1cqLwSlHG8JCfD-GCT5-19" target="V1cqLwSlHG8JCfD-GCT5-19" parent="V1cqLwSlHG8JCfD-GCT5-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-21" value="list of vertices created,&lt;br&gt;paired with unique index acquired from ammortized counter" style="shape=datastore;whiteSpace=wrap;html=1;" vertex="1" parent="V1cqLwSlHG8JCfD-GCT5-2">
+          <mxGeometry x="20" y="140" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-3" value="ammortized integer &lt;br&gt;variable" style="shape=dataStorage;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="1">
+          <mxGeometry x="255" y="110" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="V1cqLwSlHG8JCfD-GCT5-11" target="V1cqLwSlHG8JCfD-GCT5-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-11" value="wait until all threads are finished" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="510" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-13" value="..." style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=22;" vertex="1" parent="1">
+          <mxGeometry x="310" y="340" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-23" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="V1cqLwSlHG8JCfD-GCT5-16" target="V1cqLwSlHG8JCfD-GCT5-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="V1cqLwSlHG8JCfD-GCT5-16" target="V1cqLwSlHG8JCfD-GCT5-25">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-16" value="allocate array &lt;br&gt;sized to hold all created vertices" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="590" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-17" value="final vertex array" style="shape=datastore;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="160" y="565" width="100" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-29" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="V1cqLwSlHG8JCfD-GCT5-25" target="V1cqLwSlHG8JCfD-GCT5-28">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-25" value="for each thread" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="670" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-31" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.25;exitDx=0;exitDy=0;" edge="1" parent="1" source="V1cqLwSlHG8JCfD-GCT5-27" target="V1cqLwSlHG8JCfD-GCT5-28">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="490" y="800" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="445" y="832" />
+              <mxPoint x="445" y="755" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="V1cqLwSlHG8JCfD-GCT5-27" target="V1cqLwSlHG8JCfD-GCT5-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-27" value="copy the vertex to the final vertex array, at the associated&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;index generated by the ammortized counter&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="255" y="810" width="170" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-30" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="V1cqLwSlHG8JCfD-GCT5-28" target="V1cqLwSlHG8JCfD-GCT5-27">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-32" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="V1cqLwSlHG8JCfD-GCT5-28" target="V1cqLwSlHG8JCfD-GCT5-25">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="260" y="755" />
+              <mxPoint x="260" y="685" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-28" value="for each&lt;br&gt;vertex,index pair&lt;br&gt;in the thread&#39;s &lt;br&gt;output array" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="1">
+          <mxGeometry x="270" y="720" width="140" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="1" source="V1cqLwSlHG8JCfD-GCT5-8" target="V1cqLwSlHG8JCfD-GCT5-27">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="110" y="415" />
+              <mxPoint x="110" y="878" />
+              <mxPoint x="255" y="878" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="V1cqLwSlHG8JCfD-GCT5-35" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="1" source="V1cqLwSlHG8JCfD-GCT5-21" target="V1cqLwSlHG8JCfD-GCT5-27">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="570" y="415" />
+              <mxPoint x="570" y="878" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
