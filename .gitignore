@@ -12,3 +12,8 @@ imgui.ini
 *.synctex.gz
 *_svg-tex.pdf
 *_svg-tex.pdf_tex
+*.dpth
+*.md5
+doc/dissertation-figure0.pdf
+doc/dissertation-figure1.pdf
+doc/dissertation.auxlock

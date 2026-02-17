@@ -11,6 +11,13 @@
 \usepackage[a4paper, portrait, margin=1.5in, top=0.8in, bottom=0.8in]{geometry}
 \usepackage{fancyvrb,fvextra}
 \usepackage{csvsimple}
+\usepackage{pgfplots}
+\usepackage{subcaption}
+\pgfplotsset{width=10cm,compat=1.9}
+
+% We will externalize the figures
+\usepgfplotslibrary{external}
+\tikzexternalize
 \makeatother
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
@@ -543,7 +550,43 @@ In order to analyse the results, each set of related comparisons for a given mod
 \end{itemize}
 Within each group, a preference factor is computed, based on the sum of preferences for a given configuration of test variables, divided by the total number of responses. These factors sum to $\leq 1$, since 'No preference' responses count towards none of the configurations. Next, all versions of the same comparison group for different sample objects are combined using an arithmetic mean. The overall relative preference factor is then calculated by summing the corresponding configuration preference factors from different groups.
 
+\pagebreak
+
 \section{Results and Conclusions}\label{results-and-conclusions}
+
+\begin{figure}[htb]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{renders/bunny03_s.png}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{renders/bunny03_ws.png}
+\end{subfigure}
+\caption{Images of mesh output for the Stanford Bunny, using a body-centered arrangement with the integrated clustering algorithm, with the wireframe shown on the right.}
+\label{fig:imagesout}
+\end{figure}
+
+\begin{figure}[htb]
+\centering
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{renders/sphere4_s.png}
+\end{subfigure}%
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{renders/sphere4_f.png}
+\end{subfigure}%
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{renders/sphere4_ws.png}
+\end{subfigure}
+\caption{Images of mesh output for the sphere with a low sample resolution, using a body-centered arrangement with the integrated clustering algorithm. Flat shading is shown in the center, with the wireframe shown on the right.}
+\label{fig:imagesout2}
+\end{figure}
+
+\FloatBarrier
 
 \subsection{Benchmark}\label{benchmark-results}
 
@@ -565,11 +608,109 @@ as\_sp & 0.00283 & 0.0115 & 4697 & 9390 & 1.39 & 0.32 & 70.36\% \\ \hline
 \label{fig:asteroidexcerpt}
 \end{figure}
 
+\begin{figure}[htb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+	xtick=data,
+	symbolic x coords={Sphere,Asteroid,Bunny,dummy},
+	ylabel=Triangles,
+	legend style={at={(0.5,-0.1)}, anchor=north,legend columns=3,cells={align=left}},
+	ybar interval=0.7,
+	ymin=10,
+	ymax=110000,
+	axis equal=false,
+	minor tick num=1,
+	scaled y ticks=false
+]
+\addplot coordinates {(Sphere,101720) (Asteroid,45096) (Bunny,74660)  (dummy,10)};
+\addplot coordinates {(Sphere,27200) (Asteroid,12020) (Bunny,20508) (dummy,10)};
+\addplot coordinates {(Sphere,26144) (Asteroid,11326) (Bunny,19334) (dummy,10)};
+
+\addplot coordinates {(Sphere,70192) (Asteroid,31676) (Bunny,50764)  (dummy,10)};
+\addplot coordinates {(Sphere,18588) (Asteroid,8340) (Bunny,13154) (dummy,10)};
+\addplot coordinates {(Sphere,21366) (Asteroid,9390) (Bunny,15228) (dummy,10)};
+
+\legend{BCDL Unmerged, BCDL Integrated, BCDL Post-processed, Simple Unmerged, Simple Integrated, Simple Post-processed}
+\end{axis}
+\end{tikzpicture}
+\caption{Triangle counts of output meshes from all test cases. The noticeable spikes are associated with a lack of merging applied.}
+\end{figure}
+
 As can be seen, the use of a clustering algorithm results in a huge reduction in the number of triangles in the output mesh. Across all test cases, the integrated clustering technique resulted in an average reduction of $79.53\%$, meaning that seventy-nine percent of the triangles were merged and discarded. The reduction for the post-processed edge collapse technique was $72.20\%$, a similar but slightly lower result.
 
 The time taken to complete the generation was slightly higher when clustering was introduced; integrated clustering lead to a $12.07\%$ increase in time spent in the vertex pass, but reduced time spent in the geometry pass by $1.96\%$. This reduction for the geometry pass is due to the reduced amount of geometry which has to be inserted into the triangle array. For the post-processed clustering technique, the vertex pass was reduced by $1.36\%$, but the geometry pass grew in duration by $1135.96\%$. This latter increase is a result of the merging process being quite time-intensive when applied in this manner.
 
+\begin{figure}[htb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+	xtick=data,
+	symbolic x coords={Sphere,Asteroid,Bunny,dummy},
+	ylabel={$T_{vertex}$, $T_{geometry}$},
+	legend style={at={(0.5,-0.1)}, anchor=north,legend columns=3,cells={align=left}},
+	ybar interval=0.7,
+	ymin=0,
+	ymax=0.030,
+	axis equal=false,
+	minor tick num=1,
+	scaled y ticks=false
+]
+\addplot coordinates {(Sphere,0.006958) (Asteroid,0.00625) (Bunny,0.010069)  (dummy,0)};
+\addplot coordinates {(Sphere,0.003084) (Asteroid,0.001484) (Bunny,0.002293)  (dummy,0)};
+
+\addplot coordinates {(Sphere,0.007478) (Asteroid,0.006675) (Bunny,0.01118) (dummy,0)};
+\addplot coordinates {(Sphere,0.002881) (Asteroid,0.00142) (Bunny,0.002197) (dummy,0)};
+
+\addplot coordinates {(Sphere,0.006366) (Asteroid,0.006226) (Bunny,0.010107) (dummy,0)};
+\addplot coordinates {(Sphere,0.041249) (Asteroid,0.017414) (Bunny,0.029705) (dummy,0)};
+
+\addplot coordinates {(Sphere,0.003144) (Asteroid,0.002879) (Bunny,0.003909)  (dummy,0)};
+\addplot coordinates {(Sphere,0.001786) (Asteroid,0.001127) (Bunny,0.001618)  (dummy,0)};
+
+\addplot coordinates {(Sphere,0.003633) (Asteroid,0.003225) (Bunny,0.004672) (dummy,0)};
+\addplot coordinates {(Sphere,0.001745) (Asteroid,0.001149) (Bunny,0.001677) (dummy,0)};
+
+\addplot coordinates {(Sphere,0.003104) (Asteroid,0.002828) (Bunny,0.004042) (dummy,0)};
+\addplot coordinates {(Sphere,0.026069) (Asteroid,0.011522) (Bunny,0.01824) (dummy,0)};
+
+\legend{BCDL Unmerged $T_v$, BCDL Unmerged $T_g$, BCDL Integrated $T_v$, BCDL Integrated $T_g$, BCDL Post-processed $T_v$, BCDL Post-processed $T_g$, Simple Unmerged $T_v$, Simple Unmerged $T_g$, Simple Integrated $T_v$, Simple Integrated $T_g$, Simple Post-processed $T_v$, Simple Post-processed $T_g$}
+\end{axis}
+\end{tikzpicture}
+
+\caption{Vertex and geometry pass execution time from all test cases.}
+\end{figure}
+
 Also of interest is the aspect ratio of the triangles produced by the algorithm, which we assume is a good predictor of resulting smooth shading quality. The ideal aspect ratio would be $1$, where all triangles in the mesh are perfectly equilateral. Since this metric is highly specific to the sample object, a mean value is not appropriate. However, with no clustering applied, the mean aspect ratio of triangles ranged between $5.81$ and $1207.37$ for different sample objects; with intergrated clustering this was reduced to between $1.16$ and $2.16$; with post-processed merging aspect ratios ranged between $1.23$ and $1.39$. This clearly demonstrates the effectiveness of clustering for regularising the mesh.
+
+\begin{figure}[htb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+	xtick=data,
+	symbolic x coords={Sphere,Asteroid,Bunny,dummy},
+	ylabel={$AR_{mean}$},
+	legend style={at={(0.5,-0.1)}, anchor=north,legend columns=3,cells={align=left}},
+	ybar interval=0.7,
+	ymin=0,
+	ymax=10,
+	axis equal=false,
+	minor tick num=1,
+	scaled y ticks=false
+]
+\addplot coordinates {(Sphere,775.931408) (Asteroid,5.809247) (Bunny,9.432643)  (dummy,0)};
+\addplot coordinates {(Sphere,2.161832) (Asteroid,1.162554) (Bunny,1.171341) (dummy,0)};
+\addplot coordinates {(Sphere,1.231882) (Asteroid,1.234748) (Bunny,1.235127) (dummy,0)};
+
+\addplot coordinates {(Sphere,1207.366565) (Asteroid,6.530416) (Bunny,7.891359)  (dummy,0)};
+\addplot coordinates {(Sphere,1.337778) (Asteroid,1.333388) (Bunny,1.346908) (dummy,0)};
+\addplot coordinates {(Sphere,1.384396) (Asteroid,1.389157) (Bunny,1.385136) (dummy,0)};
+
+\legend{BCDL Unmerged, BCDL Integrated, BCDL Post-processed, Simple Unmerged, Simple Integrated, Simple Post-processed}
+\end{axis}
+\end{tikzpicture}
+\caption{Mean aspect ratios - $AR_{mean}$ - of triangles from output meshes from all test cases.}
+\end{figure}
 
 The standard deviation of triangle aspect ratios, $AR_{sd}$ is also illustrative here - $AR_{sd}$ ranges between $78.56$ and $15880.64$ when no clustering is applied, $0.15$ and $58.67$ for the integrated clustering method, and $0.21$ and $0.32$ for the post-processed technique. This discrepancy with the upper bound between the two merging techniques is a result of the integrated clustering method preserving fine details, while the edge collapse method will destroy elongated triangles even when they are part of complex topologies.
 
@@ -580,9 +721,6 @@ Additionally, it is important to compare the effect of lattice structure on thes
 This suggests that with respect to execution time and triangle count, the simple-cubic arrangement is generally better. However, this may be misleading, since the body-centered lattice has twice the density of sample points, and twice as many tetrahedra per unit sample volume. These results suggest that the body-centered lattice is actually a more efficient solution in terms of both execution time and triangle count, when the density of the sampling grid is taken into account.
 
 The results also suggest that while integrated clustering method may not produce triangles as uniformly as the post-processed method, the overall triangle count which results is lower. Futher in the integrated method's favour is the topology preservation it provides, not to mention the huge performance benefit over the post-processed technique, making it an all-round more effective method for reducing triangle counts in runtime-generated procedural meshes.
-
-
-!GRAPHS!
 
 \subsection{Questionnaire}\label{questionnaire-results}
 
@@ -620,7 +758,7 @@ Mean & 0.813 & 0.663 &  \\ \hline
 
 This reveals that overall, the most visually appealing set of test parameters was the integrated merging using the simple cubic tetrahedral arrangement configuration. This subverts the expectation that the body-centered tetrahedral arrangement guarantees better shading appearance. However, it is interesting to note that, on average, the body-centered tetrahedral arrangement is preferred over simple cubic, which could imply that the sample size is insufficient, or that the choice and limited range of sample objects is too narrow to effectively evaluate the overall visual performance of the two arrangements. With regard to clustering method, there also exists a significant preference toward the integrated technique, which matches the predictions of the literature.
 
-\subsection{Conclusions}\label{conclusions}
+\subsection{Final Conclusions and Future Work}\label{conclusions}
 
 Overall, our results suggest that the most effective isosurface extraction technique may depend significantly on the goals of the user. Analysis of the questionnaire shows that viewers have a significant preference for meshes produced with the integrated clustering method; the latter also produces highly regular meshes in benchmarks at minimal additional cost versus the base isosurface extraction method. The preferred choice of tetrahedron arrangement is less clear-cut - while participants somewhat prefer the body-centered lattice over the simple-cubic arrangement, the latter is noticeably faster in benchmarks due to having a lower sample point density. Depending on the desire for efficiency during mesh generation, this arrangement may be preferred. Participants in the questionnaire decided that, statistically, their favourite configuration of parameters was the simple-cubic integrated configuration, which supports its use despite going against the expectations implied by the literature.
 
@@ -629,6 +767,8 @@ The simple-cubic arrangement may be best suited for highly irregular models, due
 Most importantly, this paper demonstrates the importance of regularisation of procedural meshes, for rendering performance and storage as well as visual quality perceived by the player. Further work into the re-arrangement or elimination of the tetrahedron grid - much of the modern literature abandons the fixed-grid approach, as shown in section \ref{literature-review} - is needed, with more focus on specific use cases. A greater degree of clarity on which techniques produce greatest enjoyment for players in specific mesh generation scenarios would be beneficial; this also applies to the study of different shading scenarios, as the optimal techniques and algorithms may vary depending on the needs of the workflows and art direction in a particular project.
 
 Efficiency of both generation and rendering of procedural meshes holds significant weight in real-time applications, particularly videogames, since these algorithms will be asked to run on a variety of hardware with a variety of processing capabilities. It is also important at a time when calls for greater optimisation - and thus computational accessibility - in videogames have become more widespread. The choice of algorithms used to facilitate the visual art of videogames is paramount to providing people with an enjoyable, technologically accessible experience, in addition to forming the basis for each project's artistic vision.
+
+\pagebreak
 
 \section{Bibliography}\label{bibliography}
 
@@ -823,7 +963,7 @@ The study compares a variety of different techniques for generating and regulari
 
 Your input will be key to developing a metric for relative perceived visual quality between example results generated with different techniques. This will allow me to assess which techniques produce ‘better looking’ results to the average human eye.
 
-For each question, you will watch the attached video (you can watch it as many times as you want, and pause it if you need to), and then choose which of the two side-by-side animations has a smoother, more appealing visual aesthetic, and pick the corresponding option. If you can't see any difference, or neither looks smoother than the other, pick the 'No preference' option instead. That's all you have to do! \textbf{PLEASE MAKE SURE YOU USE THE MAXIMUM AVAILABLE YOUTUBE QUALITY WHEN WATCHING THE VIDEOS}.
+For each question, you will watch the attached video (you can watch it as many times as you want, and pause it if you need to), and then choose which of the two side-by-side animations has a smoother, more appealing visual aesthetic, and pick the corresponding option. If you can't see any difference, or neither looks smoother than the other, pick the 'No preference' option instead. That's all you have to do! PLEASE MAKE SURE YOU USE THE MAXIMUM AVAILABLE YOUTUBE QUALITY WHEN WATCHING THE VIDEOS.
 
 Your participation here is entirely voluntary and anonymous. No identifying information is attached to your response, and your results will not be identifiable to you. If you decide you don't want your participation to be recorded, simply close the questionnaire without completing it. Your response cannot be removed after it has been submitted, as no information identifying it as yours is stored.
 
