@@ -4,28 +4,8 @@
     "type": "split",
     "children": [
       {
-        "id": "6281611512a61882",
-        "type": "tabs",
-        "dimension": 67.4037674037674,
-        "children": [
-          {
-            "id": "d0c216cf2759b6ab",
-            "type": "leaf",
-            "state": {
-              "type": "pdf",
-              "state": {
-                "file": "doc/papers/regularised marching tetrahedra 1999.pdf"
-              },
-              "icon": "lucide-file-text",
-              "title": "regularised marching tetrahedra 1999"
-            }
-          }
-        ]
-      },
-      {
         "id": "68b5b1153b5047a7",
         "type": "tabs",
-        "dimension": 32.596232596232596,
         "children": [
           {
             "id": "b62eb480f45f403a",
@@ -248,19 +228,21 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "d0c216cf2759b6ab",
+  "active": "b62eb480f45f403a",
   "lastOpenFiles": [
-    "doc/dissertation.synctex(busy)",
-    "doc/dissertation.tex.RFpPAS",
-    "doc/dissertation.tex.NGEASs",
-    "doc/dissertation.tex.mNWtDV",
-    "doc/dissertation.tex.uNHdBu",
-    "doc/dissertation.tex.FTqbqF",
-    "doc/dissertation.tex.ZBmReZ",
-    "doc/dissertation.tex.BlnXXy",
-    "doc/dissertation.tex.KXxzxJ",
-    "doc/dissertation.tex.lgSuFU",
-    "doc/dissertation.tex.eXWAMp",
+    "doc/lu188762tie2k.tmp",
+    "doc/lu188762tie2h.tmp",
+    "doc/lu188762tie2e.tmp",
+    "doc/lu55442avucr.tmp",
+    "doc/lu55442avuco.tmp",
+    "doc/lu55442avucl.tmp",
+    "doc/lu55442avuci.tmp",
+    "doc/lu55442avucf.tmp",
+    "doc/lu55442avucc.tmp",
+    "doc/lu55442avuc9.tmp",
+    "doc/lu55442avuc6.tmp",
+    "doc/dissertation viva slides.md",
+    "doc/dissertation outline.md",
     "doc/local retriangulation.png",
     "doc/marching cubes configurations.png",
     "doc/dissertation.md",
@@ -272,7 +254,6 @@
     "doc/topologies.svg",
     "doc/research notes/Adaptive marching cubes 1995.md",
     "doc/research notes/simplification notes.md",
-    "doc/dissertation outline.md",
     "doc/inconsistent tessellation density.png",
     "doc/tetrahedron subdivision.svg",
     "doc/research notes/me when i relax my nodes.png",
@@ -295,7 +276,6 @@
     "doc/research notes.md",
     "Untitled.canvas",
     "2025-10-29.md",
-    "doc/sample point and edge counting.md",
-    "doc/kanban task board.md"
+    "doc/sample point and edge counting.md"
   ]
 }
