@@ -66,15 +66,13 @@ Procedural environment generation for videogames sometimes demands more complex 
 
 \newpage
 
-\tableofcontents
-
-\vspace*{\fill}
-
 \section*{Acknowledgements}
-\emph{I want to thank \textbf{Kieran Osborne} for being a fantastic supervisor throughout this project. I also want to thank \textbf{Lucy} and \textbf{Louise} for looking out for me and listening to me excitedly ramble, as well as all of my housemates and friends. Thankyou.}
+\emph{I want to thank \textbf{Kieran Osborne} for being a fantastic supervisor throughout this project. I also want to thank \textbf{Lucy} and \textbf{Louise} for looking out for me and listening to me excitedly ramble, as well as all of my housemates, friends, and my parents --- Thankyou.}
 
 \bigskip
 \bigskip
+
+\tableofcontents
 
 \newpage
 
@@ -190,6 +188,8 @@ The marching tetrahedra algorithm is a variation of marching cubes first present
 
 When tessellating 3-dimensional space with tetrahedra, the arrangement of those tetrahedra must be considered. Most tessellations work around an orthogonal cubic grid, in order to integrate well with typical voxel data, such as that from CT scans. The three simplest arrangements are simple cubic, face-centered, and body-centered; these are illustrated in Fig. \ref{fig:arrangements}. It has been demonstrated that the body-centered lattice tessellation contains tetrahedra which have edge length ratios closest to 1, meaning they produce triangles closest to equilateral; this tessellation also has a higher sampling efficiency than other arrangements (Chan and Purisima, 1998; Chan and Purisima, 1998 (2)), hence many MT implementations use this arrangement.
 
+However, marching tetrahedra generally produces worse meshes than marching cubes (Treece, Prager, and Gee, 1999) with a larger number of tiny or elongated triangles, which are undesirable. As such, both algorithms demand a simplification or regularisation mechanism to improve the final mesh. Simplification methods are discussed in more detail below.
+
 \end{multicols}
 \begin{figure}
     \centering
@@ -201,10 +201,6 @@ Right: Body-centered arrangement, containing 24 tetrahedra in total, with 5 colo
 \end{figure}
 \FloatBarrier
 \begin{multicols}{2}
-
-However, marching tetrahedra generally produces worse meshes than marching cubes (Treece, Prager, and Gee, 1999) with a larger number of tiny or elongated triangles, which are undesirable. As such, both algorithms demand a simplification or regularisation mechanism to improve the final mesh. Simplification methods are discussed in more detail below.
-
-\FloatBarrier
 
 \subsection{Regularised Marching Tetrahedra}\label{regularised-marching-tetrahedra}
 
@@ -228,13 +224,12 @@ Another proposed technique for isosurface extraction is constrained elastic surf
 
 \begin{singlecolfigure}
     \centering
-    \includegraphics[width=0.6\textwidth]{elastic surface nets.jpg}
+    \includegraphics[width=0.8\textwidth]{elastic surface nets.jpg}
     \captionof{figure}{The elastic surface nets algorithm demonstrated in 2D. From left to right, each image shows a greater degree of relaxation (Gibson, 1998).}
     \label{fig:elasticsurfacenets}
 \end{singlecolfigure}
 
 \FloatBarrier
-\columnbreak
 
 Binninger et al. (2025) proposed a similar algorithm which shares the iterative, grid-smoothed approach to isosurface extraction. This technique guarantees watertight, manifold meshes, with minimal error from the source data, and at very low memory cost. This is achieved by adapting the tetrahedral grid used to generate geometry to the surface itself, where each vertex in the tetrahedral grid represents a sample point. A Delaunay triangulation is then used to connect this cloud of sample points (Delaunay, 1934) to produce a tetrahedral grid. Each sample point carries a directional signed distance field - described using spherical harmonics - allowing iterative adjustment of the sample point cloud - and thus the tetrahedral grid - around the isosurface. Binninger et al. use a \textquotesingle fairness\textquotesingle{} metric to minimise the production of poor quality triangles, while also preserving sharp details and minimising reconstruction error. While this approach has strong applicability in 3D view reconstruction, as well as more generic isosurface extraction, the most valuable aspect is the efficient memory usage which enables cheaper triangulation of large sample volumes - particularly when that volume is sparsely populated with isosurface intersections.
 
@@ -247,18 +242,16 @@ In addition to iterative smoothing, another useful concept for mesh generation i
     \label{fig:tetsub}
 \end{singlecolfigure}
 
-\FloatBarrier
-
-While this technique has excellent applicability for modelling smooth, mathematically defined surfaces, the variable subdivision approach results in areas of varying topology density, which re-introduces poor quality triangles and thus shading problems. In addition, the time taken to produce the mesh may be too unpredictable to be useful in a real-time application, mandating strict limits on the maximum subdivision depth and potentially limiting the algorithm\textquotesingle s usefulness overall. Thus, this technique is not directly applicable to the current problem, although it may be useful for optimisation of computational work and adjustment of global voxel resolution according to surface complexity.
-
 \begin{singlecolfigure}
     \centering
-    \includegraphics[width=0.75\textwidth]{inconsistent tessellation density.png}
+    \includegraphics[width=0.5\textwidth]{inconsistent tessellation density.png}
     \captionof{figure}{Illustration of inconsistent surface tessellation density (Bey, 1995).}
     \label{fig:inconsistenttess}
 \end{singlecolfigure}
 
 \FloatBarrier
+
+While this technique has excellent applicability for modelling smooth, mathematically defined surfaces, the variable subdivision approach results in areas of varying topology density, which re-introduces poor quality triangles and thus shading problems. In addition, the time taken to produce the mesh may be too unpredictable to be useful in a real-time application, mandating strict limits on the maximum subdivision depth and potentially limiting the algorithm\textquotesingle s usefulness overall. Thus, this technique is not directly applicable to the current problem, although it may be useful for optimisation of computational work and adjustment of global voxel resolution according to surface complexity.
 
 This approach has also been considered in relation to the original marching cubes algorithm. The adaptive marching cubes algorithm (Shu et al., 1995) takes a similar approach to Bey (1995) by subdividing some of the cubes within the sample volume, according to the curvature of the surface within each cube. A greater curvature will result in higher subdivision level, in order to preserve surface detail. Cubes are subdivided until the contained surface patch is considered sufficiently flat, or until a resolution limit is reached. This approach, like Bey (1995), balances high sample resolution with minimal triangle count and computational cost by effectively varying the sample resolution across the sample volume. One problem which this paper solves is the \textquotesingle crack problem\textquotesingle{} - when two neighbouring cubes have different degrees of subdivision, a crack may be produced in the resulting surface, due to one of the neighbours having a greater number of movable vertices on the shared face between them. Shu et al. propose a detection method for this, as well as a method to generate additional triangles to close the hole and maintain a watertight mesh.
 
@@ -308,12 +301,7 @@ Another technique which may be of interest is octree hierarchical remeshing. Thi
 
 \subsection{Algorithm}\label{algorithm}
 
-The implementation produced was based closely on the regularised marching tetrahedra algorithm (Treece, Prager, and Gee, 1999). However, several adaptations were made in order to produce ideal results for videogame terrain.
-
-The specifics of our algorithm are detailed in pseudocode in Algorithms \ref{algo:pseudocode1}, \ref{algo:pseudocode2}, and \ref{algo:pseudocode3}. These correspond to the three computation stages - sampling, vertex creation, or geometry generation.
-
 \end{multicols}
-\bigskip
 
 \begin{algorithm}[H]
 \label{algo:pseudocode1}
@@ -326,7 +314,7 @@ Let $\mathbf{F}$ be a smoothly defined scalar function on $x,y,z$\;
 \caption{Sampling stage}
 \end{algorithm}
 
-\bigskip
+\smallskip
 
 \begin{algorithm}[H]
 \label{algo:pseudocode2}
@@ -361,7 +349,7 @@ Let $\mathbf{A_v}$ be the array of vertices in the generated mesh\;
 \caption{Vertex creation \& clustering stage}
 \end{algorithm}
 
-\bigskip
+\smallskip
 
 \begin{algorithm}[H]
 \label{algo:pseudocode3}
@@ -398,6 +386,8 @@ Let $\mathbf{A_t}$ be the array of triangles in the generated mesh\;
 
 \begin{multicols}{2}
 
+The implementation is based closely on the regularised marching tetrahedra algorithm (Treece, Prager, and Gee, 1999). However, several adaptations were made to better suit videogame terrain. Our technique is detailed in pseudocode in Algorithms \ref{algo:pseudocode1}, \ref{algo:pseudocode2}, and \ref{algo:pseudocode3}. These correspond to the three computation stages referenced below.
+
 \subsubsection{Integrated Vertex Clustering Strategy}\label{integrated-vertex-clustering-strategy}
 
 A novel approach to clustering vertices was developed. As discussed, the topology of the mesh should be preserved during merging, and thus the merging algorithm must behave differently depending on the topology. Based on the work of Treece, Prager, and Gee (1999), the only clustering considered is that of isosurface intersections which occur near a given sample point; sample points are processed one at a time. This approach guarantees the algorithm to scale linearly on the number of sample points, and also prevents isosurface intersections from being involved in multiple merging operations, making the process order-independent and thus producing more consistent results.
@@ -408,14 +398,14 @@ The clustering and vertex creation processes operate on these nearby intersectio
 
 Hence, around each sample point, we have a set of nearby candidate vertices which may be able to be merged. The topology of this set must be considered, otherwise merging operations may be performed which compromise the topology of the resulting mesh. Several cases are demonstrated in Figs. \ref{fig:topologies1} and \ref{fig:topologies2}.
 
-\begin{singlecolfigure}
+\end{multicols}
+
+\begin{figure}[htb]
     \centering
     \includesvg[width=0.75\textwidth]{candidate vertices.svg}
-    \captionof{figure}{Examples of candidate vertices are shown with hollow circles; an example of the merged 'real' mesh vertex they could contribute to is shown with a filled circle. Nearby intersections are labelled $N_1$ and $N_2$, and non-nearby intersections are shown in a lighter tone to further differentiate them. Only the nearby intersections, $N_1$ and $N_2$ in this example, are considered by the clustering algorithm.}
+    \caption{Examples of candidate vertices are shown with hollow circles; an example of the merged 'real' mesh vertex they could contribute to is shown with a filled circle. Nearby intersections are labelled $N_1$ and $N_2$, and non-nearby intersections are shown in a lighter tone to further differentiate them. Only the nearby intersections, $N_1$ and $N_2$ in this example, are considered by the clustering algorithm.}
     \label{fig:candidates}
-\end{singlecolfigure}
-
-\end{multicols}
+\end{figure}
 
 \begin{figure}[htb]
     \centering
@@ -626,6 +616,8 @@ Within each group, a preference factor is computed, based on the sum of preferen
 
 \section{Results and Conclusions}\label{results-and-conclusions}
 
+Examples of algorithm output, displayed in the testing environment, are shown below. As can be seen in Fig. \ref{fig:imagesout2} and \ref{fig:imagesout3}, the algorithm produces appropriate results for both smooth and flat mesh shading scenarios; the latter is comparable to the appearance of the polygonal terrain in ASTRONEER (2016).
+
 \end{multicols}
 \begin{figure}[htb]
 \centering
@@ -655,9 +647,28 @@ Within each group, a preference factor is computed, based on the sum of preferen
   \centering
   \includegraphics[width=.9\linewidth]{renders/sphere4_ws.png}
 \end{subfigure}
-\caption{Images of mesh output for the sphere with a low sample resolution, using a body-centered arrangement with the integrated clustering algorithm. Flat shading is shown in the center, with the wireframe shown on the right As can be seen, the algorithm produces appropriate results for both smooth and flat mesh shading scenarios..}
+\caption{Images of mesh output for the sphere with a low sample resolution, using a body-centered arrangement with the integrated clustering algorithm. Flat shading is shown in the center, with the wireframe shown on the right.}
 \label{fig:imagesout2}
 \end{figure}
+
+\begin{figure}[htb!]
+\centering
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{as_bi.png}
+\end{subfigure}%
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{af_bi.png}
+\end{subfigure}%
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{as_biw.png}
+\end{subfigure}
+\caption{Images of mesh output for the asteroid with a medium sample resolution, using a body-centered arrangement with the integrated clustering algorithm. Flat shading is shown in the center, with the wireframe shown on the right.}
+\label{fig:imagesout3}
+\end{figure}
+
 \FloatBarrier
 \pagebreak
 \begin{multicols}{2}
@@ -1188,7 +1199,7 @@ Question 27 - Which of these two animations do you prefer?
 [ ] Prefer left   [ ] No preference   [ ] Prefer right
 \end{Verbatim}
 
-\pagebreak
+\bigskip
 
 \section{Appendix D - Raw Questionnaire Results}\label{appendix-d}
 
