@@ -12,6 +12,7 @@
 \usepackage{fancyvrb,fvextra}
 \usepackage{csvsimple}
 \usepackage{pgfplots}
+\usepackage[format=plain,labelfont=bf,textfont=it]{caption}
 \usepackage{subcaption}
 \usepackage{lipsum}
 \usepackage{multicol}
@@ -19,6 +20,11 @@
   {\par\medskip\noindent\minipage{\linewidth}}
   {\endminipage\par\medskip}
 \pgfplotsset{width=10cm,compat=1.9}
+\providecommand{\keywords}[1]
+{
+  \small	
+  \textbf{Keywords ---} \textit{#1}
+}
 
 % We will externalize the figures
 \usepgfplotslibrary{external}
@@ -30,25 +36,45 @@
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
-\hypersetup{pdftitle={dissertation}, hidelinks, pdfcreator={cassette :)}}
+\hypersetup{
+pdftitle={An Examination of Isosurface Extraction for 3D Terrain Generation in Videogames},
+pdfauthor={Cassette Costen},
+ hidelinks, pdfcreator={cassette :)}
+pdfkeywords={Important Keywords},%
+}
 
-\title{An Examination of Isosurface Extraction for 3D Terrain Generation in Videogames}
+\title{\textbf{An Examination of Isosurface Extraction for 3D Terrain Generation in Videogames}}
 \author{Cassette Costen - Supervised by Kieran Osborne (Staffordshire University)}
 \date{March 2026}
 
 \begin{document}
 \maketitle
 
-
 \begin{center}
-    \includegraphics[width=\textwidth]{header.png}
+    \includegraphics[width=0.75\textwidth]{header.png}
 \end{center}
 
 \FloatBarrier
 
+\begin{abstract}
+Procedural environment generation for videogames sometimes demands more complex structure than simple heightmaps. The creation of such environments presents interesting challenges, in that the resulting mesh must be watertight and highly regular without human supervision, while at the same time being computationally cheap to generate. This paper compares several approaches to extracting isosurfaces as triangle meshes, and examines requirements and opportunities for further development of mesh generation algorithms specialised to suit this use case.
+\end{abstract}
+
+\bigskip
+
+\keywords{isosurface extraction, marching tetrahedra, computer graphics, video games, procedural generation, triangular mesh, regularisation}
+
 \newpage
 
 \tableofcontents
+
+\vspace*{\fill}
+
+\section*{Acknowledgements}
+\emph{I want to thank \textbf{Kieran Osborne} for being a fantastic supervisor throughout this project. I also want to thank \textbf{Lucy} and \textbf{Louise} for looking out for me and listening to me excitedly ramble, as well as all of my housemates and friends. Thankyou.}
+
+\bigskip
+\bigskip
 
 \newpage
 
@@ -196,18 +222,19 @@ The regularised marching tetrahedra algorithm has been further extended to proce
 
 \subsection{Other Isosurface Extraction Techniques}\label{other-isosurface-extraction-techniques}
 
-Research has been conducted with the target of improving interactivity for isosurface extraction techniques. One implementation pre-processes datasets to extract a subset of which all selected cells - which, according to implementation, may be cubes, tetrahedra, or other - intersect the isovalue, eliminating a large volume of computation applied to empty cells. These cells are then sorted into an acceleration structure according to the minimum and maximum data values within the cell, and the isosurface is extracted efficiently by propagating intersection tests to neighbouring cells in the acceleration structure (Bajaj et al., 1996). This technique shows a performance benefit of a factor of 3-8, providing significant value in applications aiming for real-time performance. A similar - although simplified - consideration is made in section \ref{optimisation-considerations}.
+Research has been conducted with the target of improving interactivity for isosurface extraction techniques. One implementation pre-processes datasets to extract a subset of which all selected cells - which, according to implementation, may be cubes, tetrahedra, or other - intersect the isovalue, eliminating a large volume of computation applied to empty cells. These cells are then sorted into an acceleration structure according to the minimum and maximum data values within the cell, and the isosurface is extracted efficiently by propagating intersection tests to neighbouring cells in the acceleration structure (Bajaj et al., 1996). This technique shows a performance benefit of a factor of 3-8, providing significant value in applications aiming for real-time performance. A similar - although simplified - consideration is made in section \ref{optimisation-strategies}.
 
 Another proposed technique for isosurface extraction is constrained elastic surface nets (Gibson, 1998). Like the marching cubes algorithm, it begins by segmenting the data into voxels to be processed. Each voxel is then evaluated for whether it intersects the isosurface, and if so, initialised with a single vertex, which is joined to vertices in neighbouring cells. A smoothing algorithm is then applied iteratively while constraining vertex positions within their original voxels, which limits the complexity of the resulting mesh compared to marching cubes, while also preserving fine details which may be lost when merging algorithm is applied. The smoothing algorithm described incorporates a weighting factor to promote even distribution of vertices, as well as to account for curvature of the isosurface; this results in a balance between even vertex distribution and preservation of high-frequency details in the underlying data. Unlike marching cubes and marching tetrahedra, this approach accounts for the configuration of surrounding cells, producing fewer triangles as a result.
 
 \begin{singlecolfigure}
     \centering
-    \includegraphics[width=0.75\textwidth]{elastic surface nets.jpg}
+    \includegraphics[width=0.6\textwidth]{elastic surface nets.jpg}
     \captionof{figure}{The elastic surface nets algorithm demonstrated in 2D. From left to right, each image shows a greater degree of relaxation (Gibson, 1998).}
     \label{fig:elasticsurfacenets}
 \end{singlecolfigure}
 
 \FloatBarrier
+\columnbreak
 
 Binninger et al. (2025) proposed a similar algorithm which shares the iterative, grid-smoothed approach to isosurface extraction. This technique guarantees watertight, manifold meshes, with minimal error from the source data, and at very low memory cost. This is achieved by adapting the tetrahedral grid used to generate geometry to the surface itself, where each vertex in the tetrahedral grid represents a sample point. A Delaunay triangulation is then used to connect this cloud of sample points (Delaunay, 1934) to produce a tetrahedral grid. Each sample point carries a directional signed distance field - described using spherical harmonics - allowing iterative adjustment of the sample point cloud - and thus the tetrahedral grid - around the isosurface. Binninger et al. use a \textquotesingle fairness\textquotesingle{} metric to minimise the production of poor quality triangles, while also preserving sharp details and minimising reconstruction error. While this approach has strong applicability in 3D view reconstruction, as well as more generic isosurface extraction, the most valuable aspect is the efficient memory usage which enables cheaper triangulation of large sample volumes - particularly when that volume is sparsely populated with isosurface intersections.
 
@@ -273,6 +300,9 @@ A similar technique is coplanarisation, which focuses on simplifying flat areas 
 A more advanced method for simplification is edge collapse. This approach begins by considering topology: a list of edges is first built using the list of triangles which define the mesh. These edges - pairs of vertices - are then checked individually, and are merged together if the edge length is less than a distance threshold. Finally, the mesh is reconstructed using the new vertex positions, discarding triangles which contain merged edges. Compared to vertex clustering, this technique eliminates a large number of wasted distance computations without the need for additional acceleration structures to be built. It also is more successful at preserving topology, although non-local topology - such as multi-edge loops covering a small area - is not always preserved. The edge collapse method also has a simple process for reconstructing the mesh, and does not require topology modifications between iterations of the edge length test. Because edges are merged one-by-one, this technique also produces highly regular meshes - demonstrated in section \ref{results-and-conclusions} - without additional vertex smoothing such as that used by the constrained elastic surface nets algorithm.
 
 Another technique which may be of interest is octree hierarchical remeshing. This is a costly approach which works by representing the subject mesh as an octree - a three-dimensional, recursively subdivided structure, where each cell may be subdivided into eight half-sized cells. This octree is then un-subdivided by collapsing highly recursive octree cells, simplifying the representation of the mesh as a result. Finally, the octree can be used to construct a new mesh with a lower - potentially more consistent and regular - geometry density (Andújar et al., 1996).
+
+\vspace*{\fill}
+\pagebreak
 
 \section{Methodologies}\label{methodologies}
 
@@ -568,8 +598,6 @@ The implementation was profiled numerically for the configurations described abo
 \end{itemize}
 Each benchmark was performed 100 times to account for background variations in CPU load and other conditions, and the mean value of each metric is then computed. The tests were performed on an \texttt{HP Z2 G8 Tower Workstation Desktop PC} running \texttt{Windows 11 Enterprise 24H2}, and consisting of an \texttt{11th Gen Intel Core i7-11700 CPU @2.5GHz with 16 Logical processors, 640KB L1 cache, 4MB L2 cache, 16MB L3 cache; and 32GB of 3200MT/s DDR4 RAM}.
 
-\columnbreak
-
 \subsubsection{Questionnaire}\label{questionnaire}
 
 The perceived visual quality of a mesh is assessed using a questionnaire. Each question consists of a pair of animations playing side- by-side, where each animation shows the mesh resulting from a different configuration of the test variables. The participant is then asked which of the two animations they prefer, selecting from \textquotesingle Prefer left\textquotesingle, \textquotesingle No preference\textquotesingle, or \textquotesingle Prefer right\textquotesingle.
@@ -593,30 +621,56 @@ In order to analyse the results, each set of related comparisons for a given mod
 \end{itemize}
 Within each group, a preference factor is computed, based on the sum of preferences for a given configuration of test variables, divided by the total number of responses. These factors sum to $\leq 1$, since 'No preference' responses count towards none of the configurations. Next, all versions of the same comparison group for different sample objects are combined using an arithmetic mean. The overall relative preference factor is then calculated by summing the corresponding configuration preference factors from different groups.
 
-\section{Results and Conclusions}\label{results-and-conclusions}
-
-\begin{singlecolfigure}
-\centering
-  \includegraphics[width=.85\linewidth]{renders/bunny03_s.png} 
-  \includegraphics[width=.85\linewidth]{renders/bunny03_ws.png}
-\captionof{figure}{Images of mesh output for the Stanford Bunny, using a body-centered arrangement with the integrated clustering algorithm, with the wireframe shown below.}
-\label{fig:imagesout}
-\end{singlecolfigure}
-
-\begin{singlecolfigure}
-\centering
-  \includegraphics[width=.9\linewidth]{renders/sphere4_s.png}
-  \includegraphics[width=.9\linewidth]{renders/sphere4_f.png}
-  \includegraphics[width=.9\linewidth]{renders/sphere4_ws.png}
-\captionof{figure}{Images of mesh output for the sphere with a low sample resolution, using a body-centered arrangement with the integrated clustering algorithm. Smooth shading is shown at the top, flat shading in the middle, and the wireframe at the bottom. As can be seen, the algorithm produces appropriate results for both smooth and flat mesh shading scenarios.}
-\label{fig:imagesout2}
-\end{singlecolfigure}
-
-\FloatBarrier
-
+\vspace*{\fill}
 \columnbreak
 
+\section{Results and Conclusions}\label{results-and-conclusions}
+
+\end{multicols}
+\begin{figure}[htb]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{renders/bunny03_s.png}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{renders/bunny03_ws.png}
+\end{subfigure}
+\caption{Images of mesh output for the Stanford Bunny, using a body-centered arrangement with the integrated clustering algorithm, with the wireframe shown on the right.}
+\label{fig:imagesout}
+\end{figure}
+
+\begin{figure}[htb]
+\centering
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{renders/sphere4_s.png}
+\end{subfigure}%
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{renders/sphere4_f.png}
+\end{subfigure}%
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{renders/sphere4_ws.png}
+\end{subfigure}
+\caption{Images of mesh output for the sphere with a low sample resolution, using a body-centered arrangement with the integrated clustering algorithm. Flat shading is shown in the center, with the wireframe shown on the right As can be seen, the algorithm produces appropriate results for both smooth and flat mesh shading scenarios..}
+\label{fig:imagesout2}
+\end{figure}
+\FloatBarrier
+\pagebreak
+\begin{multicols}{2}
+
 \subsection{Benchmark}\label{benchmark-results}
+
+Raw benchmark results can be found in Appendix B (section \ref{appendix-b}). An extract of these results is shown in Fig. \ref{fig:asteroidexcerpt}.
+
+As can be seen, the use of a clustering algorithm results in a huge reduction in the number of triangles in the output mesh. Across all test cases, the integrated clustering technique resulted in an average reduction of $79.53\%$, meaning that seventy-nine percent of the triangles were merged and discarded. The reduction for the post-processed edge collapse technique was $72.20\%$, a similar but slightly lower result.
+
+The time taken to complete the generation was slightly higher when clustering was introduced; integrated clustering lead to a $12.07\%$ increase in time spent in the vertex pass, but reduced time spent in the geometry pass by $1.96\%$. This reduction for the geometry pass is due to the reduced amount of geometry which has to be inserted into the triangle array. For the post-processed clustering technique, the vertex pass was reduced by $1.36\%$, but the geometry pass grew in duration by $1135.96\%$. This latter increase is a result of the merging process being quite time-intensive when applied in this manner.
+
+Also of interest is the aspect ratio of the triangles produced by the algorithm, which we assume is a good predictor of resulting smooth shading quality. The ideal aspect ratio would be $1$, where all triangles in the mesh are perfectly equilateral. Since this metric is highly specific to the sample object, a mean value is not appropriate. However, with no clustering applied, the mean aspect ratio of triangles ranged between $5.81$ and $1207.37$ for different sample objects; with intergrated clustering this was reduced to between $1.16$ and $2.16$; with post-processed merging aspect ratios ranged between $1.23$ and $1.39$. This clearly demonstrates the effectiveness of clustering for regularising the mesh.
 
 \end{multicols}
 
@@ -667,15 +721,6 @@ as\_sp & 0.00283 & 0.0115 & 4697 & 9390 & 1.39 & 0.32 & 70.36\% \\ \hline
 \caption{Triangle counts of output meshes from all test cases. The noticeable spikes are associated with a lack of merging applied.}
 \end{figure}
 \begin{multicols}{2}
-
-Raw benchmark results can be found in Appendix B (section \ref{appendix-b}). An extract of these results is shown in Fig. \ref{fig:asteroidexcerpt}.
-
-As can be seen, the use of a clustering algorithm results in a huge reduction in the number of triangles in the output mesh. Across all test cases, the integrated clustering technique resulted in an average reduction of $79.53\%$, meaning that seventy-nine percent of the triangles were merged and discarded. The reduction for the post-processed edge collapse technique was $72.20\%$, a similar but slightly lower result.
-
-The time taken to complete the generation was slightly higher when clustering was introduced; integrated clustering lead to a $12.07\%$ increase in time spent in the vertex pass, but reduced time spent in the geometry pass by $1.96\%$. This reduction for the geometry pass is due to the reduced amount of geometry which has to be inserted into the triangle array. For the post-processed clustering technique, the vertex pass was reduced by $1.36\%$, but the geometry pass grew in duration by $1135.96\%$. This latter increase is a result of the merging process being quite time-intensive when applied in this manner.
-
-Also of interest is the aspect ratio of the triangles produced by the algorithm, which we assume is a good predictor of resulting smooth shading quality. The ideal aspect ratio would be $1$, where all triangles in the mesh are perfectly equilateral. Since this metric is highly specific to the sample object, a mean value is not appropriate. However, with no clustering applied, the mean aspect ratio of triangles ranged between $5.81$ and $1207.37$ for different sample objects; with intergrated clustering this was reduced to between $1.16$ and $2.16$; with post-processed merging aspect ratios ranged between $1.23$ and $1.39$. This clearly demonstrates the effectiveness of clustering for regularising the mesh.
-
 
 \end{multicols}
 \begin{figure}[htb]
@@ -752,7 +797,11 @@ Also of interest is the aspect ratio of the triangles produced by the algorithm,
 
 The standard deviation of triangle aspect ratios, $AR_{sd}$ is also illustrative here - $AR_{sd}$ ranges between $78.56$ and $15880.64$ when no clustering is applied, $0.15$ and $58.67$ for the integrated clustering method, and $0.21$ and $0.32$ for the post-processed technique. This discrepancy with the upper bound between the two merging techniques is a result of the integrated clustering method preserving fine details, while the edge collapse method will destroy elongated triangles even when they are part of complex topologies.
 
-Additionally, it is important to compare the effect of lattice structure on these results. The body-centered lattice was on average, $124.82\%$ more expensive to perform the vertex pass on than the simple-cubic arrangement, in terms of time. However, it is critical to note that the body-centered lattice contains twice as many sample points which must be evaluated. The body-centered arrangement was also $48.67\%$ more expensive to compute the geometry pass for than the simple-cubic arrangement. The tetrahedron arrangement seemed to have little impact on the fraction of triangles discarded during clustering. However, the body-centered arrangement did produce $38.96\%$ more triangles overall after merging was applied, compared to the same sample objet processed using the simple-cubic lattice.
+Additionally, it is important to compare the effect of lattice structure on these results. The body-centered lattice was on average, $124.82\%$ more expensive to perform the vertex pass on than the simple-cubic arrangement, in terms of time.
+
+However, it is critical to note that the body-centered lattice contains twice as many sample points which must be evaluated. The body-centered arrangement was also $48.67\%$ more expensive to compute the geometry pass for than the simple-cubic arrangement.
+
+The tetrahedron arrangement seemed to have little impact on the fraction of triangles discarded during clustering. However, the body-centered arrangement did produce $38.96\%$ more triangles overall after merging was applied, compared to the same sample objet processed using the simple-cubic lattice.
 
 \FloatBarrier
 
@@ -760,11 +809,17 @@ This suggests that with respect to execution time and triangle count, the simple
 
 The results also suggest that while integrated clustering method may not produce triangles as uniformly as the post-processed method, the overall triangle count which results is lower. Futher in the integrated method's favour is the topology preservation it provides, not to mention the huge performance benefit over the post-processed technique, making it an all-round more effective method for reducing triangle counts in runtime-generated procedural meshes.
 
+\columnbreak
+
 \subsection{Questionnaire}\label{questionnaire-results}
 
 The questionnaire was conducted on a sample size of 18 volunteer participants. The raw results can be found in Appendix D (section \ref{appendix-d}). By summing preference factors for identical test configurations (see Fig. \ref{fig:preftab}), an overall preference weight for each test characteristic can be derived (see Fig. \ref{fig:prefoverall}).
 
-This reveals that overall, the most visually appealing set of test parameters was the integrated merging using the simple cubic tetrahedral arrangement configuration. This subverts the expectation that the body-centered tetrahedral arrangement guarantees better shading appearance. However, it is interesting to note that, on average, the body-centered tetrahedral arrangement is preferred over simple cubic, which could imply that the sample size is insufficient, or that the choice and limited range of sample objects is too narrow to effectively evaluate the overall visual performance of the two arrangements. With regard to clustering method, there also exists a significant preference toward the integrated technique, which matches the predictions of the literature.
+This reveals that overall, the most visually appealing set of test parameters was the integrated merging using the simple cubic tetrahedral arrangement configuration. This subverts the expectation that the body-centered tetrahedral arrangement guarantees better shading appearance.
+
+However, it is interesting to note that, on average, the body-centered tetrahedral arrangement is preferred over simple cubic, which could imply that the sample size is insufficient, or that the choice and limited range of sample objects is too narrow to effectively evaluate the overall visual performance of the two arrangements.
+
+With regard to clustering method, there also exists a significant preference toward the integrated technique, which matches the predictions of the literature.
 
 \end{multicols}
 \begin{figure}[htb]
