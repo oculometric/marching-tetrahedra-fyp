@@ -44,7 +44,7 @@ pdfkeywords={Important Keywords},%
 }
 
 \title{\textbf{An Examination of Isosurface Extraction for 3D Terrain Generation in Videogames}}
-\author{Cassette Costen - Supervised by Kieran Osborne (Staffordshire University)}
+\author{Cassette Costen - Supervised by Kieran Osborne (University of Staffordshire)}
 \date{March 2026}
 
 \begin{document}
@@ -57,7 +57,7 @@ pdfkeywords={Important Keywords},%
 \FloatBarrier
 
 \begin{abstract}
-Procedural environment generation for videogames sometimes demands more complex structure than simple heightmaps. The creation of such environments presents interesting challenges, in that the resulting mesh must be watertight and highly regular without human supervision, while at the same time being computationally cheap to generate. This paper compares several approaches to extracting isosurfaces as triangle meshes, and examines requirements and opportunities for further development of mesh generation algorithms specialised to suit this use case.
+Procedural environment generation for videogames sometimes demands a more advanced implementation than simple heightmaps, in the form of unique topologies. The creation of such environments presents unique challenges, in that the resulting mesh must be watertight and highly regular without human supervision, while at the same time being computationally cheap to generate. This paper compares several approaches to extracting isosurfaces as triangle meshes, and examines requirements and opportunities for further development of mesh generation algorithms specialised to suit this use case.
 \end{abstract}
 
 \bigskip
@@ -117,7 +117,7 @@ The presence of tiny or elongated triangles in an organic mesh also results in s
 \FloatBarrier
 \begin{multicols}{2}
 
-Ideally, all triangles in the resulting mesh should be equilateral, or as close to equilateral as possible to tile the surface, as this minimises the deviation in internal corner angles for the triangle and thus also minimises the appearance of shading anomalies. Tiling a surface with equilateral triangles also results in the most efficient filling of surface area, which significantly reduces work wasted due to overdraw as mentioned above. Within this paper, triangles being described as poor quality implies they are highly elongated or extremely small.
+Ideally, all triangles in the resulting mesh should be equilateral, or as close to equilateral as possible to tile the surface, as this minimises the deviation in internal corner angles for the triangle and thus also minimises the appearance of shading anomalies. Tiling a surface with equilateral triangles also results in the most efficient filling of surface area, which significantly reduces work wasted due to overdraw. Within this paper, triangles being described as poor quality implies they are highly elongated or extremely small.
 
 In addition to this, the performance of the isosurface extraction algorithm is of great importance. Many videogames involve procedurally generated terrain - often dynamic terrain modifiable by the player, such as in ASTRONEER (2016), which contains stylised, polygonal, continuously deformable terrain. In order to facilitate this, two considerations are made: first, that the algorithm should be capable of evaluating a usefully-sized volume of space within a typical game frame-time (1/60th of a second); second, that the algorithm should be capable of evaluating a larger volume as a series of smaller blocks if necessary. The first of these considerations must also make note of the startup time for the algorithm - an ideal implementation would keep existing memory allocated where practical, and give sufficient control to the developer to eliminate unnecessary re-evaluation of sampling data. The second consideration allows for staggering mesh computation over multiple frames or compute units, as well as avoiding re-computation of the entire sample space. Modifiable terrain is rarely altered in many places at once, and thus not all of the space must be re-tessellated for every modification.
 
@@ -430,7 +430,7 @@ In each of these cases, the merging behaviour must be adjusted to preserve topol
 \begin{figure}[htb]
     \centering
     \includesvg[width=0.8\textwidth]{mergeable candidates.svg}
-    \caption{Example transformation from spatial representation into graph representation. As described, only nearby candidates participate (labelled $A\dots E$), and only adjacent candidates may be connected togther. This results in the graph on the right, where it can be seen that the topology consists of two separate islands (labelled $I_1$ and $I_2$).}
+    \caption{Example transformation from spatial representation into graph representation. As described, only nearby candidates participate (labelled $A\dots E$), and only adjacent candidates may be connected together. This results in the graph on the right, where it can be seen that the topology consists of two separate islands (labelled $I_1$ and $I_2$).}
     \label{fig:mergeables}
 \end{figure}
 
@@ -509,7 +509,7 @@ Sample direction & $X$ & $Y$ & $Z$ \\
 
 Further optimisations are made by using the proximity flags to determine where there is one or fewer nearby intersections to skip the clustering process. Similarly, when the geometry pass encounters a cube where the intersection flags value is zero, the entire cube - consisting of 24 tetrahedra - is skipped, since this indicates that no geometry is present in the relevant tetrahedra; this massively reduces the processing cost of this step. This mirrors the work of Bajaja et al. (1996) - discussed earlier - to reduce the amount of computation required for a given sample volume by filtering out cells which have no isosurface intersections.
 
-Another alteration made to the Treece, Prager, and Gee (1999) algorithm is that in the current implementation, vertex normal vectors are calculated naively without evaluating surface curvature. This decision was made to reduce the computational cost of the algorithm and thus improve overall performance. Normal vectors are instead calculated by computing the mean interpolated normal vector for attached triangles after geometry has been generated. This also guarantees more appropriate shading for use in the context of videogames, as players are less concerned with the accuracy of the surface shading to the underlying noise function, and more so whether the terrain looks smooth and avoids shading artefacts.
+Another alteration made to the Treece, Prager, and Gee (1999) algorithm is that in the current implementation, vertex normal vectors are calculated naively without evaluating surface curvature. This decision was made to reduce the computational cost of the algorithm and thus improve overall performance. Normal vectors are instead calculated by computing the mean interpolated normal vector for attached triangles after geometry has been generated. This also guarantees more appropriate shading for use in the context of videogames, as players are less concerned with the accuracy of the surface shading to the underlying noise function, and more so whether the terrain looks smooth and avoids shading artifacts.
 
 \subsubsection{Tetrahedral Arrangements}\label{tetrahedral-arrangements}
 
@@ -547,7 +547,7 @@ In addition, the consideration is made below that the user may wish to divide th
 \begin{figure}[htb]
     \centering
     \includegraphics[width=0.7\textwidth]{vertex parallelisation.png}
-    \caption{Example algorithm for how the vertex creation pass could be parallelised. The time spent within critical sections - using the amortized counter, which is a synchronised, one-at-a-time multi-threaded resource - is minimised, and vertices are merged afterwards at additional cost. The use of an amortized counter to number vertices guarantees each vertex is uniquely identified by its index, preserving the existing behaviour of the geometry generation pass.}
+    \caption{Example algorithm for how the vertex creation pass could be parallelised. The time spent within critical sections - using the amortized counter, which is a synchronised, one-at-a-time multi-threaded resource - is minimised, and vertices are merged afterward at additional cost. The use of an amortized counter to number vertices guarantees each vertex is uniquely identified by its index, preserving the existing behaviour of the geometry generation pass.}
     \label{fig:vertparallel}
 \end{figure}
 
@@ -681,7 +681,7 @@ As can be seen, the use of a clustering algorithm results in a huge reduction in
 
 The time taken to complete the generation was slightly higher when clustering was introduced; integrated clustering lead to a $12.07\%$ increase in time spent in the vertex pass, but reduced time spent in the geometry pass by $1.96\%$. This reduction for the geometry pass is due to the reduced amount of geometry which has to be inserted into the triangle array. For the post-processed clustering technique, the vertex pass was reduced by $1.36\%$, but the geometry pass grew in duration by $1135.96\%$. This latter increase is a result of the merging process being quite time-intensive when applied in this manner.
 
-Also of interest is the aspect ratio of the triangles produced by the algorithm, which we assume is a good predictor of resulting smooth shading quality. The ideal aspect ratio would be $1$, where all triangles in the mesh are perfectly equilateral. Since this metric is highly specific to the sample object, a mean value is not appropriate. However, with no clustering applied, the mean aspect ratio of triangles ranged between $5.81$ and $1207.37$ for different sample objects; with intergrated clustering this was reduced to between $1.16$ and $2.16$; with post-processed merging aspect ratios ranged between $1.23$ and $1.39$. This clearly demonstrates the effectiveness of clustering for regularising the mesh.
+Also of interest is the aspect ratio of the triangles produced by the algorithm, which we assume is a good predictor of resulting smooth shading quality. The ideal aspect ratio would be $1$, where all triangles in the mesh are perfectly equilateral. Since this metric is highly specific to the sample object, a mean value is not appropriate. However, with no clustering applied, the mean aspect ratio of triangles ranged between $5.81$ and $1207.37$ for different sample objects; with integrated clustering this was reduced to between $1.16$ and $2.16$; with post-processed merging aspect ratios ranged between $1.23$ and $1.39$. This clearly demonstrates the effectiveness of clustering for regularising the mesh.
 
 \end{multicols}
 
@@ -812,13 +812,13 @@ Additionally, it is important to compare the effect of lattice structure on thes
 
 However, it is critical to note that the body-centered lattice contains twice as many sample points which must be evaluated. The body-centered arrangement was also $48.67\%$ more expensive to compute the geometry pass for than the simple-cubic arrangement.
 
-The tetrahedron arrangement seemed to have little impact on the fraction of triangles discarded during clustering. However, the body-centered arrangement did produce $38.96\%$ more triangles overall after merging was applied, compared to the same sample objet processed using the simple-cubic lattice.
+The tetrahedron arrangement seemed to have little impact on the fraction of triangles discarded during clustering. However, the body-centered arrangement did produce $38.96\%$ more triangles overall after merging was applied, compared to the same sample object processed using the simple-cubic lattice.
 
 \FloatBarrier
 
 This suggests that with respect to execution time and triangle count, the simple-cubic arrangement is generally better. However, this may be misleading, since the body-centered lattice has twice the density of sample points, and twice as many tetrahedra per unit sample volume. These results suggest that the body-centered lattice is actually a more efficient solution in terms of both execution time and triangle count, when the density of the sampling grid is taken into account.
 
-The results also suggest that while integrated clustering method may not produce triangles as uniformly as the post-processed method, the overall triangle count which results is lower. Futher in the integrated method's favour is the topology preservation it provides, not to mention the huge performance benefit over the post-processed technique, making it an all-round more effective method for reducing triangle counts in runtime-generated procedural meshes.
+The results also suggest that while integrated clustering method may not produce triangles as uniformly as the post-processed method, the overall triangle count which results is lower. Further in the integrated method's favour is the topology preservation it provides, not to mention the huge performance benefit over the post-processed technique, making it an all-round more effective method for reducing triangle counts in runtime-generated procedural meshes.
 
 \columnbreak
 
@@ -1086,7 +1086,7 @@ You have the right to access information held about you. Your right of access ca
 
 [ ] I understand that my data will be processed securely by the researcher and University of Staffordshire
 [ ] I understand that my participation is voluntary and I can stop completing the questionnaire at any time
-[ ] I understand that no personally indentifying information is stored with my response, and that this means my response cannot be withdrawn after it is submitted
+[ ] I understand that no personally identifying information is stored with my response, and that this means my response cannot be withdrawn after it is submitted
 [ ] I understand that ticking these four boxes and submitting my answers to this questionnaire represents consenting for my answers to be statistically analysed for the purposes detailed above
 
 Question 1 - Which of these two animations do you prefer?
