@@ -574,12 +574,13 @@ void GraphicsEnv::drawImGui()
     {
         static bool clicked = true;
         clicked |= ImGui::Checkbox("update live", &update_live);
+        clicked |= ImGui::Checkbox("update continuously", &update_every_frame);
         clicked |= ImGui::SliderFloat3("min", (float*)(&param_min), -5, 5);
         clicked |= ImGui::SliderFloat3("max", (float*)(&param_max), -5, 5);
         clicked |= ImGui::SliderFloat3("offset", (float*)(&param_off), -5, 5);
         clicked |= ImGui::SliderFloat("resolution", &param_resolution, 0.002f, 2);
-        const char* options[7] = { "sphere", "bump", "fbm", "asteroid", "cube", "bunny", "suzanne"};
-        clicked |= ImGui::Combo("function", &param_function, options, 7);
+        const char* options[8] = { "sphere", "bump", "fbm", "asteroid", "cube", "bunny", "suzanne", "blobs (live)" };
+        clicked |= ImGui::Combo("function", &param_function, options, 8);
         clicked |= ImGui::SliderFloat("threshold", &param_threshold, -2, 2);
         ImGui::LabelText("lattice type", "");
         ImGui::BeginTable("lattice type tbl", 1, ImGuiTableFlags_BordersOuter);
@@ -603,10 +604,10 @@ void GraphicsEnv::drawImGui()
         ImGui::EndTable();
         if (update_live)
             ImGui::BeginDisabled();
-        if (ImGui::Button("generate!") || (update_live && clicked))
+        if (ImGui::Button("generate!") || (update_live && clicked) || update_every_frame)
         {
             // run the generator!
-            static float(*funcs[7])(MTVT::Vector3) = { sphereFunc, bumpFunc, fbmFunc, asteroidFunc, cubeFunc, bunnyFunc, suzanneFunc };
+            static float(*funcs[8])(MTVT::Vector3) = { sphereFunc, bumpFunc, fbmFunc, asteroidFunc, cubeFunc, bunnyFunc, suzanneFunc, blobsFunc };
             glfwSetWindowTitle(window, "MTVT GUI (working...)");
             auto result = MTVT::runBenchmark("-", 1, param_min + param_off, param_max + param_off, param_resolution, funcs[param_function], param_threshold, (MTVT::Builder::LatticeType)param_lattice, (MTVT::Builder::ClusteringMode)param_merging, thread_count);
             glfwSetWindowTitle(window, "MTVT GUI");

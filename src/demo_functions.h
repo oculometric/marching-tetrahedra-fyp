@@ -10,3 +10,4 @@ float cubeFunc(MTVT::Vector3 v);
 void bunnyInit();
 float bunnyFunc(MTVT::Vector3 v);
 float suzanneFunc(MTVT::Vector3 v);
+float blobsFunc(MTVT::Vector3 v);

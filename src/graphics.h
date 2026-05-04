@@ -54,6 +54,7 @@ private:
 
 	// generation parameters
 	bool update_live = true;
+	bool update_every_frame = false;
 	MTVT::Vector3 param_min = { -1, -1, -1 };
 	MTVT::Vector3 param_max = { 1, 1, 1 };
 	MTVT::Vector3 param_off = { 0, 0, 0 };
