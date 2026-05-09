@@ -447,6 +447,7 @@ void GraphicsEnv::drawMesh(glm::mat4 transform)
     if (wireframe_mode)
     {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glLineWidth(3.0f);
         glDisable(GL_CULL_FACE);
         glUniform1i(shvar_shading_mode, 0);
         glUniform1i(shvar_backface_highlight, 0);
